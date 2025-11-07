@@ -66,7 +66,7 @@ serve(async (req) => {
     });
 
     // Forward to Spring Boot backend
-    const backendUrl = "https://243daac1c640.ngrok-free.app/api/user-sync";
+    const backendUrl = "https://a6e31b85afdb.ngrok-free.app/api/user-sync";
     console.log("🚀 Forwarding to Spring Boot backend:", backendUrl);
 
     const backendResponse = await fetch(backendUrl, {
