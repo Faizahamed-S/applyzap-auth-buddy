@@ -1,1 +1,4 @@
 project_id = "sgokoumxpgqhwmiamcwi"
+
+[functions.forward-to-backend]
+# JWT verification is enabled by default - only authenticated users can call this function
