@@ -47,7 +47,7 @@ const Signup = () => {
         email: validated.email,
         password: validated.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             first_name: validated.firstName,
             last_name: validated.lastName,
@@ -59,8 +59,8 @@ const Signup = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Account created! Please check your email to verify.");
-        navigate("/login");
+        toast.success("Account created successfully!");
+        navigate("/dashboard");
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -76,7 +76,7 @@ const Signup = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     });
 

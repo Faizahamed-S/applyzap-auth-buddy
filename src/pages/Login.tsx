@@ -35,7 +35,7 @@ const Login = () => {
         toast.error(error.message);
       } else {
         toast.success("Logged in successfully!");
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -51,7 +51,7 @@ const Login = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     });
 
