@@ -1,14 +1,16 @@
-import { JobApplication, CreateJobApplication, UpdateJobApplication, JobStatus } from '@/types/job';
-import { transformForBackend, transformFromBackend } from './statusMapper';
-import { supabase } from '@/integrations/supabase/client';
+import { JobApplication, CreateJobApplication, UpdateJobApplication, JobStatus } from "@/types/job";
+import { transformForBackend, transformFromBackend } from "./statusMapper";
+import { supabase } from "@/integrations/supabase/client";
 
-const API_BASE_URL = 'https://5baa8e9283a6.ngrok-free.app/board';
+const API_BASE_URL = "tracker-backend-production-535d.up.railway.app/board";
 
 // Helper to get auth token
 const getAuthToken = async (): Promise<string> => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session?.access_token) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
   return session.access_token;
 };
@@ -17,8 +19,8 @@ const getAuthToken = async (): Promise<string> => {
 const getAuthHeaders = async () => {
   const token = await getAuthToken();
   return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
   };
 };
 
@@ -26,15 +28,15 @@ export const jobApi = {
   // Fetch all job applications
   getAllApplications: async (status?: JobStatus, page = 1, limit = 100): Promise<JobApplication[]> => {
     const params = new URLSearchParams();
-    if (status) params.append('status', status);
-    params.append('page', page.toString());
-    params.append('limit', limit.toString());
-    
+    if (status) params.append("status", status);
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
+
     const url = `${API_BASE_URL}/applications?${params.toString()}`;
     const headers = await getAuthHeaders();
 
     const response = await fetch(url, { headers });
-    if (!response.ok) throw new Error('Failed to fetch applications');
+    if (!response.ok) throw new Error("Failed to fetch applications");
     const result = await response.json();
     return result.map(transformFromBackend);
   },
@@ -43,7 +45,7 @@ export const jobApi = {
   getApplication: async (id: string): Promise<JobApplication> => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/applications/${id}`, { headers });
-    if (!response.ok) throw new Error('Failed to fetch application');
+    if (!response.ok) throw new Error("Failed to fetch application");
     const result = await response.json();
     return transformFromBackend(result);
   },
@@ -52,7 +54,7 @@ export const jobApi = {
   getApplicationsByStatus: async (status: JobStatus): Promise<JobApplication[]> => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/applications/status/${status}`, { headers });
-    if (!response.ok) throw new Error('Failed to fetch applications by status');
+    if (!response.ok) throw new Error("Failed to fetch applications by status");
     const result = await response.json();
     return result.map(transformFromBackend);
   },
@@ -61,13 +63,13 @@ export const jobApi = {
   createApplication: async (data: CreateJobApplication): Promise<JobApplication> => {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${API_BASE_URL}/applications`, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify(transformedData),
     });
-    if (!response.ok) throw new Error('Failed to create application');
+    if (!response.ok) throw new Error("Failed to create application");
     const result = await response.json();
     return transformFromBackend(result);
   },
@@ -76,13 +78,13 @@ export const jobApi = {
   updateApplication: async (id: string, data: UpdateJobApplication): Promise<JobApplication> => {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers,
       body: JSON.stringify(transformedData),
     });
-    if (!response.ok) throw new Error('Failed to update application');
+    if (!response.ok) throw new Error("Failed to update application");
     const result = await response.json();
     return transformFromBackend(result);
   },
@@ -91,13 +93,13 @@ export const jobApi = {
   patchApplication: async (id: string, data: UpdateJobApplication): Promise<JobApplication> => {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers,
       body: JSON.stringify(transformedData),
     });
-    if (!response.ok) throw new Error('Failed to patch application');
+    if (!response.ok) throw new Error("Failed to patch application");
     const result = await response.json();
     return transformFromBackend(result);
   },
@@ -106,9 +108,9 @@ export const jobApi = {
   deleteApplication: async (id: string): Promise<void> => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers,
     });
-    if (!response.ok) throw new Error('Failed to delete application');
+    if (!response.ok) throw new Error("Failed to delete application");
   },
 };
