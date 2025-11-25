@@ -62,7 +62,11 @@ const Dashboard = () => {
           <div>
             <h1 className="text-xl font-bold text-foreground">ApplyZap</h1>
             {user && (
-              <p className="text-sm text-muted-foreground">{user.email}</p>
+              <p className="text-sm text-muted-foreground">
+                {user.user_metadata?.first_name && user.user_metadata?.last_name
+                  ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+                  : user.email}
+              </p>
             )}
           </div>
           <Button variant="outline" onClick={handleLogout}>
