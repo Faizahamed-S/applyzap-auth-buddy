@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { JobApplication, JobStatus } from '@/types/job';
 import { JobCard } from './JobCard';
 import { Badge } from '@/components/ui/badge';
+import { STATUS_CONFIG } from '@/lib/statusConfig';
 
 interface KanbanColumnProps {
   status: JobStatus;
@@ -12,14 +13,6 @@ interface KanbanColumnProps {
   onDelete: (id: string) => void;
   onViewDetails: (id: string) => void;
 }
-
-const STATUS_CONFIG: Record<JobStatus, { label: string; colorClass: string }> = {
-  APPLIED: { label: 'Applied', colorClass: 'bg-[hsl(var(--status-applied-bg))] border-[hsl(var(--status-applied))]' },
-  REJECTED: { label: 'Rejected', colorClass: 'bg-[hsl(var(--status-rejected-bg))] border-[hsl(var(--status-rejected))]' },
-  ONLINE_ASSESSMENT: { label: 'Online Assessment', colorClass: 'bg-[hsl(var(--status-online-assessment-bg))] border-[hsl(var(--status-online-assessment))]' },
-  INTERVIEW: { label: 'Interview', colorClass: 'bg-[hsl(var(--status-interview-bg))] border-[hsl(var(--status-interview))]' },
-  OFFER: { label: 'Offer', colorClass: 'bg-[hsl(var(--status-offer-bg))] border-[hsl(var(--status-offer))]' },
-};
 
 export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: KanbanColumnProps) => {
   const navigate = useNavigate();
@@ -41,7 +34,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
   return (
     <div 
       ref={setNodeRef}
-      className={`flex flex-col h-full rounded-lg border-2 ${config.colorClass} shadow-sm transition-all duration-200 ${isOver ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : 'hover:bg-muted/50'}`}
+      className={`flex flex-col h-full rounded-lg border-2 ${config.columnBgColor} ${config.columnBorderColor} shadow-sm transition-all duration-200 ${isOver ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : 'hover:opacity-90'}`}
     >
       <div 
         className="p-4 border-b-2 bg-background/50 cursor-pointer hover:bg-background/70 transition-colors"
