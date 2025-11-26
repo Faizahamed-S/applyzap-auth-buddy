@@ -32,7 +32,11 @@ const Login = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes("Email not confirmed")) {
+          toast.error("Please verify your email first. Check your inbox for the confirmation link.");
+        } else {
+          toast.error(error.message);
+        }
       } else {
         toast.success("Logged in successfully!");
         navigate("/dashboard");

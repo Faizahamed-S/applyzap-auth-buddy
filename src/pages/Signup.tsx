@@ -59,8 +59,8 @@ const Signup = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Account created successfully!");
-        navigate("/dashboard");
+        toast.success("Account created! Please check your email to verify.");
+        navigate("/verify-email", { state: { email: validated.email } });
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
