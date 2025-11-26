@@ -59,7 +59,7 @@ const Signup = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Account created! Please check your email to verify.");
+        toast.info("We've sent a verification email. Please check your inbox.");
         navigate("/verify-email", { state: { email: validated.email } });
       }
     } catch (err) {

@@ -56,9 +56,19 @@ const VerifyEmail = () => {
             </div>
           )}
           
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>Please click the verification link in your email to activate your account.</p>
-            <p>Once verified, you'll be able to sign in and start using ApplyZap.</p>
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
+              <p className="font-semibold text-foreground mb-2">⚠️ Verification Required</p>
+              <p>You must verify your email before you can sign in. Please click the verification link in your email to activate your account.</p>
+            </div>
+            
+            <p className="text-center">
+              <strong>Important:</strong> Check your spam folder if you don't see the email within a few minutes.
+            </p>
+            
+            <p className="text-center text-xs">
+              If you entered an incorrect email address, you'll need to sign up again with the correct one.
+            </p>
           </div>
 
           <div className="pt-2">
