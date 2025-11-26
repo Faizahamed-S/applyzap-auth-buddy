@@ -46,19 +46,8 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-    }
+  const handleGoogleLogin = () => {
+    toast.info("We're still working on Google sign-in. For now, please sign in with your email.");
   };
 
   return (
