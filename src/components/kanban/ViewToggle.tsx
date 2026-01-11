@@ -7,15 +7,15 @@ interface ViewToggleProps {
 
 export const ViewToggle = ({ currentView, onViewChange }: ViewToggleProps) => {
   return (
-    <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-fit">
+    <div className="flex items-center p-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
       <button
         onClick={() => onViewChange('kanban')}
         className={cn(
-          'px-4 py-2 text-sm font-medium rounded-md transition-all duration-200',
-          'hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+          'px-5 py-2 text-sm font-medium rounded-full transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#050A30]',
           currentView === 'kanban'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
+            ? 'bg-primary text-white shadow-md'
+            : 'text-white/70 hover:text-white hover:bg-white/10'
         )}
       >
         Grouped by Stage
@@ -23,11 +23,11 @@ export const ViewToggle = ({ currentView, onViewChange }: ViewToggleProps) => {
       <button
         onClick={() => onViewChange('table')}
         className={cn(
-          'px-4 py-2 text-sm font-medium rounded-md transition-all duration-200',
-          'hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+          'px-5 py-2 text-sm font-medium rounded-full transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#050A30]',
           currentView === 'table'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
+            ? 'bg-primary text-white shadow-md'
+            : 'text-white/70 hover:text-white hover:bg-white/10'
         )}
       >
         All Applications
