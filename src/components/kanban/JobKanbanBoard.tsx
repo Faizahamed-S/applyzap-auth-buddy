@@ -200,7 +200,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full bg-[#050A30]">
       {/* Top Navigation Header */}
       <header className="sticky top-0 z-50 border-b border-white/10 bg-deep-blue/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-6 py-4">
