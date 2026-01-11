@@ -47,7 +47,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-deep-blue">
+    <div className="min-h-screen w-full bg-[#050A30]">
       <JobKanbanBoard user={user} />
     </div>
   );
