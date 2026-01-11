@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Chrome, ArrowRight, Zap } from "lucide-react";
 import DashboardMockup from "./DashboardMockup";
 
+const fadeInUp = {
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
+};
+
 const HeroSection = () => {
   const navigate = useNavigate();
 
@@ -88,7 +94,7 @@ const HeroSection = () => {
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 text-lg px-8"
+                className="border-primary-foreground/30 bg-primary-foreground/5 text-primary-foreground hover:bg-primary-foreground/15 text-lg px-8"
               >
                 <Chrome className="mr-2 w-5 h-5" />
                 Download Extension
