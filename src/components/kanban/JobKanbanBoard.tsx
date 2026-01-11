@@ -180,8 +180,8 @@ export const JobKanbanBoard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-6">
+      <div className="max-w-full">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Job Application Tracker</h1>

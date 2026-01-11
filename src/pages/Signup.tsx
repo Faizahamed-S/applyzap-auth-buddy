@@ -77,13 +77,13 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4 relative">
+    <div className="min-h-screen flex items-center justify-center p-4 relative bg-[hsl(230,75%,10%)]">
       {/* Top-left Logo */}
       <div className="absolute top-6 left-6">
-        <Logo variant="dark" />
+        <Logo variant="light" />
       </div>
       
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-2xl border-0 my-8">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
           <CardDescription className="text-center">

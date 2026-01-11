@@ -52,7 +52,7 @@ export const JobCard = ({ job, onEdit, onDelete, onViewDetails }: JobCardProps) 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Card 
-        className="cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 border-border hover:border-primary/50"
+        className="cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 bg-card border border-border hover:border-primary/30 shadow-sm"
         onClick={handleCardClick}
       >
         <CardHeader className="pb-3">

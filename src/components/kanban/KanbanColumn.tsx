@@ -34,25 +34,30 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
   return (
     <div 
       ref={setNodeRef}
-      className={`flex flex-col h-full rounded-lg border-2 ${config.columnBgColor} ${config.columnBorderColor} shadow-sm transition-all duration-200 ${isOver ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : 'hover:opacity-90'}`}
+      className={`flex flex-col h-full rounded-lg border border-border bg-transparent transition-all duration-200 ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
     >
+      {/* Header with colored accent bar */}
       <div 
-        className="p-4 border-b-2 bg-background/50 cursor-pointer hover:bg-background/70 transition-colors"
+        className="cursor-pointer hover:opacity-90 transition-opacity"
         onClick={handleHeaderClick}
       >
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">{config.label}</h3>
-          <Badge variant="secondary" className="ml-2 font-medium" data-badge>
-            {jobs.length}
-          </Badge>
+        <div className={`h-1 rounded-t-lg ${config.headerAccentColor}`} />
+        <div className="p-4 bg-card rounded-b-none border-b border-border">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">{config.label}</h3>
+            <Badge className={`${config.badgeColor} font-medium`} data-badge>
+              {jobs.length}
+            </Badge>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 p-4 space-y-3 min-h-[600px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      {/* Cards area - transparent background */}
+      <div className="flex-1 p-3 space-y-3 min-h-[500px] max-h-[75vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {jobs.length === 0 ? (
-              <div className="flex items-center justify-center h-32 text-muted-foreground border-2 border-dashed border-border rounded-lg">
+              <div className="flex items-center justify-center h-24 text-muted-foreground border-2 border-dashed border-border rounded-lg bg-card/50">
                 <div className="text-center">
                   <p className="text-sm">No applications</p>
                   <p className="text-xs mt-1">Drag applications here</p>
