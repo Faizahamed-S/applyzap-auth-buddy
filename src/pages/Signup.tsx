@@ -44,7 +44,7 @@ const Signup = () => {
       const validated = signupSchema.parse(formData);
       setLoading(true);
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: validated.email,
         password: validated.password,
         options: {
@@ -59,10 +59,17 @@ const Signup = () => {
 
       if (error) {
         toast.error(error.message);
-      } else {
-        toast.info("We've sent a verification email. Please check your inbox.");
-        navigate("/verify-email", { state: { email: validated.email } });
+        return;
       }
+
+      // Check if user already exists (identities array will be empty)
+      if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+        toast.error("An account with this email already exists. Please sign in instead.");
+        return;
+      }
+
+      toast.info("We've sent a verification email. Please check your inbox.");
+      navigate("/verify-email", { state: { email: validated.email } });
     } catch (err) {
       if (err instanceof z.ZodError) {
         toast.error(err.errors[0].message);
