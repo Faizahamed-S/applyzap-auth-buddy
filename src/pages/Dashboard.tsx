@@ -3,10 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { JobKanbanBoard } from '@/components/kanban/JobKanbanBoard';
-import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
-import { toast } from 'sonner';
-import Logo from '@/components/ui/Logo';
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -39,15 +36,9 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success('Logged out successfully');
-    navigate('/login');
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
@@ -58,27 +49,10 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Logo size="sm" variant="dark" />
-            {user && (
-              <div className="hidden sm:block border-l pl-4">
-                <p className="text-sm text-muted-foreground">
-                  {user.user_metadata?.first_name && user.user_metadata?.last_name
-                    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
-                    : user.email}
-                </p>
-              </div>
-            )}
-          </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </div>
-      <JobKanbanBoard />
+      <DashboardSidebar />
+      <main className="ml-64 transition-all duration-300">
+        <JobKanbanBoard />
+      </main>
     </div>
   );
 };
