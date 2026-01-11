@@ -23,32 +23,30 @@ const HeroSection = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-zap/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Navigation */}
-      <nav className="relative z-10 container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Logo variant="light" />
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate("/login")}
-              className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
-            >
-              Sign In
-            </Button>
-          </motion.div>
-        </div>
-      </nav>
+      {/* Navigation - Absolute positioning matching Sign-in page */}
+      <motion.div 
+        className="absolute top-6 left-6 z-10"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Logo variant="light" />
+      </motion.div>
+      
+      <motion.div
+        className="absolute top-6 right-6 z-10"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/login")}
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+        >
+          Sign In
+        </Button>
+      </motion.div>
 
       {/* Hero Content */}
       <div className="relative z-10 container mx-auto px-4 pt-16 md:pt-24 pb-20">
