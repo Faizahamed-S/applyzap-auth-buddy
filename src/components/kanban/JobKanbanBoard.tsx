@@ -227,16 +227,10 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
       {/* Main Content - Constrained Width */}
       <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
-        {/* Control Bar - Title Left, Toggle & Add Button Right */}
+        {/* Control Bar - Logo Left, Add Button & Toggle Right */}
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
-            <p className="text-white/70 mt-2">
-              Manage your job search with drag-and-drop simplicity
-            </p>
-          </div>
+          <Logo variant="light" />
           <div className="flex items-center gap-3">
-            <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
             <Button 
               onClick={() => setIsAddModalOpen(true)} 
               className="bg-electric-blue hover:bg-blue-700 active:scale-95 text-white transition-all duration-150"
@@ -244,6 +238,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               <Plus className="mr-2 h-4 w-4" />
               Add Application
             </Button>
+            <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
           </div>
         </div>
 
