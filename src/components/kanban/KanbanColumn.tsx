@@ -3,7 +3,6 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useNavigate } from 'react-router-dom';
 import { JobApplication, JobStatus } from '@/types/job';
 import { JobCard } from './JobCard';
-import { Badge } from '@/components/ui/badge';
 import { STATUS_CONFIG } from '@/lib/statusConfig';
 
 interface KanbanColumnProps {
@@ -34,29 +33,33 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
   return (
     <div 
       ref={setNodeRef}
-      className={`flex flex-col h-full transition-all duration-200 ${isOver ? 'ring-2 ring-electric-blue ring-offset-2 ring-offset-deep-blue rounded-lg' : ''}`}
+      className={`flex flex-col min-w-[260px] max-w-[300px] rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm transition-all duration-200 ${
+        isOver ? 'ring-2 ring-electric-blue border-electric-blue bg-white/10' : ''
+      }`}
     >
       {/* Column Header */}
       <div 
-        className="cursor-pointer hover:opacity-90 transition-opacity mb-4"
+        className="cursor-pointer hover:opacity-90 transition-opacity p-4 border-b border-white/10"
         onClick={handleHeaderClick}
       >
-        <div className="flex items-center gap-3">
-          <h3 className={`font-semibold text-lg ${config.headerTextColor}`}>{config.label}</h3>
-          <Badge className={`${config.badgeColor} font-medium`} data-badge>
+        <div className="flex items-center justify-between">
+          <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${config.badgeBg}`}>
+            {config.label}
+          </span>
+          <span className="text-white font-medium bg-white/20 px-2.5 py-1 rounded-full text-sm" data-badge>
             {jobs.length}
-          </Badge>
+          </span>
         </div>
       </div>
 
-      {/* Cards area - transparent background */}
-      <div className="flex-1 space-y-3 min-h-[500px] max-h-[75vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pr-1">
+      {/* Cards area */}
+      <div className="flex-1 p-3 space-y-3 min-h-[400px] max-h-[65vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {jobs.length === 0 ? (
-              <div className="flex items-center justify-center h-24 text-white/40 border-2 border-dashed border-white/20 rounded-lg">
+              <div className="flex items-center justify-center h-24 text-white/50 border-2 border-dashed border-white/20 rounded-lg">
                 <div className="text-center">
-                  <p className="text-sm">No applications</p>
+                  <p className="text-sm font-medium">No applications</p>
                   <p className="text-xs mt-1">Drag applications here</p>
                 </div>
               </div>
