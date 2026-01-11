@@ -238,10 +238,10 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       {/* Main Content */}
       <div className="p-6">
         <div className="max-w-full">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-white">Job Application Tracker</h1>
-              <p className="text-white/60 mt-1">
+              <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
+              <p className="text-white/70 mt-2">
                 Manage your job search with drag-and-drop simplicity
               </p>
             </div>
@@ -254,7 +254,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 xl:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
                 {STATUSES.map((status) => (
                   <KanbanColumn
                     key={status}
