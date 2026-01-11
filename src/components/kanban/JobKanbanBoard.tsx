@@ -201,29 +201,30 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
   return (
     <div className="min-h-screen w-full bg-[#050A30]">
-      {/* Top Navigation Header - Logo & Profile Only */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050A30]/95 backdrop-blur-sm">
-        <div className="max-w-[1600px] w-[85%] mx-auto flex items-center justify-between px-4 py-4">
-          <Logo variant="light" />
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
-                <UserIcon className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                {user?.email}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
+      {/* Top-left Logo - Absolute position matching Sign-in page */}
+      <div className="absolute top-6 left-6 z-50">
+        <Logo variant="light" />
+      </div>
+
+      {/* Top-right Profile - Absolute position matching Sign-in page nav */}
+      <div className="absolute top-6 right-6 z-50">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
+              <UserIcon className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+              {user?.email}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {/* Main Content - Constrained Width */}
       <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-8">
