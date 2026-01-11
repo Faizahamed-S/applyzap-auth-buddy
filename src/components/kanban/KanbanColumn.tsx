@@ -54,6 +54,9 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
         </div>
       </div>
 
+      {/* Separator Line */}
+      <div className="border-b border-white/10 mx-3" />
+
       {/* Cards area */}
       <div className="flex-1 p-3 space-y-3 min-h-[400px] max-h-[65vh] overflow-y-auto scrollbar-stealth">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
