@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Chrome, ArrowRight } from "lucide-react";
@@ -41,10 +41,10 @@ const HeroSection = () => {
       >
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/login")}
+          asChild
           className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
         >
-          Sign In
+          <Link to="/login">Sign In</Link>
         </Button>
       </motion.div>
 
