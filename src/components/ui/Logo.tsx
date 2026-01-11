@@ -1,11 +1,13 @@
 import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
   variant?: "light" | "dark" | "auto";
   showText?: boolean;
   className?: string;
+  linkTo?: string;
 }
 
 const sizeConfig = {
@@ -18,7 +20,8 @@ const Logo = ({
   size = "md", 
   variant = "auto", 
   showText = true,
-  className 
+  className,
+  linkTo = "/"
 }: LogoProps) => {
   const config = sizeConfig[size];
   
@@ -28,8 +31,8 @@ const Logo = ({
       ? "text-foreground" 
       : "text-foreground";
 
-  return (
-    <div className={cn("flex items-center gap-2", className)}>
+  const logoContent = (
+    <div className={cn("flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80", className)}>
       <div className={cn(
         "rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow",
         config.icon
@@ -43,6 +46,12 @@ const Logo = ({
       )}
     </div>
   );
+
+  if (linkTo) {
+    return <Link to={linkTo}>{logoContent}</Link>;
+  }
+
+  return logoContent;
 };
 
 export { Logo };
