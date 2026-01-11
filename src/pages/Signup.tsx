@@ -77,18 +77,18 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4 relative">
+      {/* Top-left Logo */}
+      <div className="absolute top-6 left-6">
+        <Logo variant="dark" />
+      </div>
+      
       <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="space-y-4">
-          <div className="flex justify-center">
-            <Logo size="lg" variant="dark" />
-          </div>
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
-            <CardDescription className="text-center">
-              Join ApplyZap today
-            </CardDescription>
-          </div>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardDescription className="text-center">
+            Join ApplyZap today
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
