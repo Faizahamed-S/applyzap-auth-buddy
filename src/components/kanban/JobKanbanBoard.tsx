@@ -213,7 +213,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     <div className="min-h-screen w-full bg-[#050A30]">
       {/* Global Top Navigation Bar */}
       <header className="sticky top-0 z-40 bg-[#050A30] border-b border-white/10">
-        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="w-full px-6 py-4 flex items-center justify-between">
           {/* Left: Logo */}
           <Logo variant="light" />
           
