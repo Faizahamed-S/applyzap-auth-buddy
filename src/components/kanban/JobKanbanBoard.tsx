@@ -201,42 +201,33 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
   return (
     <div className="min-h-screen w-full bg-[#050A30]">
-      {/* Top Navigation Header */}
+      {/* Top Navigation Header - Logo & Profile Only */}
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050A30]/95 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-4">
+        <div className="max-w-[1600px] w-[85%] mx-auto flex items-center justify-between px-4 py-4">
           <Logo variant="light" />
           
-          <div className="flex items-center gap-4">
-            <Button 
-              onClick={() => setIsAddModalOpen(true)} 
-              className="bg-electric-blue hover:bg-electric-blue/90 text-white"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Application
-            </Button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
-                  <UserIcon className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                  {user?.email}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
+                <UserIcon className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                {user?.email}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="w-[98%] mx-auto px-4 py-6">
+      {/* Main Content - Constrained Width */}
+      <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
+        {/* Control Bar - Title Left, Toggle & Add Button Right */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
@@ -244,7 +235,16 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               Manage your job search with drag-and-drop simplicity
             </p>
           </div>
-          <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+          <div className="flex items-center gap-3">
+            <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+            <Button 
+              onClick={() => setIsAddModalOpen(true)} 
+              className="bg-electric-blue hover:bg-blue-700 active:scale-95 text-white transition-all duration-150"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Application
+            </Button>
+          </div>
         </div>
 
         {currentView === 'kanban' ? (
@@ -253,7 +253,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex gap-4 pb-4">
+            <div className="flex gap-6 pb-4">
                 {STATUSES.map((status) => (
                   <KanbanColumn
                     key={status}
