@@ -34,30 +34,27 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
   return (
     <div 
       ref={setNodeRef}
-      className={`flex flex-col h-full rounded-lg border border-border bg-transparent transition-all duration-200 ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+      className={`flex flex-col h-full transition-all duration-200 ${isOver ? 'ring-2 ring-electric-blue ring-offset-2 ring-offset-deep-blue rounded-lg' : ''}`}
     >
-      {/* Header with colored accent bar */}
+      {/* Column Header */}
       <div 
-        className="cursor-pointer hover:opacity-90 transition-opacity"
+        className="cursor-pointer hover:opacity-90 transition-opacity mb-4"
         onClick={handleHeaderClick}
       >
-        <div className={`h-1 rounded-t-lg ${config.headerAccentColor}`} />
-        <div className="p-4 bg-card rounded-b-none border-b border-border">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">{config.label}</h3>
-            <Badge className={`${config.badgeColor} font-medium`} data-badge>
-              {jobs.length}
-            </Badge>
-          </div>
+        <div className="flex items-center gap-3">
+          <h3 className={`font-semibold text-lg ${config.headerTextColor}`}>{config.label}</h3>
+          <Badge className={`${config.badgeColor} font-medium`} data-badge>
+            {jobs.length}
+          </Badge>
         </div>
       </div>
 
       {/* Cards area - transparent background */}
-      <div className="flex-1 p-3 space-y-3 min-h-[500px] max-h-[75vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+      <div className="flex-1 space-y-3 min-h-[500px] max-h-[75vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pr-1">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {jobs.length === 0 ? (
-              <div className="flex items-center justify-center h-24 text-muted-foreground border-2 border-dashed border-border rounded-lg bg-card/50">
+              <div className="flex items-center justify-center h-24 text-white/40 border-2 border-dashed border-white/20 rounded-lg">
                 <div className="text-center">
                   <p className="text-sm">No applications</p>
                   <p className="text-xs mt-1">Drag applications here</p>

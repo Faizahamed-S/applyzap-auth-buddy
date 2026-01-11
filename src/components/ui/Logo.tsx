@@ -45,4 +45,5 @@ const Logo = ({
   );
 };
 
+export { Logo };
 export default Logo;
