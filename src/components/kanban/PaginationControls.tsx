@@ -20,8 +20,8 @@ export const PaginationControls = ({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-background border-t">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex items-center justify-between px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl">
+      <div className="text-sm text-white/80">
         Showing {startItem} to {endItem} of {totalItems} applications
       </div>
       
@@ -31,6 +31,7 @@ export const PaginationControls = ({
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
+          className="border-white/30 text-white hover:bg-white/10 hover:text-white disabled:opacity-50"
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
@@ -45,7 +46,11 @@ export const PaginationControls = ({
                 variant={currentPage === pageNum ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(pageNum)}
-                className="w-8 h-8 p-0"
+                className={`w-8 h-8 p-0 ${
+                  currentPage === pageNum 
+                    ? 'bg-primary text-white' 
+                    : 'border-white/30 text-white hover:bg-white/10'
+                }`}
               >
                 {pageNum}
               </Button>
@@ -58,6 +63,7 @@ export const PaginationControls = ({
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
+          className="border-white/30 text-white hover:bg-white/10 hover:text-white disabled:opacity-50"
         >
           Next
           <ChevronRight className="h-4 w-4" />

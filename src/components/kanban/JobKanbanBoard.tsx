@@ -202,8 +202,8 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   return (
     <div className="min-h-screen w-full bg-[#050A30]">
       {/* Top Navigation Header */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-deep-blue/95 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-6 py-4">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050A30]/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-4">
           <Logo variant="light" />
           
           <div className="flex items-center gap-4">
@@ -236,25 +236,24 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       </header>
 
       {/* Main Content */}
-      <div className="p-6">
-        <div className="max-w-full">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
-              <p className="text-white/70 mt-2">
-                Manage your job search with drag-and-drop simplicity
-              </p>
-            </div>
-            <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
+            <p className="text-white/70 mt-2">
+              Manage your job search with drag-and-drop simplicity
+            </p>
           </div>
+          <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+        </div>
 
-          {currentView === 'kanban' ? (
-            <DndContext
-              sensors={sensors}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+        {currentView === 'kanban' ? (
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {STATUSES.map((status) => (
                   <KanbanColumn
                     key={status}
@@ -281,35 +280,13 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               </DragOverlay>
             </DndContext>
           ) : (
-            <AllApplicationsTable
-              applications={applications}
-              onEdit={handleOpenEdit}
-              onDelete={handleDeleteJob}
-              onStatusChange={handleStatusChange}
-            />
-          )}
-        </div>
-
-        <AddJobModal
-          open={isAddModalOpen}
-          onOpenChange={setIsAddModalOpen}
-          onSubmit={handleAddJob}
-        />
-
-        <EditJobModal
-          open={isEditModalOpen}
-          onOpenChange={setIsEditModalOpen}
-          job={editingJob}
-          onSubmit={handleEditJob}
-        />
-
-        <ApplicationDetailModal
-          open={isDetailModalOpen}
-          onOpenChange={setIsDetailModalOpen}
-          applicationId={viewingJobId}
-          onEdit={handleOpenEdit}
-          onDelete={handleDeleteJob}
-        />
+          <AllApplicationsTable
+            applications={applications}
+            onEdit={handleOpenEdit}
+            onDelete={handleDeleteJob}
+            onStatusChange={handleStatusChange}
+          />
+        )}
 
         {applications.length > 0 && (
           <div className="mt-6">
@@ -323,6 +300,27 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
           </div>
         )}
       </div>
+
+      <AddJobModal
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        onSubmit={handleAddJob}
+      />
+
+      <EditJobModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        job={editingJob}
+        onSubmit={handleEditJob}
+      />
+
+      <ApplicationDetailModal
+        open={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        applicationId={viewingJobId}
+        onEdit={handleOpenEdit}
+        onDelete={handleDeleteJob}
+      />
     </div>
   );
 };
