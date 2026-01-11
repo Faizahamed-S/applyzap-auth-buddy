@@ -226,10 +226,17 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       </header>
 
       {/* Main Content - Constrained Width */}
-      <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
-        {/* Control Bar - Logo Left, Add Button & Toggle Right */}
-        <div className="flex justify-between items-center mb-8">
-          <Logo variant="light" />
+      <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-8">
+        {/* Page Header - Title & Subtitle */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
+          <p className="text-white/70 mt-2">
+            Manage your job search with drag-and-drop simplicity
+          </p>
+        </div>
+
+        {/* Control Bar - Add Button & Toggle Right */}
+        <div className="flex justify-end items-center mb-8">
           <div className="flex items-center gap-3">
             <Button 
               onClick={() => setIsAddModalOpen(true)} 
