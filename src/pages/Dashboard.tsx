@@ -6,6 +6,7 @@ import { JobKanbanBoard } from '@/components/kanban/JobKanbanBoard';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { toast } from 'sonner';
+import Logo from '@/components/ui/Logo';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -59,14 +60,16 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">ApplyZap</h1>
+          <div className="flex items-center gap-4">
+            <Logo size="sm" variant="dark" />
             {user && (
-              <p className="text-sm text-muted-foreground">
-                {user.user_metadata?.first_name && user.user_metadata?.last_name
-                  ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
-                  : user.email}
-              </p>
+              <div className="hidden sm:block border-l pl-4">
+                <p className="text-sm text-muted-foreground">
+                  {user.user_metadata?.first_name && user.user_metadata?.last_name
+                    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+                    : user.email}
+                </p>
+              </div>
             )}
           </div>
           <Button variant="outline" onClick={handleLogout}>

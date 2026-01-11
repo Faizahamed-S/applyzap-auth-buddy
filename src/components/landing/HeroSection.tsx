@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Chrome, ArrowRight, Zap } from "lucide-react";
+import { Chrome, ArrowRight } from "lucide-react";
 import DashboardMockup from "./DashboardMockup";
+import Logo from "@/components/ui/Logo";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
@@ -29,12 +30,8 @@ const HeroSection = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center gap-2"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
-              <Zap className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold text-primary-foreground">ApplyZap</span>
+            <Logo variant="light" />
           </motion.div>
           
           <motion.div
