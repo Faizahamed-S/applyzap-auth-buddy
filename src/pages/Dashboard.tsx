@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { JobKanbanBoard } from '@/components/kanban/JobKanbanBoard';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,21 +37,18 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-screen bg-deep-blue">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-electric-blue mx-auto mb-4"></div>
+          <p className="text-white/70">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardSidebar />
-      <main className="ml-64 transition-all duration-300">
-        <JobKanbanBoard />
-      </main>
+    <div className="min-h-screen bg-deep-blue">
+      <JobKanbanBoard user={user} />
     </div>
   );
 };
