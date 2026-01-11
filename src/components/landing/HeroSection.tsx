@@ -25,7 +25,7 @@ const HeroSection = () => {
 
       {/* Navigation - Absolute positioning matching Sign-in page */}
       <motion.div 
-        className="absolute top-6 left-6 z-10"
+        className="absolute top-6 left-6 z-50"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
@@ -34,7 +34,7 @@ const HeroSection = () => {
       </motion.div>
       
       <motion.div
-        className="absolute top-6 right-6 z-10"
+        className="absolute top-6 right-6 z-50"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
