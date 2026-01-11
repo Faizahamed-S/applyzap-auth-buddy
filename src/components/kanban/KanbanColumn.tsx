@@ -33,13 +33,15 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
   return (
     <div 
       ref={setNodeRef}
-      className={`flex flex-col w-[280px] min-w-[280px] flex-shrink-0 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm transition-all duration-200 ${
-        isOver ? 'ring-2 ring-electric-blue border-electric-blue bg-white/10' : ''
+      className={`flex flex-col min-w-[300px] w-[300px] flex-shrink-0 rounded-xl border transition-colors duration-200 ${
+        isOver 
+          ? 'border-electric-blue bg-electric-blue/10' 
+          : 'border-white/20'
       }`}
     >
       {/* Column Header */}
       <div 
-        className="cursor-pointer hover:opacity-90 transition-opacity p-4 border-b border-white/10"
+        className="cursor-pointer hover:opacity-90 transition-opacity p-4"
         onClick={handleHeaderClick}
       >
         <div className="flex items-center justify-between">
@@ -53,7 +55,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
       </div>
 
       {/* Cards area */}
-      <div className="flex-1 p-3 space-y-3 min-h-[400px] max-h-[65vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+      <div className="flex-1 p-3 space-y-3 min-h-[400px] max-h-[65vh] overflow-y-auto">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {jobs.length === 0 ? (
