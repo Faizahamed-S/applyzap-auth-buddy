@@ -199,45 +199,52 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     );
   }
 
+  const getUserDisplayName = () => {
+    const firstName = user?.user_metadata?.first_name;
+    const lastName = user?.user_metadata?.last_name;
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    }
+    if (firstName) return firstName;
+    return user?.email;
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#050A30]">
-      {/* Top-left Logo - Absolute position matching Sign-in page */}
-      <div className="absolute top-6 left-6 z-50">
-        <Logo variant="light" />
-      </div>
-
-      {/* Top-right Profile - Absolute position matching Sign-in page nav */}
-      <div className="absolute top-6 right-6 z-50">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
-              <UserIcon className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-              {user?.email}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {/* Global Top Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-[#050A30] border-b border-white/10">
+        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-4 flex items-center justify-between">
+          {/* Left: Logo */}
+          <Logo variant="light" />
+          
+          {/* Right: Profile */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
+                <UserIcon className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                {getUserDisplayName()}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
 
       {/* Main Content - Constrained Width */}
       <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-8">
-        {/* Page Header - Title & Subtitle */}
-        <div className="mb-6">
+        {/* Action Bar - Title on Left, Controls on Right */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Left: Page Title */}
           <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
-          <p className="text-white/70 mt-2">
-            Manage your job search with drag-and-drop simplicity
-          </p>
-        </div>
-
-        {/* Control Bar - Add Button & Toggle Right */}
-        <div className="flex justify-end items-center mb-8">
+          
+          {/* Right: Controls */}
           <div className="flex items-center gap-3">
             <Button 
               onClick={() => setIsAddModalOpen(true)} 
