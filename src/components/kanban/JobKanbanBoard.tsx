@@ -241,8 +241,13 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-8">
         {/* Action Bar - Title on Left, Controls on Right */}
         <div className="flex items-center justify-between mb-8">
-          {/* Left: Page Title */}
-          <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
+          {/* Left: Page Title + Tagline */}
+          <div>
+            <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
+            <p className="text-white/70 mt-1">
+              Manage your job search with drag-and-drop simplicity
+            </p>
+          </div>
           
           {/* Right: Controls */}
           <div className="flex items-center gap-3">
