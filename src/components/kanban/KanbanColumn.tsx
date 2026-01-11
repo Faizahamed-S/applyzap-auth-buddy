@@ -33,7 +33,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
   return (
     <div 
       ref={setNodeRef}
-      className={`flex flex-col min-w-[260px] max-w-[300px] rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm transition-all duration-200 ${
+      className={`flex flex-col w-[280px] min-w-[280px] flex-shrink-0 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm transition-all duration-200 ${
         isOver ? 'ring-2 ring-electric-blue border-electric-blue bg-white/10' : ''
       }`}
     >
