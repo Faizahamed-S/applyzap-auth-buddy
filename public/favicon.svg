@@ -1,58 +1,19 @@
-import { Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
-
-interface LogoProps {
-  size?: "sm" | "md" | "lg";
-  variant?: "light" | "dark" | "auto";
-  showText?: boolean;
-  className?: string;
-  linkTo?: string;
-}
-
-const sizeConfig = {
-  sm: { icon: "w-8 h-8", iconInner: "w-4 h-4", text: "text-lg" },
-  md: { icon: "w-10 h-10", iconInner: "w-6 h-6", text: "text-2xl" },
-  lg: { icon: "w-14 h-14", iconInner: "w-8 h-8", text: "text-3xl" },
-};
-
-const Logo = ({ 
-  size = "md", 
-  variant = "auto", 
-  showText = true,
-  className,
-  linkTo = "/"
-}: LogoProps) => {
-  const config = sizeConfig[size];
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" /> <stop offset="100%" style="stop-color:#db2777;stop-opacity:1" /> </linearGradient>
+  </defs>
   
-  const textColorClass = variant === "light" 
-    ? "text-primary-foreground" 
-    : variant === "dark" 
-      ? "text-foreground" 
-      : "text-foreground";
-
-  const logoContent = (
-    <div className={cn("flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80", className)}>
-      <div className={cn(
-        "rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow",
-        config.icon
-      )}>
-        <Zap className={cn("text-primary-foreground", config.iconInner)} />
-      </div>
-      {showText && (
-        <span className={cn("font-bold", config.text, textColorClass)}>
-          ApplyZap
-        </span>
-      )}
-    </div>
-  );
-
-  if (linkTo) {
-    return <Link to={linkTo}>{logoContent}</Link>;
-  }
-
-  return logoContent;
-};
-
-export { Logo };
-export default Logo;
+  <rect x="0" y="0" width="24" height="24" rx="6" fill="url(#brandGradient)"/>
+  
+  <g transform="translate(4, 4) scale(0.66)">
+    <path 
+      d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" 
+      fill="white" 
+      stroke="white" 
+      stroke-width="2" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>
