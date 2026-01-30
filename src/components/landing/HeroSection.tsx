@@ -90,9 +90,16 @@ const HeroSection = () => {
                 size="lg"
                 variant="outline"
                 className="border-primary-foreground/30 bg-primary-foreground/5 text-primary-foreground hover:bg-primary-foreground/15 text-lg px-8"
+                asChild
               >
-                <Chrome className="mr-2 w-5 h-5" />
-                Download Extension
+                <a 
+                  href="https://chromewebstore.google.com/detail/applyzap-%E2%80%93-job-tracker/ccfbjpekklocngnifhpoifgdobnppgoh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Chrome className="mr-2 w-5 h-5" />
+                  Download Extension
+                </a>
               </Button>
             </div>
 
