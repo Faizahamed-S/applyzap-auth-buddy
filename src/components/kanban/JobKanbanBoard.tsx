@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
@@ -9,6 +10,8 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { JobApplication, JobStatus } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { KanbanColumn } from './KanbanColumn';
@@ -20,12 +23,24 @@ import { PaginationControls } from './PaginationControls';
 import { ViewToggle } from './ViewToggle';
 import { AllApplicationsTable } from './AllApplicationsTable';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
+import { Plus, LogOut, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const STATUSES: JobStatus[] = ['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER'];
 
-export const JobKanbanBoard = () => {
+interface JobKanbanBoardProps {
+  user: User | null;
+}
+
+export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
+  const navigate = useNavigate();
   const [activeJob, setActiveJob] = useState<JobApplication | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -96,6 +111,11 @@ export const JobKanbanBoard = () => {
       toast.error('Failed to delete application');
     },
   });
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   const handleDragStart = (event: DragStartEvent) => {
     const job = applications.find((j) => j.id === event.active.id);
@@ -172,31 +192,74 @@ export const JobKanbanBoard = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading applications...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-electric-blue mx-auto mb-4"></div>
+          <p className="text-white/70">Loading applications...</p>
         </div>
       </div>
     );
   }
 
+  const getUserDisplayName = () => {
+    const firstName = user?.user_metadata?.first_name;
+    const lastName = user?.user_metadata?.last_name;
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    }
+    if (firstName) return firstName;
+    return user?.email;
+  };
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen w-full bg-[#050A30]">
+      {/* Global Top Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-[#050A30] border-b border-white/10">
+        <div className="w-full px-6 py-4 flex items-center justify-between">
+          {/* Left: Logo */}
+          <Logo variant="light" />
+          
+          {/* Right: Profile */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
+                <UserIcon className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                {getUserDisplayName()}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      {/* Main Content - Constrained Width */}
+      <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-8">
+        {/* Action Bar - Title on Left, Controls on Right */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Left: Page Title + Tagline */}
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Job Application Tracker</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
+            <p className="text-white/70 mt-1">
               Manage your job search with drag-and-drop simplicity
             </p>
           </div>
-          <Button onClick={() => setIsAddModalOpen(true)} size="lg">
-            <Plus className="mr-2 h-5 w-5" />
-            Add Application
-          </Button>
-        </div>
-
-        <div className="mb-6">
-          <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+          
+          {/* Right: Controls */}
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => setIsAddModalOpen(true)} 
+              className="bg-electric-blue hover:bg-blue-700 active:scale-95 text-white transition-all duration-150"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Application
+            </Button>
+            <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+          </div>
         </div>
 
         {currentView === 'kanban' ? (
@@ -205,39 +268,51 @@ export const JobKanbanBoard = () => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 xl:gap-6">
-              {STATUSES.map((status) => (
-                <KanbanColumn
-                  key={status}
-                  status={status}
-                  jobs={getJobsByStatus(status)}
-                  onEdit={handleOpenEdit}
-                  onDelete={handleDeleteJob}
-                  onViewDetails={handleViewDetails}
-                />
-              ))}
-            </div>
-
-            <DragOverlay>
-              {activeJob ? (
-                <div className="rotate-3 scale-105">
-                  <JobCard
-                    job={activeJob}
-                    onEdit={() => {}}
-                    onDelete={() => {}}
-                    onViewDetails={() => {}}
+            <div className="flex gap-6 pb-4">
+                {STATUSES.map((status) => (
+                  <KanbanColumn
+                    key={status}
+                    status={status}
+                    jobs={getJobsByStatus(status)}
+                    onEdit={handleOpenEdit}
+                    onDelete={handleDeleteJob}
+                    onViewDetails={handleViewDetails}
                   />
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        ) : (
+                ))}
+              </div>
+
+              <DragOverlay>
+                {activeJob ? (
+                  <div className="rotate-3 scale-105">
+                    <JobCard
+                      job={activeJob}
+                      onEdit={() => {}}
+                      onDelete={() => {}}
+                      onViewDetails={() => {}}
+                    />
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          ) : (
           <AllApplicationsTable
             applications={applications}
             onEdit={handleOpenEdit}
             onDelete={handleDeleteJob}
             onStatusChange={handleStatusChange}
           />
+        )}
+
+        {applications.length > 0 && (
+          <div className="mt-6">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={Math.ceil(applications.length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+              totalItems={applications.length}
+              itemsPerPage={itemsPerPage}
+            />
+          </div>
         )}
       </div>
 
@@ -261,18 +336,6 @@ export const JobKanbanBoard = () => {
         onEdit={handleOpenEdit}
         onDelete={handleDeleteJob}
       />
-
-      {applications.length > 0 && (
-        <div className="mt-6">
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={Math.ceil(applications.length / itemsPerPage)}
-            onPageChange={setCurrentPage}
-            totalItems={applications.length}
-            itemsPerPage={itemsPerPage}
-          />
-        </div>
-      )}
     </div>
   );
 };

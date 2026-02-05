@@ -20,8 +20,8 @@ export const PaginationControls = ({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-background border-t">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex items-center justify-between px-6 py-4 bg-[#0a1445] border border-white/20 rounded-2xl">
+      <div className="text-sm text-white/90">
         Showing {startItem} to {endItem} of {totalItems} applications
       </div>
       
@@ -31,8 +31,9 @@ export const PaginationControls = ({
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
+          className="bg-[#0d1a50] border-white/20 text-white hover:bg-electric-blue hover:text-white hover:border-electric-blue disabled:opacity-40 disabled:bg-transparent disabled:border-white/10 disabled:text-white/40"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 mr-1" />
           Previous
         </Button>
         
@@ -45,7 +46,11 @@ export const PaginationControls = ({
                 variant={currentPage === pageNum ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(pageNum)}
-                className="w-8 h-8 p-0"
+                className={`w-8 h-8 p-0 ${
+                  currentPage === pageNum 
+                    ? 'bg-electric-blue text-white border-electric-blue hover:bg-electric-blue/90' 
+                    : 'bg-[#0d1a50] border-white/20 text-white hover:bg-electric-blue hover:border-electric-blue'
+                }`}
               >
                 {pageNum}
               </Button>
@@ -58,9 +63,10 @@ export const PaginationControls = ({
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
+          className="bg-[#0d1a50] border-white/20 text-white hover:bg-electric-blue hover:text-white hover:border-electric-blue disabled:opacity-40 disabled:bg-transparent disabled:border-white/10 disabled:text-white/40"
         >
           Next
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
     </div>

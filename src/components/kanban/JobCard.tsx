@@ -52,11 +52,11 @@ export const JobCard = ({ job, onEdit, onDelete, onViewDetails }: JobCardProps) 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Card 
-        className="cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 border-border hover:border-primary/50"
+        className="cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 bg-white border border-gray-200 hover:border-electric-blue/50 shadow-md"
         onClick={handleCardClick}
       >
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold text-foreground flex items-start justify-between gap-2">
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-start justify-between gap-2">
             <span className="flex-1">{job.companyName}</span>
             <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
               <Button
@@ -80,10 +80,10 @@ export const JobCard = ({ job, onEdit, onDelete, onViewDetails }: JobCardProps) 
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <p className="text-sm font-medium text-foreground">{job.roleName}</p>
+            <p className="text-sm font-medium text-gray-800">{job.roleName}</p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
             <Calendar className="h-3.5 w-3.5" />
             <span>{formattedDate}</span>
           </div>
