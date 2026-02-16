@@ -21,7 +21,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import { JobApplication } from '@/types/job';
+import { CustomFieldsEditor, metadataToFields, fieldsToMetadata, CustomFieldEntry } from './CustomFieldsEditor';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -45,6 +47,7 @@ interface EditJobModalProps {
 
 export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -72,6 +75,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
         jobDescription: job.jobDescription || '',
         referral: job.referral || false,
       });
+      setCustomFields(metadataToFields(job.applicationMetadata));
     }
   }, [job, form]);
 
@@ -80,7 +84,8 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
     
     setIsSubmitting(true);
     try {
-      await onSubmit(job.id, data);
+      const metadata = fieldsToMetadata(customFields);
+      await onSubmit(job.id, { ...data, ...(metadata ? { applicationMetadata: metadata } : {}) } as any);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -232,6 +237,10 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
                 </FormItem>
               )}
             />
+
+            <Separator />
+
+            <CustomFieldsEditor fields={customFields} onChange={setCustomFields} />
 
             <div className="flex gap-3 justify-end pt-4">
               <Button

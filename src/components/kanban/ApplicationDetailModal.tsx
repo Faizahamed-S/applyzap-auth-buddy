@@ -4,9 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, ExternalLink, Edit2, Trash2, CheckCircle2, User, Building, Briefcase } from 'lucide-react';
-import { JobApplication, JobStatus } from '@/types/job';
+import { Calendar, ExternalLink, Edit2, Trash2, CheckCircle2, User, Building, Briefcase, Tag } from 'lucide-react';
+import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
+import { getStatusConfig } from '@/lib/statusConfig';
 
 interface ApplicationDetailModalProps {
   open: boolean;
@@ -16,13 +17,7 @@ interface ApplicationDetailModalProps {
   onDelete: (id: string) => void;
 }
 
-const STATUS_CONFIG: Record<JobStatus, { label: string; colorClass: string }> = {
-  APPLIED: { label: 'Applied', colorClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  REJECTED: { label: 'Rejected', colorClass: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  ONLINE_ASSESSMENT: { label: 'Online Assessment', colorClass: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
-  INTERVIEW: { label: 'Interview', colorClass: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-  OFFER: { label: 'Offer', colorClass: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-};
+// Use the shared status config helper
 
 export const ApplicationDetailModal = ({ 
   open, 
@@ -103,7 +98,7 @@ export const ApplicationDetailModal = ({
     );
   }
 
-  const statusConfig = STATUS_CONFIG[application.status];
+  const statusConfig = getStatusConfig(application.status);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -125,7 +120,7 @@ export const ApplicationDetailModal = ({
                   <span className="text-lg text-muted-foreground">{application.roleName}</span>
                 </div>
               </div>
-              <Badge className={`${statusConfig.colorClass} text-sm font-medium px-3 py-1`}>
+              <Badge className={`${statusConfig.badgeColor} text-sm font-medium px-3 py-1`}>
                 {statusConfig.label}
               </Badge>
             </div>
@@ -156,7 +151,7 @@ export const ApplicationDetailModal = ({
               
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Status</label>
-                <Badge className={statusConfig.colorClass}>{statusConfig.label}</Badge>
+                <Badge className={statusConfig.badgeColor}>{statusConfig.label}</Badge>
               </div>
               
               <div className="space-y-2">
@@ -209,6 +204,23 @@ export const ApplicationDetailModal = ({
                 <label className="text-sm font-medium text-muted-foreground">Job Description</label>
                 <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-foreground whitespace-pre-wrap">{application.jobDescription}</p>
+                </div>
+              </div>
+            )}
+
+            {application.applicationMetadata && Object.keys(application.applicationMetadata).length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                  <Tag className="h-4 w-4" />
+                  Custom Fields
+                </label>
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                  {Object.entries(application.applicationMetadata).map(([key, value]) => (
+                    <div key={key} className="flex items-baseline gap-2">
+                      <span className="text-sm font-medium text-foreground">{key}:</span>
+                      <span className="text-sm text-muted-foreground">{String(value)}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
