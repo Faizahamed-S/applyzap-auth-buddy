@@ -174,6 +174,7 @@ const StatusApplicationsPage = () => {
   }
 
   const statusConfig = getStatusConfig(status);
+  const displayLabel = status;
 
   if (isLoading) {
     return (
@@ -220,7 +221,7 @@ const StatusApplicationsPage = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                {statusConfig.label} Applications
+                {displayLabel} Applications
               </h1>
               <p className="text-muted-foreground">
                 {filteredAndSortedApplications.length} application{filteredAndSortedApplications.length !== 1 ? 's' : ''}
@@ -228,7 +229,7 @@ const StatusApplicationsPage = () => {
             </div>
           </div>
           <Badge className={`${statusConfig.badgeColor} text-lg font-medium px-4 py-2`}>
-            {statusConfig.label}
+            {displayLabel}
           </Badge>
         </div>
 
