@@ -72,6 +72,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     mutationFn: jobApi.createApplication,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
       toast.success('Application added successfully!');
     },
     onError: () => {
@@ -84,6 +85,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       jobApi.updateApplication(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
       toast.success('Application updated successfully!');
     },
     onError: () => {
@@ -96,10 +98,16 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       jobApi.patchApplication(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
       toast.success('Status updated!');
     },
-    onError: () => {
-      toast.error('Failed to update status');
+    onError: (error: any) => {
+      // Revert optimistic update
+      queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      const msg = error?.message?.includes('401') || error?.message?.includes('403')
+        ? 'Not authorized to update status'
+        : 'Could not update status; please try again';
+      toast.error(msg);
     },
   });
 

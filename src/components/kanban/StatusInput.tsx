@@ -10,6 +10,13 @@ interface StatusInputProps {
   placeholder?: string;
 }
 
+/**
+ * Normalize a status string to title-case for deduplication.
+ * "APPLIED" → "Applied", "applied" → "Applied", "Ghosted 👻" → "Ghosted 👻"
+ */
+const normalizeStatus = (s: string): string =>
+  s.charAt(0).toUpperCase() + s.slice(1);
+
 export const StatusInput = ({ value, onChange, placeholder }: StatusInputProps) => {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('');
@@ -24,11 +31,27 @@ export const StatusInput = ({ value, onChange, placeholder }: StatusInputProps) 
   const { columns } = useTrackerColumns();
   const columnTitles = columns.map(c => c.title);
 
-  // Merge column titles + used statuses, deduplicate
-  const allSuggestions = Array.from(new Set([...columnTitles, ...usedStatuses]));
+  // Merge column titles (settings) + API statuses, deduplicate case-insensitively.
+  // Column titles take priority as the canonical form.
+  const allSuggestions = (() => {
+    const seen = new Map<string, string>(); // lowercase → canonical
+    // Settings columns first (canonical)
+    for (const t of columnTitles) {
+      seen.set(t.toLowerCase(), t);
+    }
+    // API statuses — only add if not already present
+    for (const s of usedStatuses) {
+      const key = s.toLowerCase();
+      if (!seen.has(key)) {
+        seen.set(key, normalizeStatus(s));
+      }
+    }
+    return Array.from(seen.values());
+  })();
 
+  const searchTerm = (filter || value).toLowerCase();
   const filtered = allSuggestions.filter(s =>
-    s.toLowerCase().includes((filter || value).toLowerCase())
+    s.toLowerCase().includes(searchTerm)
   );
 
   useEffect(() => {

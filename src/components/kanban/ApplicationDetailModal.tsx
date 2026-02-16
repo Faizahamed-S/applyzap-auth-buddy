@@ -8,6 +8,7 @@ import { Calendar, ExternalLink, Edit2, Trash2, CheckCircle2, User, Building, Br
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { getStatusConfig } from '@/lib/statusConfig';
+import { useTrackerColumns } from '@/hooks/useUserProfile';
 
 interface ApplicationDetailModalProps {
   open: boolean;
@@ -27,6 +28,7 @@ export const ApplicationDetailModal = ({
   onDelete 
 }: ApplicationDetailModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { columns: trackerColumns } = useTrackerColumns();
 
   const { data: application, isLoading, error } = useQuery({
     queryKey: ['application', applicationId],
@@ -98,7 +100,7 @@ export const ApplicationDetailModal = ({
     );
   }
 
-  const statusConfig = getStatusConfig(application.status);
+  const statusConfig = getStatusConfig(application.status, trackerColumns);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -56,7 +56,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
       companyName: '',
       roleName: '',
       dateOfApplication: '',
-      status: 'APPLIED',
+      status: '',
       jobLink: '',
       tailored: false,
       jobDescription: '',
