@@ -222,7 +222,7 @@ const ProfilePage = () => {
                 type="button"
                 variant="outline"
                 onClick={addSkill}
-                className="border-white/20 text-white hover:bg-white/10"
+                className="bg-electric-blue/20 text-electric-blue border-electric-blue/30 hover:bg-electric-blue/30"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -238,7 +238,7 @@ const ProfilePage = () => {
               variant="outline"
               size="sm"
               onClick={addExperience}
-              className="border-white/20 text-white hover:bg-white/10"
+              className="bg-electric-blue/20 text-electric-blue border-electric-blue/30 hover:bg-electric-blue/30"
             >
               <Plus className="mr-1 h-4 w-4" />
               Add
