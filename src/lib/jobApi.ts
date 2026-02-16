@@ -1,4 +1,4 @@
-import { JobApplication, CreateJobApplication, UpdateJobApplication, JobStatus } from "@/types/job";
+import { JobApplication, CreateJobApplication, UpdateJobApplication } from "@/types/job";
 import { transformForBackend, transformFromBackend } from "./statusMapper";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,7 +26,7 @@ const getAuthHeaders = async () => {
 
 export const jobApi = {
   // Fetch all job applications
-  getAllApplications: async (status?: JobStatus, page = 1, limit = 100): Promise<JobApplication[]> => {
+  getAllApplications: async (status?: string, page = 1, limit = 100): Promise<JobApplication[]> => {
     const params = new URLSearchParams();
     if (status) params.append("status", status);
     params.append("page", page.toString());
@@ -51,7 +51,7 @@ export const jobApi = {
   },
 
   // Fetch applications by status
-  getApplicationsByStatus: async (status: JobStatus): Promise<JobApplication[]> => {
+  getApplicationsByStatus: async (status: string): Promise<JobApplication[]> => {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/applications/status/${status}`, { headers });
     if (!response.ok) throw new Error("Failed to fetch applications by status");

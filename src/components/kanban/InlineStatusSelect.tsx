@@ -1,22 +1,17 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { JobStatus } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { STATUS_CONFIG } from '@/lib/statusConfig';
+import { getStatusConfig } from '@/lib/statusConfig';
+import { Check, X } from 'lucide-react';
 
 interface InlineStatusSelectProps {
   applicationId: string;
-  currentStatus: JobStatus;
-  onStatusChange?: (newStatus: JobStatus) => void;
+  currentStatus: string;
+  onStatusChange?: (newStatus: string) => void;
 }
 
 export const InlineStatusSelect = ({ 
@@ -24,18 +19,18 @@ export const InlineStatusSelect = ({
   currentStatus, 
   onStatusChange 
 }: InlineStatusSelectProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(currentStatus);
   const queryClient = useQueryClient();
 
-  const statusConfig = STATUS_CONFIG[currentStatus];
+  const statusConfig = getStatusConfig(currentStatus);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: JobStatus }) =>
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
       jobApi.patchApplication(id, { status }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['applications-by-status'] });
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
-      
       toast.success('Status updated successfully!');
       onStatusChange?.(variables.status);
     },
@@ -44,17 +39,41 @@ export const InlineStatusSelect = ({
     },
   });
 
-  const handleStatusChange = (newStatus: string) => {
-    if (newStatus !== currentStatus) {
-      updateMutation.mutate({ 
-        id: applicationId, 
-        status: newStatus as JobStatus 
-      });
+  const handleSave = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== currentStatus) {
+      updateMutation.mutate({ id: applicationId, status: trimmed });
     }
-    setIsOpen(false);
+    setIsEditing(false);
   };
 
-  const allStatuses: JobStatus[] = ['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER'];
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') {
+      setEditValue(currentStatus);
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="h-7 w-36 text-sm"
+          autoFocus
+        />
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleSave}>
+          <Check className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditValue(currentStatus); setIsEditing(false); }}>
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
@@ -62,32 +81,8 @@ export const InlineStatusSelect = ({
         {statusConfig.label}
       </Badge>
       
-      <Select 
-        value={currentStatus} 
-        onValueChange={handleStatusChange}
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      >
-        <SelectTrigger className="w-0 h-0 p-0 border-0 opacity-0 absolute -z-10">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {allStatuses.map((status) => {
-            const config = STATUS_CONFIG[status];
-            return (
-              <SelectItem key={status} value={status}>
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${config.badgeColor.split(' ')[0] || 'bg-gray-100'}`} />
-                  {config.label}
-                </div>
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
-      </Select>
-      
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setEditValue(currentStatus); setIsEditing(true); }}
         className="ml-1 p-1 hover:bg-muted rounded transition-colors"
         disabled={updateMutation.isPending}
       >
@@ -97,7 +92,7 @@ export const InlineStatusSelect = ({
           stroke="currentColor" 
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
         </svg>
       </button>
     </div>
