@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { JobApplication, JobStatus } from '@/types/job';
+import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

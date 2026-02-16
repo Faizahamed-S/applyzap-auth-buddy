@@ -1,12 +1,12 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useNavigate } from 'react-router-dom';
-import { JobApplication, JobStatus } from '@/types/job';
+import { JobApplication } from '@/types/job';
 import { JobCard } from './JobCard';
-import { STATUS_CONFIG } from '@/lib/statusConfig';
+import { getStatusConfig } from '@/lib/statusConfig';
 
 interface KanbanColumnProps {
-  status: JobStatus;
+  status: string;
   jobs: JobApplication[];
   onEdit: (job: JobApplication) => void;
   onDelete: (id: string) => void;
@@ -22,7 +22,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
       status: status
     }
   });
-  const config = STATUS_CONFIG[status];
+  const config = getStatusConfig(status);
 
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest('[data-badge]')) {

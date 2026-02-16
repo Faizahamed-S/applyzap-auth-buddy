@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { JobApplication, JobStatus } from '@/types/job';
+import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { KanbanColumn } from './KanbanColumn';
 import { JobCard } from './JobCard';
@@ -33,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const STATUSES: JobStatus[] = ['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER'];
+const DEFAULT_STATUSES: string[] = ['APPLIED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER', 'REJECTED'];
 
 interface JobKanbanBoardProps {
   user: User | null;
@@ -129,7 +129,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     if (!over) return;
 
     const jobId = active.id as string;
-    let newStatus: JobStatus;
+    let newStatus: string;
     
     if (over.data?.current?.type === 'status') {
       newStatus = over.data.current.status;
@@ -138,9 +138,9 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       if (targetJob) {
         newStatus = targetJob.status;
       } else {
-        const validStatuses = ['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER'];
-        if (validStatuses.includes(over.id as string)) {
-          newStatus = over.id as JobStatus;
+        // Check if the over id is a known column status
+        if (allStatuses.includes(over.id as string)) {
+          newStatus = over.id as string;
         } else {
           return;
         }
@@ -185,8 +185,26 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     queryClient.invalidateQueries({ queryKey: ['job-applications'] });
   };
 
-  const getJobsByStatus = (status: JobStatus) =>
+  const getJobsByStatus = (status: string) =>
     applications.filter((job) => job.status === status);
+
+  // Derive all unique statuses from data, preserving default order for known ones
+  const allStatuses = useMemo(() => {
+    const fromData = new Set(applications.map((j) => j.status));
+    const ordered: string[] = [];
+    for (const s of DEFAULT_STATUSES) {
+      if (fromData.has(s)) {
+        ordered.push(s);
+        fromData.delete(s);
+      }
+    }
+    // Append any custom statuses not in the defaults
+    for (const s of fromData) {
+      ordered.push(s);
+    }
+    // If no data yet, show defaults
+    return ordered.length > 0 ? ordered : DEFAULT_STATUSES;
+  }, [applications]);
 
   if (isLoading) {
     return (
@@ -269,7 +287,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
             onDragEnd={handleDragEnd}
           >
             <div className="flex gap-6 pb-4">
-                {STATUSES.map((status) => (
+                {allStatuses.map((status) => (
                   <KanbanColumn
                     key={status}
                     status={status}

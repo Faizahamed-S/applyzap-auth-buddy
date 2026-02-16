@@ -21,20 +21,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { JobApplication } from '@/types/job';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
   roleName: z.string().min(1, 'Role name is required'),
   dateOfApplication: z.string().min(1, 'Date is required'),
-  status: z.enum(['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER']),
+  status: z.string().min(1, 'Status is required'),
   jobLink: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   tailored: z.boolean().default(false),
   jobDescription: z.string().optional(),
@@ -157,20 +150,9 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="APPLIED">Applied</SelectItem>
-                        <SelectItem value="REJECTED">Rejected</SelectItem>
-                        <SelectItem value="ONLINE_ASSESSMENT">Online Assessment</SelectItem>
-                        <SelectItem value="INTERVIEW">Interview</SelectItem>
-                        <SelectItem value="OFFER">Offer</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input placeholder="e.g. APPLIED, Interview, Ghosted 👻" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
