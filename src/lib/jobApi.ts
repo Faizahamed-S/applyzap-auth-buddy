@@ -113,4 +113,12 @@ export const jobApi = {
     });
     if (!response.ok) throw new Error("Failed to delete application");
   },
+
+  // Fetch unique statuses
+  getUniqueStatuses: async (): Promise<string[]> => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/applications/statuses`, { headers });
+    if (!response.ok) throw new Error("Failed to fetch statuses");
+    return response.json();
+  },
 };
