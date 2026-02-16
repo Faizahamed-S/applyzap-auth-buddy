@@ -24,7 +24,7 @@ import { ViewToggle } from './ViewToggle';
 import { AllApplicationsTable } from './AllApplicationsTable';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
-import { Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { Plus, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
+import { BoardSettingsModal } from './BoardSettingsModal';
 
 interface JobKanbanBoardProps {
   user: User | null;
@@ -49,6 +50,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(100);
   const [currentView, setCurrentView] = useState<'kanban' | 'table'>('kanban');
+  const [isBoardSettingsOpen, setIsBoardSettingsOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const { columns: trackerColumns, isLoading: isColumnsLoading } = useTrackerColumns();
@@ -260,6 +262,14 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
           
           {/* Right: Controls */}
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white/80 hover:text-white hover:bg-white/10"
+              onClick={() => setIsBoardSettingsOpen(true)}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
             <Button 
               onClick={() => setIsAddModalOpen(true)} 
               className="bg-electric-blue hover:bg-blue-700 active:scale-95 text-white transition-all duration-150"
@@ -356,6 +366,12 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
         applicationId={viewingJobId}
         onEdit={handleOpenEdit}
         onDelete={handleDeleteJob}
+      />
+
+      <BoardSettingsModal
+        open={isBoardSettingsOpen}
+        onOpenChange={setIsBoardSettingsOpen}
+        columns={trackerColumns}
       />
     </div>
   );
