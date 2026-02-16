@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { CustomFieldsEditor, fieldsToMetadata } from './CustomFieldsEditor';
 import type { CustomFieldEntry } from './CustomFieldsEditor';
+import { useTrackerColumns } from '@/hooks/useUserProfile';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -48,6 +49,7 @@ interface AddJobModalProps {
 export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
+  const { columns } = useTrackerColumns();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -55,7 +57,7 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       companyName: '',
       roleName: '',
       dateOfApplication: new Date().toISOString().split('T')[0],
-      status: 'APPLIED',
+      status: columns[0]?.title || 'Applied',
       jobLink: '',
       tailored: false,
       jobDescription: '',

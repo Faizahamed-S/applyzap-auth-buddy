@@ -4,6 +4,7 @@ import { jobApi } from '@/lib/jobApi';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
+import { useTrackerColumns } from '@/hooks/useUserProfile';
 import { Check, X } from 'lucide-react';
 import { StatusInput } from './StatusInput';
 
@@ -21,8 +22,9 @@ export const InlineStatusSelect = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(currentStatus);
   const queryClient = useQueryClient();
+  const { columns: trackerColumns } = useTrackerColumns();
 
-  const statusConfig = getStatusConfig(currentStatus);
+  const statusConfig = getStatusConfig(currentStatus, trackerColumns);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
