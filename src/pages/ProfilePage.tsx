@@ -194,7 +194,7 @@ const ProfilePage = () => {
               {skills.map((skill) => (
                 <Badge
                   key={skill}
-                  className="bg-electric-blue/20 text-electric-blue border-electric-blue/30 pr-1"
+                  className="bg-electric-blue/20 text-white border-electric-blue/30 pr-1"
                 >
                   {skill}
                   <button
@@ -222,7 +222,7 @@ const ProfilePage = () => {
                 type="button"
                 variant="outline"
                 onClick={addSkill}
-                className="bg-electric-blue/20 text-electric-blue border-electric-blue/30 hover:bg-electric-blue/30"
+                className="bg-electric-blue/20 text-white border-electric-blue/30 hover:bg-electric-blue/30"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -238,7 +238,7 @@ const ProfilePage = () => {
               variant="outline"
               size="sm"
               onClick={addExperience}
-              className="bg-electric-blue/20 text-electric-blue border-electric-blue/30 hover:bg-electric-blue/30"
+              className="bg-electric-blue/20 text-white border-electric-blue/30 hover:bg-electric-blue/30"
             >
               <Plus className="mr-1 h-4 w-4" />
               Add
