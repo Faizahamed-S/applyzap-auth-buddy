@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { StatusInput } from './StatusInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -139,7 +140,7 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
                   <FormItem>
                     <FormLabel>Status</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. APPLIED, Interview, Ghosted 👻" {...field} />
+                      <StatusInput value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
