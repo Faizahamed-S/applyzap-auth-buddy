@@ -10,6 +10,7 @@ export interface JobApplication {
   jobDescription?: string;
   referral?: boolean;
   status: JobStatus;
+  applicationMetadata?: Record<string, unknown>;
 }
 
 export interface CreateJobApplication extends Omit<JobApplication, 'id'> {}
