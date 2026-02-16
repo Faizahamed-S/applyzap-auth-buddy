@@ -32,8 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-const DEFAULT_STATUSES: string[] = ['APPLIED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER', 'REJECTED'];
+import { useTrackerColumns } from '@/hooks/useUserProfile';
 
 interface JobKanbanBoardProps {
   user: User | null;
@@ -52,6 +51,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const [currentView, setCurrentView] = useState<'kanban' | 'table'>('kanban');
 
   const queryClient = useQueryClient();
+  const { columns: trackerColumns, isLoading: isColumnsLoading } = useTrackerColumns();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -138,8 +138,8 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       if (targetJob) {
         newStatus = targetJob.status;
       } else {
-        // Check if the over id is a known column status
-        if (allStatuses.includes(over.id as string)) {
+        // Check if the over id is a known column title
+        if (columnTitles.includes(over.id as string)) {
           newStatus = over.id as string;
         } else {
           return;
@@ -185,28 +185,19 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     queryClient.invalidateQueries({ queryKey: ['job-applications'] });
   };
 
-  const getJobsByStatus = (status: string) =>
-    applications.filter((job) => job.status === status);
+  const getJobsByColumn = (columnTitle: string) =>
+    applications.filter((job) => job.status === columnTitle);
 
-  // Derive all unique statuses from data, preserving default order for known ones
-  const allStatuses = useMemo(() => {
-    const fromData = new Set(applications.map((j) => j.status));
-    const ordered: string[] = [];
-    for (const s of DEFAULT_STATUSES) {
-      if (fromData.has(s)) {
-        ordered.push(s);
-        fromData.delete(s);
-      }
-    }
-    // Append any custom statuses not in the defaults
-    for (const s of fromData) {
-      ordered.push(s);
-    }
-    // If no data yet, show defaults
-    return ordered.length > 0 ? ordered : DEFAULT_STATUSES;
-  }, [applications]);
+  // Build a set of column titles for drag-end matching
+  const columnTitles = useMemo(() => trackerColumns.map(c => c.title), [trackerColumns]);
 
-  if (isLoading) {
+  // Find applications whose status doesn't match any column
+  const unmatchedApps = useMemo(() => {
+    const titleSet = new Set(columnTitles);
+    return applications.filter((job) => !titleSet.has(job.status));
+  }, [applications, columnTitles]);
+
+  if (isLoading || isColumnsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -286,17 +277,29 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex gap-6 pb-4">
-                {allStatuses.map((status) => (
+            <div className="flex gap-6 pb-4 overflow-x-auto">
+                {trackerColumns.map((col) => (
                   <KanbanColumn
-                    key={status}
-                    status={status}
-                    jobs={getJobsByStatus(status)}
+                    key={col.id}
+                    status={col.title}
+                    jobs={getJobsByColumn(col.title)}
                     onEdit={handleOpenEdit}
                     onDelete={handleDeleteJob}
                     onViewDetails={handleViewDetails}
+                    color={col.color}
                   />
                 ))}
+                {unmatchedApps.length > 0 && (
+                  <KanbanColumn
+                    key="__other"
+                    status="Other"
+                    jobs={unmatchedApps}
+                    onEdit={handleOpenEdit}
+                    onDelete={handleDeleteJob}
+                    onViewDetails={handleViewDetails}
+                    color="gray"
+                  />
+                )}
               </div>
 
               <DragOverlay>
