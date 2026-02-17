@@ -39,7 +39,7 @@ const AboutMeSection = ({ aboutMe, onChange }: AboutMeSectionProps) => {
               <X className="h-4 w-4 mr-1" /> Cancel
             </Button>
             <Button size="sm" onClick={confirmEdit} className="bg-electric-blue hover:bg-blue-700 text-white">
-              Done
+              Save
             </Button>
           </div>
         )}
