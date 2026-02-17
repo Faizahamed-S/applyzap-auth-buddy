@@ -28,7 +28,7 @@ const AboutMeSection = ({ aboutMe, onChange }: AboutMeSectionProps) => {
   return (
     <Card className="bg-white/5 border-white/10">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-white">About Me (in 2–3 sentences)</CardTitle>
+        <CardTitle className="text-white">Professional Summary</CardTitle>
         {!editing ? (
           <Button variant="ghost" size="sm" onClick={startEdit} className="text-white/60 hover:text-white hover:bg-white/10">
             <Pencil className="h-4 w-4 mr-1" /> Edit
