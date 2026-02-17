@@ -116,10 +116,10 @@ export const ApplicationDetailModal = ({
           <div className="space-y-4">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-foreground">{application.companyName}</h2>
+                <h2 className="text-2xl font-bold text-foreground capitalize">{application.companyName}</h2>
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-lg text-muted-foreground">{application.roleName}</span>
+                  <span className="text-lg text-muted-foreground capitalize">{application.roleName}</span>
                 </div>
               </div>
               <Badge className={`${statusConfig.badgeColor} text-sm font-medium px-3 py-1`}>
@@ -143,12 +143,12 @@ export const ApplicationDetailModal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Company</label>
-                <p className="text-foreground">{application.companyName}</p>
+                <p className="text-foreground capitalize">{application.companyName}</p>
               </div>
               
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Role</label>
-                <p className="text-foreground">{application.roleName}</p>
+                <p className="text-foreground capitalize">{application.roleName}</p>
               </div>
               
               <div className="space-y-2">
