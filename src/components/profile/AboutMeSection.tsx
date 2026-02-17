@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pencil, X } from 'lucide-react';
 
-interface HeadlineSectionProps {
-  headline: string;
-  onChange: (headline: string) => void;
+interface AboutMeSectionProps {
+  aboutMe: string;
+  onChange: (aboutMe: string) => void;
 }
 
-const HeadlineSection = ({ headline, onChange }: HeadlineSectionProps) => {
+const AboutMeSection = ({ aboutMe, onChange }: AboutMeSectionProps) => {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(headline);
+  const [draft, setDraft] = useState(aboutMe);
 
   const startEdit = () => {
-    setDraft(headline);
+    setDraft(aboutMe);
     setEditing(true);
   };
 
@@ -28,7 +28,7 @@ const HeadlineSection = ({ headline, onChange }: HeadlineSectionProps) => {
   return (
     <Card className="bg-white/5 border-white/10">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-white">Professional Headline</CardTitle>
+        <CardTitle className="text-white">About Me (in 2–3 sentences)</CardTitle>
         {!editing ? (
           <Button variant="ghost" size="sm" onClick={startEdit} className="text-white/60 hover:text-white hover:bg-white/10">
             <Pencil className="h-4 w-4 mr-1" /> Edit
@@ -46,19 +46,19 @@ const HeadlineSection = ({ headline, onChange }: HeadlineSectionProps) => {
       </CardHeader>
       <CardContent>
         {editing ? (
-          <Input
+          <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="e.g. Full Stack Developer | React & Spring Boot"
-            maxLength={120}
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/30"
+            placeholder="Tell us about yourself in 2–3 sentences..."
+            maxLength={500}
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/30 min-h-[100px] resize-none"
           />
         ) : (
-          <p className="text-white/80">{headline || <span className="text-white/40">No headline set</span>}</p>
+          <p className="text-white/80 whitespace-pre-wrap">{aboutMe || <span className="text-white/40">No description set</span>}</p>
         )}
       </CardContent>
     </Card>
   );
 };
 
-export default HeadlineSection;
+export default AboutMeSection;
