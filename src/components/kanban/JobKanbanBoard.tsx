@@ -249,7 +249,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/profile')}>
                 <UserIcon className="mr-2 h-4 w-4" />
-                Profile Settings
+                Profile Data
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
