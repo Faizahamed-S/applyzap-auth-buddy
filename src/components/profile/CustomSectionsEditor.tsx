@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pencil, X, Plus, Trash2 } from 'lucide-react';
-import { CustomSection, CustomSubsection } from '@/types/user';
+import { CustomSection, CustomSectionField } from '@/types/user';
 import { DndContext, closestCenter, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import SortableItem from './SortableItem';
 
@@ -15,27 +16,37 @@ interface CustomSectionsEditorProps {
 
 const genId = () => crypto.randomUUID();
 
+// Give each field a stable id for drag-and-drop
+type FieldWithId = CustomSectionField & { _id: string };
+
 const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<CustomSection | null>(null);
+  const [draftFieldIds, setDraftFieldIds] = useState<string[]>([]);
+  const idCounter = useRef(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor)
   );
 
+  const makeFieldId = () => `sf-${++idCounter.current}`;
+
   const startEdit = (section: CustomSection) => {
-    setDraft(JSON.parse(JSON.stringify(section)));
+    const cloned: CustomSection = JSON.parse(JSON.stringify(section));
+    setDraft(cloned);
+    setDraftFieldIds((cloned.fields || []).map(() => makeFieldId()));
     setEditingId(section.id);
   };
 
-  const cancelEdit = () => { setEditingId(null); setDraft(null); };
+  const cancelEdit = () => { setEditingId(null); setDraft(null); setDraftFieldIds([]); };
 
   const confirmEdit = () => {
     if (!draft) return;
     onChange(sections.map(s => s.id === draft.id ? draft : s));
     setEditingId(null);
     setDraft(null);
+    setDraftFieldIds([]);
   };
 
   const addSection = () => {
@@ -62,6 +73,7 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
   const addSectionField = () => {
     if (!draft) return;
     setDraft({ ...draft, fields: [...(draft.fields || []), { label: '', value: '' }] });
+    setDraftFieldIds(prev => [...prev, makeFieldId()]);
   };
 
   const updateSectionField = (fieldIdx: number, key: 'label' | 'value', val: string) => {
@@ -72,6 +84,7 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
   const removeSectionField = (fieldIdx: number) => {
     if (!draft) return;
     setDraft({ ...draft, fields: (draft.fields || []).filter((_, i) => i !== fieldIdx) });
+    setDraftFieldIds(prev => prev.filter((_, i) => i !== fieldIdx));
   };
 
   const removeSubsection = (subId: string) => {
@@ -116,7 +129,6 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
     });
   };
 
-  // Drag handlers
   const handleSectionDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -130,9 +142,12 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
     if (!draft?.fields) return;
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const oldIndex = draft.fields.findIndex((_, i) => `sf-${i}` === active.id);
-      const newIndex = draft.fields.findIndex((_, i) => `sf-${i}` === over.id);
-      setDraft({ ...draft, fields: arrayMove(draft.fields, oldIndex, newIndex) });
+      const oldIndex = draftFieldIds.indexOf(active.id as string);
+      const newIndex = draftFieldIds.indexOf(over.id as string);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        setDraft({ ...draft, fields: arrayMove(draft.fields, oldIndex, newIndex) });
+        setDraftFieldIds(arrayMove(draftFieldIds, oldIndex, newIndex));
+      }
     }
   };
 
@@ -148,7 +163,7 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
 
   return (
     <div className="space-y-4">
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd} modifiers={[restrictToVerticalAxis]}>
         <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
           {sections.map(section => {
             const isEditing = editingId === section.id;
@@ -193,10 +208,10 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
                   <CardContent className="space-y-4">
                     {/* Section-level fields */}
                     {isEditing && (draft?.fields || []).length > 0 && (
-                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionFieldDragEnd}>
-                        <SortableContext items={(draft?.fields || []).map((_, i) => `sf-${i}`)} strategy={verticalListSortingStrategy}>
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionFieldDragEnd} modifiers={[restrictToVerticalAxis]}>
+                        <SortableContext items={draftFieldIds} strategy={verticalListSortingStrategy}>
                           {(draft?.fields || []).map((field, fi) => (
-                            <SortableItem key={`sf-${fi}`} id={`sf-${fi}`}>
+                            <SortableItem key={draftFieldIds[fi]} id={draftFieldIds[fi]}>
                               <div className="flex gap-2 items-start">
                                 <Input value={field.label} onChange={(e) => updateSectionField(fi, 'label', e.target.value)} placeholder="Label" className="bg-white/10 border-white/20 text-white placeholder:text-white/30 w-1/3" />
                                 <Input value={field.value} onChange={(e) => updateSectionField(fi, 'value', e.target.value)} placeholder="Value" className="bg-white/10 border-white/20 text-white placeholder:text-white/30 flex-1" />
@@ -227,7 +242,7 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
 
                     {/* Subsections */}
                     {isEditing && draft ? (
-                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSubsectionDragEnd}>
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSubsectionDragEnd} modifiers={[restrictToVerticalAxis]}>
                         <SortableContext items={draft.subsections.map(s => s.id)} strategy={verticalListSortingStrategy}>
                           {draft.subsections.map((sub) => (
                             <SortableItem key={sub.id} id={sub.id}>
