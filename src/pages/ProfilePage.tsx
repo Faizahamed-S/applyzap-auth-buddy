@@ -4,16 +4,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { userApi } from '@/lib/userApi';
-import { ProfileData, ProfileLinks, ProfileExperience } from '@/types/user';
+import { ProfileData, ProfileExperience, ProfileLink, BasicInfoExtraField, CustomSection } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import BasicInfoSection from '@/components/profile/BasicInfoSection';
-import HeadlineSection from '@/components/profile/HeadlineSection';
+import AboutMeSection from '@/components/profile/AboutMeSection';
 import LinksSection from '@/components/profile/LinksSection';
-import SkillsSection from '@/components/profile/SkillsSection';
 import ExperienceSection from '@/components/profile/ExperienceSection';
+import CustomSectionsEditor from '@/components/profile/CustomSectionsEditor';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -23,10 +23,11 @@ const ProfilePage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [timezone, setTimezone] = useState('');
-  const [headline, setHeadline] = useState('');
-  const [links, setLinks] = useState<ProfileLinks>({});
-  const [skills, setSkills] = useState<string[]>([]);
+  const [aboutMe, setAboutMe] = useState('');
+  const [links, setLinks] = useState<ProfileLink[]>([]);
   const [experiences, setExperiences] = useState<ProfileExperience[]>([]);
+  const [basicInfoExtra, setBasicInfoExtra] = useState<BasicInfoExtraField[]>([]);
+  const [customSections, setCustomSections] = useState<CustomSection[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -41,20 +42,35 @@ const ProfilePage = () => {
       setFirstName(user.firstName || '');
       setLastName(user.lastName || '');
       setTimezone(user.timezone || '');
-      setHeadline(user.profileData?.headline || '');
-      setLinks(user.profileData?.links || {});
-      setSkills(user.profileData?.skills || []);
-      setExperiences((user.profileData?.experiences as ProfileExperience[]) || []);
+      const pd = user.profileData;
+      setAboutMe(pd?.aboutMe || pd?.headline || '');
+      // Handle links migration: old format was object, new is array
+      if (Array.isArray(pd?.links)) {
+        setLinks(pd.links as ProfileLink[]);
+      } else if (pd?.links && typeof pd.links === 'object') {
+        const oldLinks = pd.links as Record<string, string>;
+        const migrated: ProfileLink[] = [];
+        if (oldLinks.github) migrated.push({ label: 'GitHub', url: oldLinks.github });
+        if (oldLinks.linkedin) migrated.push({ label: 'LinkedIn', url: oldLinks.linkedin });
+        if (oldLinks.portfolio) migrated.push({ label: 'Portfolio', url: oldLinks.portfolio });
+        setLinks(migrated);
+      } else {
+        setLinks([]);
+      }
+      setExperiences((pd?.experiences as ProfileExperience[]) || []);
+      setBasicInfoExtra((pd?.basicInfoExtra as BasicInfoExtraField[]) || []);
+      setCustomSections((pd?.customSections as CustomSection[]) || []);
     }
   }, [user]);
 
   const saveMutation = useMutation({
     mutationFn: () => {
       const profileData: ProfileData = {
-        headline,
+        aboutMe,
         links,
-        skills,
         experiences,
+        basicInfoExtra,
+        customSections,
       };
       return userApi.updateProfile({ firstName, lastName, timezone, profileData });
     },
@@ -98,17 +114,19 @@ const ProfilePage = () => {
           lastName={lastName}
           email={user?.email || ''}
           timezone={timezone}
+          extraFields={basicInfoExtra}
           onChange={({ firstName: fn, lastName: ln, timezone: tz }) => {
             if (fn !== undefined) setFirstName(fn);
             if (ln !== undefined) setLastName(ln);
             if (tz !== undefined) setTimezone(tz);
           }}
+          onExtraFieldsChange={setBasicInfoExtra}
         />
 
-        <HeadlineSection headline={headline} onChange={setHeadline} />
+        <AboutMeSection aboutMe={aboutMe} onChange={setAboutMe} />
         <LinksSection links={links} onChange={setLinks} />
-        <SkillsSection skills={skills} onChange={setSkills} />
         <ExperienceSection experiences={experiences} onChange={setExperiences} />
+        <CustomSectionsEditor sections={customSections} onChange={setCustomSections} />
 
         <div className="flex justify-end">
           <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="bg-electric-blue hover:bg-blue-700 text-white">

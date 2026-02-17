@@ -3,6 +3,12 @@ export interface TrackerConfig {
   [key: string]: unknown;
 }
 
+export interface ProfileLink {
+  label: string;
+  url: string;
+}
+
+// Keep old interface for backward compat during transition
 export interface ProfileLinks {
   github?: string;
   linkedin?: string;
@@ -17,11 +23,36 @@ export interface ProfileExperience {
   endDate?: string;
 }
 
+export interface BasicInfoExtraField {
+  label: string;
+  value: string;
+}
+
+export interface CustomSectionField {
+  label: string;
+  value: string;
+}
+
+export interface CustomSubsection {
+  id: string;
+  subsectionTitle: string;
+  fields: CustomSectionField[];
+}
+
+export interface CustomSection {
+  id: string;
+  sectionTitle: string;
+  subsections: CustomSubsection[];
+}
+
 export interface ProfileData {
-  headline?: string;
-  skills?: string[];
+  aboutMe?: string;
+  headline?: string; // legacy
+  skills?: string[]; // legacy
   experiences?: ProfileExperience[];
-  links?: ProfileLinks;
+  links?: ProfileLink[];
+  basicInfoExtra?: BasicInfoExtraField[];
+  customSections?: CustomSection[];
   [key: string]: unknown;
 }
 
