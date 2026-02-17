@@ -31,7 +31,7 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
   };
 
   const addSection = () => {
-    const newSection: CustomSection = { id: genId(), sectionTitle: 'New Section', subsections: [] };
+    const newSection: CustomSection = { id: genId(), sectionTitle: 'New Section', fields: [], subsections: [] };
     onChange([...sections, newSection]);
     startEdit(newSection);
   };
@@ -50,6 +50,21 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
   const addSubsection = () => {
     if (!draft) return;
     setDraft({ ...draft, subsections: [...draft.subsections, { id: genId(), subsectionTitle: '', fields: [] }] });
+  };
+
+  const addSectionField = () => {
+    if (!draft) return;
+    setDraft({ ...draft, fields: [...(draft.fields || []), { label: '', value: '' }] });
+  };
+
+  const updateSectionField = (fieldIdx: number, key: 'label' | 'value', val: string) => {
+    if (!draft) return;
+    setDraft({ ...draft, fields: (draft.fields || []).map((f, i) => i === fieldIdx ? { ...f, [key]: val } : f) });
+  };
+
+  const removeSectionField = (fieldIdx: number) => {
+    if (!draft) return;
+    setDraft({ ...draft, fields: (draft.fields || []).filter((_, i) => i !== fieldIdx) });
   };
 
   const removeSubsection = (subId: string) => {
@@ -136,8 +151,30 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {display.subsections.length === 0 && !isEditing && (
-                <p className="text-white/40 text-sm">No subsections yet</p>
+              {/* Section-level fields */}
+              {isEditing && (draft?.fields || []).map((field, fi) => (
+                <div key={`sf-${fi}`} className="flex gap-2 items-start">
+                  <Input value={field.label} onChange={(e) => updateSectionField(fi, 'label', e.target.value)} placeholder="Label" className="bg-white/10 border-white/20 text-white placeholder:text-white/30 w-1/3" />
+                  <Input value={field.value} onChange={(e) => updateSectionField(fi, 'value', e.target.value)} placeholder="Value" className="bg-white/10 border-white/20 text-white placeholder:text-white/30 flex-1" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0" onClick={() => removeSectionField(fi)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+
+              {!isEditing && (display.fields || []).length > 0 && (
+                <div className="space-y-1">
+                  {(display.fields || []).map((f, fi) => (
+                    <div key={fi}>
+                      <span className="text-white/50 text-xs">{f.label}</span>
+                      <p className="text-white text-sm">{f.value || '—'}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!isEditing && (display.fields || []).length === 0 && display.subsections.length === 0 && (
+                <p className="text-white/40 text-sm">No content yet</p>
               )}
 
               {display.subsections.map((sub) => (
@@ -189,9 +226,14 @@ const CustomSectionsEditor = ({ sections, onChange }: CustomSectionsEditorProps)
               ))}
 
               {isEditing && (
-                <Button variant="outline" size="sm" onClick={addSubsection} className="bg-transparent text-white border-white/30 hover:text-white/60 hover:border-white/15 transition-all">
-                  <Plus className="mr-1 h-4 w-4" /> Add Subsection
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={addSectionField} className="bg-transparent text-white border-white/30 hover:text-white/60 hover:border-white/15 transition-all">
+                    <Plus className="mr-1 h-4 w-4" /> Add Field
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={addSubsection} className="bg-transparent text-white border-white/30 hover:text-white/60 hover:border-white/15 transition-all">
+                    <Plus className="mr-1 h-4 w-4" /> Add Subsection
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

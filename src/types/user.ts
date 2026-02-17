@@ -42,6 +42,7 @@ export interface CustomSubsection {
 export interface CustomSection {
   id: string;
   sectionTitle: string;
+  fields?: CustomSectionField[];
   subsections: CustomSubsection[];
 }
 
