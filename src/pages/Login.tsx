@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
 import Logo from "@/components/ui/Logo";
+import { lovable } from "@/integrations/lovable/index";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -51,8 +52,15 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    toast.info("We're still working on Google sign-in. For now, please sign in with your email.");
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) {
+      toast.error("Google sign-in failed. Please try again.");
+    }
+    setLoading(false);
   };
 
   return (
