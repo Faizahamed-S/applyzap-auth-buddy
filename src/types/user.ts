@@ -3,10 +3,25 @@ export interface TrackerConfig {
   [key: string]: unknown;
 }
 
+export interface ProfileLinks {
+  github?: string;
+  linkedin?: string;
+  portfolio?: string;
+}
+
+export interface ProfileExperience {
+  title: string;
+  company: string;
+  description: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface ProfileData {
   headline?: string;
   skills?: string[];
-  experience?: Array<Record<string, unknown>>;
+  experiences?: ProfileExperience[];
+  links?: ProfileLinks;
   [key: string]: unknown;
 }
 
