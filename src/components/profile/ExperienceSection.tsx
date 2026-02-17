@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pencil, Plus, X, Briefcase } from 'lucide-react';
 import { ProfileExperience } from '@/types/user';
 import { DndContext, closestCenter, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import SortableItem from './SortableItem';
 
@@ -15,20 +16,22 @@ interface ExperienceSectionProps {
   onChange: (experiences: ProfileExperience[]) => void;
 }
 
+type DraftExperience = ProfileExperience & { _id: string };
+
 const ExperienceSection = ({ experiences, onChange }: ExperienceSectionProps) => {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState<(ProfileExperience & { _id: string })[]>([]);
+  const [draft, setDraft] = useState<DraftExperience[]>([]);
+  const idCounter = useRef(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor)
   );
 
-  const withIds = (items: ProfileExperience[]) =>
-    items.map((e, i) => ({ ...e, _id: `exp-${i}-${Date.now()}` }));
+  const makeId = () => `exp-${++idCounter.current}`;
 
   const startEdit = () => {
-    setDraft(withIds(experiences));
+    setDraft(experiences.map(e => ({ ...e, _id: makeId() })));
     setEditing(true);
   };
 
@@ -40,15 +43,15 @@ const ExperienceSection = ({ experiences, onChange }: ExperienceSectionProps) =>
   };
 
   const addExperience = () => {
-    setDraft(prev => [...prev, { title: '', company: '', description: '', startDate: '', endDate: '', _id: `exp-new-${Date.now()}` }]);
+    setDraft(prev => [...prev, { title: '', company: '', description: '', startDate: '', endDate: '', _id: makeId() }]);
   };
 
-  const updateField = (index: number, field: keyof ProfileExperience, value: string) => {
-    setDraft(prev => prev.map((exp, i) => (i === index ? { ...exp, [field]: value } : exp)));
+  const updateField = (id: string, field: keyof ProfileExperience, value: string) => {
+    setDraft(prev => prev.map(exp => exp._id === id ? { ...exp, [field]: value } : exp));
   };
 
-  const removeExperience = (index: number) => {
-    setDraft(prev => prev.filter((_, i) => i !== index));
+  const removeExperience = (id: string) => {
+    setDraft(prev => prev.filter(exp => exp._id !== id));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -98,40 +101,40 @@ const ExperienceSection = ({ experiences, onChange }: ExperienceSectionProps) =>
               <p className="text-sm">No experience entries yet</p>
             </div>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
               <SortableContext items={draft.map(e => e._id)} strategy={verticalListSortingStrategy}>
                 {draft.map((exp, index) => (
                   <SortableItem key={exp._id} id={exp._id}>
                     <div className="rounded-lg border border-white/10 p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-white/50 text-xs font-medium">Entry {index + 1}</span>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => removeExperience(index)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => removeExperience(exp._id)}>
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <Label className="text-white/60 text-xs">Title</Label>
-                          <Input value={exp.title} onChange={(e) => updateField(index, 'title', e.target.value)} placeholder="Software Engineer" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                          <Input value={exp.title} onChange={(e) => updateField(exp._id, 'title', e.target.value)} placeholder="Software Engineer" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-white/60 text-xs">Company</Label>
-                          <Input value={exp.company} onChange={(e) => updateField(index, 'company', e.target.value)} placeholder="Google" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                          <Input value={exp.company} onChange={(e) => updateField(exp._id, 'company', e.target.value)} placeholder="Google" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <Label className="text-white/60 text-xs">Start Date</Label>
-                          <Input value={exp.startDate || ''} onChange={(e) => updateField(index, 'startDate', e.target.value)} placeholder="e.g. Jan 2023" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                          <Input value={exp.startDate || ''} onChange={(e) => updateField(exp._id, 'startDate', e.target.value)} placeholder="e.g. Jan 2023" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-white/60 text-xs">End Date</Label>
-                          <Input value={exp.endDate || ''} onChange={(e) => updateField(index, 'endDate', e.target.value)} placeholder="e.g. Present" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                          <Input value={exp.endDate || ''} onChange={(e) => updateField(exp._id, 'endDate', e.target.value)} placeholder="e.g. Present" className="bg-white/10 border-white/20 text-white placeholder:text-white/30" />
                         </div>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-white/60 text-xs">Description</Label>
-                        <Textarea value={exp.description} onChange={(e) => updateField(index, 'description', e.target.value)} placeholder="Describe your role..." className="bg-white/10 border-white/20 text-white placeholder:text-white/30 min-h-[80px] resize-none" />
+                        <Textarea value={exp.description} onChange={(e) => updateField(exp._id, 'description', e.target.value)} placeholder="Describe your role..." className="bg-white/10 border-white/20 text-white placeholder:text-white/30 min-h-[80px] resize-none" />
                       </div>
                     </div>
                   </SortableItem>
