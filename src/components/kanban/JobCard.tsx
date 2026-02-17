@@ -1,10 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { JobApplication } from '@/types/job';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, Edit2, Trash2, Calendar, CheckCircle2 } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 interface JobCardProps {
   job: JobApplication;
@@ -21,109 +18,37 @@ export const JobCard = ({ job, onEdit, onDelete, onViewDetails }: JobCardProps) 
     transform,
     transition,
     isDragging,
-  } = useSortable({ 
+  } = useSortable({
     id: job.id,
-    data: {
-      type: 'job',
-      job: job,
-      status: job.status
-    }
+    data: { type: 'job', job, status: job.status },
   });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   const formattedDate = new Date(job.dateOfApplication).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
   });
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[data-drag-handle]')) {
-      return;
-    }
-    onViewDetails(job.id);
-  };
-
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Card 
-        className="cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-200 bg-white border border-gray-200 hover:border-electric-blue/50 shadow-md"
-        onClick={handleCardClick}
-      >
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold text-gray-900 flex items-start justify-between gap-2">
-            <span className="flex-1">{job.companyName}</span>
-            <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => onEdit(job)}
-              >
-                <Edit2 className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
-                onClick={() => onDelete(job.id)}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <p className="text-sm font-medium text-gray-800">{job.roleName}</p>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>{formattedDate}</span>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {job.tailored && (
-              <Badge variant="secondary" className="text-xs">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                Tailored
-              </Badge>
-            )}
-            {job.referral && (
-              <Badge variant="outline" className="text-xs">
-                Referral
-              </Badge>
-            )}
-          </div>
-
-          {job.jobLink && (
-            <div onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="link"
-                size="sm"
-                className="h-auto p-0 text-xs"
-                asChild
-              >
-                <a
-                  href={job.jobLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  View Job Posting
-                </a>
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => onViewDetails(job.id)}
+      className="cursor-grab active:cursor-grabbing rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-electric-blue/40 transition-all duration-150 px-3 py-2.5"
+    >
+      <p className="text-sm font-semibold text-white truncate">{job.companyName}</p>
+      <p className="text-xs text-white/60 truncate mt-0.5">{job.roleName}</p>
+      <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-white/40">
+        <Calendar className="h-3 w-3 flex-shrink-0" />
+        <span>{formattedDate}</span>
+      </div>
     </div>
   );
 };
