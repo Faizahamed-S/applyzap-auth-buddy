@@ -7,13 +7,14 @@ import { userApi } from '@/lib/userApi';
 import { ProfileData, ProfileExperience, ProfileLink, BasicInfoExtraField, CustomSection } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import BasicInfoSection from '@/components/profile/BasicInfoSection';
 import AboutMeSection from '@/components/profile/AboutMeSection';
 import LinksSection from '@/components/profile/LinksSection';
 import ExperienceSection from '@/components/profile/ExperienceSection';
 import CustomSectionsEditor from '@/components/profile/CustomSectionsEditor';
+import SectionReorderModal, { SectionOrderItem } from '@/components/profile/SectionReorderModal';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,17 @@ const ProfilePage = () => {
   const [experiences, setExperiences] = useState<ProfileExperience[]>([]);
   const [basicInfoExtra, setBasicInfoExtra] = useState<BasicInfoExtraField[]>([]);
   const [customSections, setCustomSections] = useState<CustomSection[]>([]);
+  const [reorderOpen, setReorderOpen] = useState(false);
+
+  const DEFAULT_SECTION_ORDER: SectionOrderItem[] = [
+    { id: 'basic-info', label: 'Basic Information' },
+    { id: 'professional-summary', label: 'Professional Summary' },
+    { id: 'links', label: 'Links' },
+    { id: 'experience', label: 'Experience' },
+    { id: 'custom-sections', label: 'Custom Sections' },
+  ];
+
+  const [sectionOrder, setSectionOrder] = useState<SectionOrderItem[]>(DEFAULT_SECTION_ORDER);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -60,6 +72,10 @@ const ProfilePage = () => {
       setExperiences((pd?.experiences as ProfileExperience[]) || []);
       setBasicInfoExtra((pd?.basicInfoExtra as BasicInfoExtraField[]) || []);
       setCustomSections((pd?.customSections as CustomSection[]) || []);
+      // Restore saved section order
+      if (pd?.sectionOrder && Array.isArray(pd.sectionOrder)) {
+        setSectionOrder(pd.sectionOrder as SectionOrderItem[]);
+      }
     }
   }, [user]);
 
@@ -71,6 +87,7 @@ const ProfilePage = () => {
         experiences,
         basicInfoExtra,
         customSections,
+        sectionOrder,
       };
       return userApi.updateProfile({ firstName, lastName, timezone, profileData });
     },
@@ -82,6 +99,15 @@ const ProfilePage = () => {
       toast.error('Failed to save profile');
     },
   });
+
+  // Build the section list for the reorder modal (no custom sub-items needed)
+  const buildFullSectionList = (): SectionOrderItem[] => {
+    return sectionOrder;
+  };
+
+  const handleReorderSave = (newOrder: SectionOrderItem[]) => {
+    setSectionOrder(newOrder);
+  };
 
   if (isLoading) {
     return (
@@ -104,29 +130,60 @@ const ProfilePage = () => {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
-          <p className="text-white/70 mt-1">Manage your personal information and career profile.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Profile</h1>
+            <p className="text-white/70 mt-1">Manage your personal information and career profile.</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white/60 hover:text-white hover:bg-white/10 h-10 w-10"
+            onClick={() => setReorderOpen(true)}
+            title="Reorder sections"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
         </div>
 
-        <BasicInfoSection
-          firstName={firstName}
-          lastName={lastName}
-          email={user?.email || ''}
-          timezone={timezone}
-          extraFields={basicInfoExtra}
-          onChange={({ firstName: fn, lastName: ln, timezone: tz }) => {
-            if (fn !== undefined) setFirstName(fn);
-            if (ln !== undefined) setLastName(ln);
-            if (tz !== undefined) setTimezone(tz);
-          }}
-          onExtraFieldsChange={setBasicInfoExtra}
-        />
+        {sectionOrder.map(section => {
+          switch (section.id) {
+            case 'basic-info':
+              return (
+                <BasicInfoSection
+                  key="basic-info"
+                  firstName={firstName}
+                  lastName={lastName}
+                  email={user?.email || ''}
+                  timezone={timezone}
+                  extraFields={basicInfoExtra}
+                  onChange={({ firstName: fn, lastName: ln, timezone: tz }) => {
+                    if (fn !== undefined) setFirstName(fn);
+                    if (ln !== undefined) setLastName(ln);
+                    if (tz !== undefined) setTimezone(tz);
+                  }}
+                  onExtraFieldsChange={setBasicInfoExtra}
+                />
+              );
+            case 'professional-summary':
+              return <AboutMeSection key="professional-summary" aboutMe={aboutMe} onChange={setAboutMe} />;
+            case 'links':
+              return <LinksSection key="links" links={links} onChange={setLinks} />;
+            case 'experience':
+              return <ExperienceSection key="experience" experiences={experiences} onChange={setExperiences} />;
+            case 'custom-sections':
+              return <CustomSectionsEditor key="custom-sections" sections={customSections} onChange={setCustomSections} />;
+            default:
+              return null;
+          }
+        })}
 
-        <AboutMeSection aboutMe={aboutMe} onChange={setAboutMe} />
-        <LinksSection links={links} onChange={setLinks} />
-        <ExperienceSection experiences={experiences} onChange={setExperiences} />
-        <CustomSectionsEditor sections={customSections} onChange={setCustomSections} />
+        <SectionReorderModal
+          open={reorderOpen}
+          onOpenChange={setReorderOpen}
+          sections={buildFullSectionList()}
+          onSave={handleReorderSave}
+        />
 
         <div className="flex justify-end">
           <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="bg-electric-blue hover:bg-blue-700 text-white">
