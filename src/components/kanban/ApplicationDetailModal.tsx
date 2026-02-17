@@ -153,7 +153,7 @@ export const ApplicationDetailModal = ({
               
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Status</label>
-                <Badge className={statusConfig.badgeColor}>{statusConfig.label}</Badge>
+                <p className="text-foreground">{statusConfig.label}</p>
               </div>
               
               <div className="space-y-2">
