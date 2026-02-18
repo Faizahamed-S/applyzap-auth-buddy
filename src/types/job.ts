@@ -1,4 +1,4 @@
-export type JobStatus = 'APPLIED' | 'REJECTED' | 'ONLINE_ASSESSMENT' | 'INTERVIEW' | 'OFFER';
+export type JobStatus = string;
 
 export interface JobApplication {
   id: string;
@@ -10,6 +10,7 @@ export interface JobApplication {
   jobDescription?: string;
   referral?: boolean;
   status: JobStatus;
+  applicationMetadata?: Record<string, unknown>;
 }
 
 export interface CreateJobApplication extends Omit<JobApplication, 'id'> {}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { JobApplication, JobStatus } from '@/types/job';
+import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { KanbanColumn } from './KanbanColumn';
 import { JobCard } from './JobCard';
@@ -24,7 +24,7 @@ import { ViewToggle } from './ViewToggle';
 import { AllApplicationsTable } from './AllApplicationsTable';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
-import { Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { Plus, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -32,8 +32,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-const STATUSES: JobStatus[] = ['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER'];
+import { useTrackerColumns } from '@/hooks/useUserProfile';
+import { BoardSettingsModal } from './BoardSettingsModal';
 
 interface JobKanbanBoardProps {
   user: User | null;
@@ -50,8 +50,10 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(100);
   const [currentView, setCurrentView] = useState<'kanban' | 'table'>('kanban');
+  const [isBoardSettingsOpen, setIsBoardSettingsOpen] = useState(false);
 
   const queryClient = useQueryClient();
+  const { columns: trackerColumns, isLoading: isColumnsLoading } = useTrackerColumns();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -70,6 +72,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     mutationFn: jobApi.createApplication,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
       toast.success('Application added successfully!');
     },
     onError: () => {
@@ -82,6 +85,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       jobApi.updateApplication(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
       toast.success('Application updated successfully!');
     },
     onError: () => {
@@ -94,10 +98,16 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       jobApi.patchApplication(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
       toast.success('Status updated!');
     },
-    onError: () => {
-      toast.error('Failed to update status');
+    onError: (error: any) => {
+      // Revert optimistic update
+      queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+      const msg = error?.message?.includes('401') || error?.message?.includes('403')
+        ? 'Not authorized to update status'
+        : 'Could not update status; please try again';
+      toast.error(msg);
     },
   });
 
@@ -129,7 +139,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     if (!over) return;
 
     const jobId = active.id as string;
-    let newStatus: JobStatus;
+    let newStatus: string;
     
     if (over.data?.current?.type === 'status') {
       newStatus = over.data.current.status;
@@ -138,9 +148,9 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       if (targetJob) {
         newStatus = targetJob.status;
       } else {
-        const validStatuses = ['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER'];
-        if (validStatuses.includes(over.id as string)) {
-          newStatus = over.id as JobStatus;
+        // Check if the over id is a known column title
+        if (columnTitles.includes(over.id as string)) {
+          newStatus = over.id as string;
         } else {
           return;
         }
@@ -185,10 +195,19 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     queryClient.invalidateQueries({ queryKey: ['job-applications'] });
   };
 
-  const getJobsByStatus = (status: JobStatus) =>
-    applications.filter((job) => job.status === status);
+  const getJobsByColumn = (columnTitle: string) =>
+    applications.filter((job) => job.status === columnTitle);
 
-  if (isLoading) {
+  // Build a set of column titles for drag-end matching
+  const columnTitles = useMemo(() => trackerColumns.map(c => c.title), [trackerColumns]);
+
+  // Find applications whose status doesn't match any column
+  const unmatchedApps = useMemo(() => {
+    const titleSet = new Set(columnTitles);
+    return applications.filter((job) => !titleSet.has(job.status));
+  }, [applications, columnTitles]);
+
+  if (isLoading || isColumnsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -224,9 +243,13 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
                 <UserIcon className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
               <DropdownMenuItem disabled className="text-xs text-muted-foreground">
                 {getUserDisplayName()}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <UserIcon className="mr-2 h-4 w-4" />
+                Profile Data
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -251,6 +274,14 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
           
           {/* Right: Controls */}
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white/80 hover:text-white hover:bg-white/10"
+              onClick={() => setIsBoardSettingsOpen(true)}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
             <Button 
               onClick={() => setIsAddModalOpen(true)} 
               className="bg-electric-blue hover:bg-blue-700 active:scale-95 text-white transition-all duration-150"
@@ -268,17 +299,29 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex gap-6 pb-4">
-                {STATUSES.map((status) => (
+            <div className="flex gap-6 pb-4 overflow-x-auto">
+                {trackerColumns.map((col) => (
                   <KanbanColumn
-                    key={status}
-                    status={status}
-                    jobs={getJobsByStatus(status)}
+                    key={col.id}
+                    status={col.title}
+                    jobs={getJobsByColumn(col.title)}
                     onEdit={handleOpenEdit}
                     onDelete={handleDeleteJob}
                     onViewDetails={handleViewDetails}
+                    color={col.color}
                   />
                 ))}
+                {unmatchedApps.length > 0 && (
+                  <KanbanColumn
+                    key="__other"
+                    status="Other"
+                    jobs={unmatchedApps}
+                    onEdit={handleOpenEdit}
+                    onDelete={handleDeleteJob}
+                    onViewDetails={handleViewDetails}
+                    color="gray"
+                  />
+                )}
               </div>
 
               <DragOverlay>
@@ -335,6 +378,12 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
         applicationId={viewingJobId}
         onEdit={handleOpenEdit}
         onDelete={handleDeleteJob}
+      />
+
+      <BoardSettingsModal
+        open={isBoardSettingsOpen}
+        onOpenChange={setIsBoardSettingsOpen}
+        columns={trackerColumns}
       />
     </div>
   );

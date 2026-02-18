@@ -18,23 +18,19 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { StatusInput } from './StatusInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { JobApplication } from '@/types/job';
+import { CustomFieldsEditor, metadataToFields, fieldsToMetadata, CustomFieldEntry } from './CustomFieldsEditor';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
   roleName: z.string().min(1, 'Role name is required'),
   dateOfApplication: z.string().min(1, 'Date is required'),
-  status: z.enum(['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER']),
+  status: z.string().min(1, 'Status is required'),
   jobLink: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   tailored: z.boolean().default(false),
   jobDescription: z.string().optional(),
@@ -52,6 +48,7 @@ interface EditJobModalProps {
 
 export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,7 +56,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
       companyName: '',
       roleName: '',
       dateOfApplication: '',
-      status: 'APPLIED',
+      status: '',
       jobLink: '',
       tailored: false,
       jobDescription: '',
@@ -79,6 +76,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
         jobDescription: job.jobDescription || '',
         referral: job.referral || false,
       });
+      setCustomFields(metadataToFields(job.applicationMetadata));
     }
   }, [job, form]);
 
@@ -87,7 +85,8 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
     
     setIsSubmitting(true);
     try {
-      await onSubmit(job.id, data);
+      const metadata = fieldsToMetadata(customFields);
+      await onSubmit(job.id, { ...data, ...(metadata ? { applicationMetadata: metadata } : {}) } as any);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -157,20 +156,9 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="APPLIED">Applied</SelectItem>
-                        <SelectItem value="REJECTED">Rejected</SelectItem>
-                        <SelectItem value="ONLINE_ASSESSMENT">Online Assessment</SelectItem>
-                        <SelectItem value="INTERVIEW">Interview</SelectItem>
-                        <SelectItem value="OFFER">Offer</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <StatusInput value={field.value} onChange={field.onChange} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -250,6 +238,10 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
                 </FormItem>
               )}
             />
+
+            <Separator />
+
+            <CustomFieldsEditor fields={customFields} onChange={setCustomFields} />
 
             <div className="flex gap-3 justify-end pt-4">
               <Button

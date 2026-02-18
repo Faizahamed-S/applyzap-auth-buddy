@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { JobApplication, JobStatus } from '@/types/job';
+import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,13 +19,13 @@ import { EditJobModal } from '@/components/kanban/EditJobModal';
 import { InlineStatusSelect } from '@/components/kanban/InlineStatusSelect';
 import { ArrowLeft, Search, Edit2, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-import { STATUS_CONFIG } from '@/lib/statusConfig';
+import { getStatusConfig } from '@/lib/statusConfig';
 
 type SortField = 'companyName' | 'roleName' | 'dateOfApplication';
 type SortDirection = 'asc' | 'desc';
 
 const StatusApplicationsPage = () => {
-  const { status } = useParams<{ status: JobStatus }>();
+  const { status } = useParams<{ status: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
@@ -154,7 +154,7 @@ const StatusApplicationsPage = () => {
     return sortDirection === 'asc' ? '↑' : '↓';
   };
 
-  if (!status || !STATUS_CONFIG[status as JobStatus]) {
+  if (!status) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
@@ -173,7 +173,8 @@ const StatusApplicationsPage = () => {
     );
   }
 
-  const statusConfig = STATUS_CONFIG[status];
+  const statusConfig = getStatusConfig(status);
+  const displayLabel = status;
 
   if (isLoading) {
     return (
@@ -220,7 +221,7 @@ const StatusApplicationsPage = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                {statusConfig.label} Applications
+                {displayLabel} Applications
               </h1>
               <p className="text-muted-foreground">
                 {filteredAndSortedApplications.length} application{filteredAndSortedApplications.length !== 1 ? 's' : ''}
@@ -228,7 +229,7 @@ const StatusApplicationsPage = () => {
             </div>
           </div>
           <Badge className={`${statusConfig.badgeColor} text-lg font-medium px-4 py-2`}>
-            {statusConfig.label}
+            {displayLabel}
           </Badge>
         </div>
 

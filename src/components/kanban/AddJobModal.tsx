@@ -18,25 +18,20 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { StatusInput } from './StatusInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { JobStatus } from '@/types/job';
+import { Separator } from '@/components/ui/separator';
+import { CustomFieldsEditor, fieldsToMetadata } from './CustomFieldsEditor';
+import type { CustomFieldEntry } from './CustomFieldsEditor';
+import { useTrackerColumns } from '@/hooks/useUserProfile';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
   roleName: z.string().min(1, 'Role name is required'),
   dateOfApplication: z.string().min(1, 'Date is required'),
-  status: z.enum(['APPLIED', 'REJECTED', 'ONLINE_ASSESSMENT', 'INTERVIEW', 'OFFER'], {
-    errorMap: () => ({ message: 'Please select a valid status' })
-  }),
+  status: z.string().min(1, 'Status is required'),
   jobLink: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   tailored: z.boolean().default(false),
   jobDescription: z.string().optional(),
@@ -53,6 +48,8 @@ interface AddJobModalProps {
 
 export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
+  const { columns } = useTrackerColumns();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -60,7 +57,7 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       companyName: '',
       roleName: '',
       dateOfApplication: new Date().toISOString().split('T')[0],
-      status: 'APPLIED',
+      status: columns[0]?.title || 'Applied',
       jobLink: '',
       tailored: false,
       jobDescription: '',
@@ -71,8 +68,10 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      const metadata = fieldsToMetadata(customFields);
+      await onSubmit({ ...data, ...(metadata ? { applicationMetadata: metadata } : {}) } as any);
       form.reset();
+      setCustomFields([]);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -142,20 +141,9 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="APPLIED">Applied</SelectItem>
-                        <SelectItem value="REJECTED">Rejected</SelectItem>
-                        <SelectItem value="ONLINE_ASSESSMENT">Online Assessment</SelectItem>
-                        <SelectItem value="INTERVIEW">Interview</SelectItem>
-                        <SelectItem value="OFFER">Offer</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <StatusInput value={field.value} onChange={field.onChange} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -235,6 +223,10 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
                 </FormItem>
               )}
             />
+
+            <Separator />
+
+            <CustomFieldsEditor fields={customFields} onChange={setCustomFields} />
 
             <div className="flex gap-3 justify-end pt-4">
               <Button

@@ -1,19 +1,39 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useNavigate } from 'react-router-dom';
-import { JobApplication, JobStatus } from '@/types/job';
+import { JobApplication } from '@/types/job';
 import { JobCard } from './JobCard';
-import { STATUS_CONFIG } from '@/lib/statusConfig';
+
+const COLOR_MAP: Record<string, string> = {
+  blue: 'bg-blue-500',
+  red: 'bg-red-500',
+  green: 'bg-green-500',
+  emerald: 'bg-emerald-500',
+  amber: 'bg-amber-500',
+  purple: 'bg-purple-500',
+  pink: 'bg-pink-500',
+  indigo: 'bg-indigo-500',
+  cyan: 'bg-cyan-500',
+  orange: 'bg-orange-500',
+  teal: 'bg-teal-500',
+  gray: 'bg-gray-500',
+};
+
+const getColorClass = (color?: string): string => {
+  if (!color) return 'bg-gray-500';
+  return COLOR_MAP[color.toLowerCase()] || 'bg-gray-500';
+};
 
 interface KanbanColumnProps {
-  status: JobStatus;
+  status: string;
   jobs: JobApplication[];
   onEdit: (job: JobApplication) => void;
   onDelete: (id: string) => void;
   onViewDetails: (id: string) => void;
+  color?: string;
 }
 
-export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: KanbanColumnProps) => {
+export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, color }: KanbanColumnProps) => {
   const navigate = useNavigate();
   const { setNodeRef, isOver } = useDroppable({ 
     id: status,
@@ -22,7 +42,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
       status: status
     }
   });
-  const config = STATUS_CONFIG[status];
+  const badgeBg = getColorClass(color);
 
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest('[data-badge]')) {
@@ -45,8 +65,8 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: 
         onClick={handleHeaderClick}
       >
         <div className="flex items-center justify-between">
-          <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${config.badgeBg}`}>
-            {config.label}
+          <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${badgeBg}`}>
+            {status}
           </span>
           <span className="text-white font-medium bg-white/20 px-2.5 py-1 rounded-full text-sm" data-badge>
             {jobs.length}
