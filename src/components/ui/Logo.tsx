@@ -26,7 +26,7 @@ const Logo = ({
   const config = sizeConfig[size];
   
   const textColorClass = variant === "light" 
-    ? "text-primary-foreground" 
+    ? "text-white" 
     : variant === "dark" 
       ? "text-foreground" 
       : "text-foreground";

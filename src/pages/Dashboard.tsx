@@ -37,17 +37,17 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-deep-blue">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-electric-blue mx-auto mb-4"></div>
-          <p className="text-white/70">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#050A30]">
+    <div className="min-h-screen w-full bg-background">
       <JobKanbanBoard user={user} />
     </div>
   );

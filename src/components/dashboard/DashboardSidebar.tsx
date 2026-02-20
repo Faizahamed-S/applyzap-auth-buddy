@@ -46,20 +46,20 @@ export const DashboardSidebar = () => {
     <aside 
       className={cn(
         "fixed left-0 top-0 z-40 h-screen transition-all duration-300 flex flex-col",
-        "bg-[hsl(230,75%,10%)]",
+        "bg-sidebar border-r border-sidebar-border",
         collapsed ? "w-20" : "w-64"
       )}
     >
       {/* Logo Section */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
+      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
         <div className={cn("transition-opacity", collapsed && "opacity-0 w-0 overflow-hidden")}>
-          <Logo variant="light" size="sm" />
+          <Logo size="sm" />
         </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="text-white/70 hover:text-white hover:bg-white/10 shrink-0"
+          className="text-sidebar-muted hover:text-sidebar-foreground shrink-0"
         >
           {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </Button>
@@ -74,8 +74,8 @@ export const DashboardSidebar = () => {
               key={item.label}
               variant="ghost"
               className={cn(
-                "w-full justify-start gap-3 text-white/70 hover:text-white hover:bg-white/10 transition-colors",
-                isActive && "bg-[hsl(199,89%,48%)] text-white hover:bg-[hsl(199,89%,48%)] hover:text-white",
+                "w-full justify-start gap-3 text-sidebar-muted hover:text-sidebar-foreground transition-colors",
+                isActive && "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 collapsed && "justify-center px-2"
               )}
               onClick={() => navigate(item.href)}
@@ -90,11 +90,11 @@ export const DashboardSidebar = () => {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-3 border-t border-white/10">
+      <div className="p-3 border-t border-sidebar-border">
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start gap-3 text-white/70 hover:text-white hover:bg-white/10",
+            "w-full justify-start gap-3 text-sidebar-muted hover:text-sidebar-foreground",
             collapsed && "justify-center px-2"
           )}
           onClick={handleLogout}

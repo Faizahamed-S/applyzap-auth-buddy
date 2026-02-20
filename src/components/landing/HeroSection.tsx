@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Chrome, ArrowRight } from "lucide-react";
 import DashboardMockup from "./DashboardMockup";
 import Logo from "@/components/ui/Logo";
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-};
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -23,26 +18,27 @@ const HeroSection = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-zap/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Navigation - Absolute positioning matching Sign-in page */}
+      {/* Navigation */}
       <motion.div 
         className="absolute top-6 left-6 z-50"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Logo variant="light" />
+        <Logo />
       </motion.div>
       
       <motion.div
-        className="absolute top-6 right-6 z-50"
+        className="absolute top-6 right-6 z-50 flex items-center gap-2"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
+        <ThemeToggle />
         <Button 
           variant="ghost" 
           asChild
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+          className="text-foreground/80 hover:text-foreground hover:bg-foreground/10"
         >
           <Link to="/login">Sign In</Link>
         </Button>
@@ -62,18 +58,18 @@ const HeroSection = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 border border-foreground/20 mb-6"
             >
               <span className="w-2 h-2 rounded-full bg-zap animate-pulse" />
-              <span className="text-sm text-primary-foreground/90">For students who mean business</span>
+              <span className="text-sm text-foreground/90">For students who mean business</span>
             </motion.div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
               Stop Applying Blindly.{" "}
               <span className="text-gradient">Track, Analyze,</span> and Land Your Dream Job.
             </h1>
 
-            <p className="text-lg md:text-xl text-primary-foreground/70 mb-8 max-w-xl mx-auto lg:mx-0">
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0">
               The unified job application portal for students. Get insights into your job hunt and stop wasting your hard work on guess-work.
             </p>
 
@@ -81,7 +77,7 @@ const HeroSection = () => {
               <Button 
                 size="lg"
                 onClick={() => navigate("/signup")}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow group text-lg px-8"
+                className="shadow-glow group text-lg px-8"
               >
                 Get Started for Free
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -89,7 +85,7 @@ const HeroSection = () => {
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-primary-foreground/30 bg-primary-foreground/5 text-primary-foreground hover:bg-primary-foreground/15 text-lg px-8"
+                className="border-foreground/30 bg-foreground/5 text-foreground hover:bg-foreground/15 text-lg px-8"
                 asChild
               >
                 <a 
@@ -120,7 +116,7 @@ const HeroSection = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-primary-foreground/60">
+              <p className="text-sm text-muted-foreground">
                 Join <span className="text-zap font-semibold">500+</span> students tracking their applications
               </p>
             </motion.div>

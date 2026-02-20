@@ -24,6 +24,7 @@ import { ViewToggle } from './ViewToggle';
 import { AllApplicationsTable } from './AllApplicationsTable';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Plus, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -102,7 +103,6 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       toast.success('Status updated!');
     },
     onError: (error: any) => {
-      // Revert optimistic update
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       const msg = error?.message?.includes('401') || error?.message?.includes('403')
         ? 'Not authorized to update status'
@@ -148,7 +148,6 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       if (targetJob) {
         newStatus = targetJob.status;
       } else {
-        // Check if the over id is a known column title
         if (columnTitles.includes(over.id as string)) {
           newStatus = over.id as string;
         } else {
@@ -198,10 +197,8 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const getJobsByColumn = (columnTitle: string) =>
     applications.filter((job) => job.status === columnTitle);
 
-  // Build a set of column titles for drag-end matching
   const columnTitles = useMemo(() => trackerColumns.map(c => c.title), [trackerColumns]);
 
-  // Find applications whose status doesn't match any column
   const unmatchedApps = useMemo(() => {
     const titleSet = new Set(columnTitles);
     return applications.filter((job) => !titleSet.has(job.status));
@@ -211,8 +208,8 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-electric-blue mx-auto mb-4"></div>
-          <p className="text-white/70">Loading applications...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading applications...</p>
         </div>
       </div>
     );
@@ -229,34 +226,37 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#050A30]">
+    <div className="min-h-screen w-full bg-background">
       {/* Global Top Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-[#050A30] border-b border-white/10">
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="w-full px-6 py-4 flex items-center justify-between">
           {/* Left: Logo */}
-          <Logo variant="light" />
+          <Logo />
           
-          {/* Right: Profile */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10">
-                <UserIcon className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
-              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                {getUserDisplayName()}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
-                <UserIcon className="mr-2 h-4 w-4" />
-                Profile Data
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Right: Theme Toggle + Profile */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <UserIcon className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
+                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                  {getUserDisplayName()}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  Profile Data
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
 
@@ -266,8 +266,8 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
         <div className="flex items-center justify-between mb-8">
           {/* Left: Page Title + Tagline */}
           <div>
-            <h1 className="text-3xl font-bold text-white">Job Application Tracker</h1>
-            <p className="text-white/70 mt-1">
+            <h1 className="text-3xl font-bold text-foreground">Job Application Tracker</h1>
+            <p className="text-muted-foreground mt-1">
               Manage your job search with drag-and-drop simplicity
             </p>
           </div>
@@ -277,14 +277,14 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => setIsBoardSettingsOpen(true)}
             >
               <Settings className="h-5 w-5" />
             </Button>
             <Button 
               onClick={() => setIsAddModalOpen(true)} 
-              className="bg-electric-blue hover:bg-blue-700 active:scale-95 text-white transition-all duration-150"
+              className="active:scale-95 transition-all duration-150"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Application
