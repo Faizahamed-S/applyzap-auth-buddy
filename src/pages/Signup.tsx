@@ -9,6 +9,7 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { z } from "zod";
 import Logo from "@/components/ui/Logo";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 
 const signupSchema = z.object({
@@ -91,10 +92,13 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative bg-[hsl(230,75%,10%)]">
+    <div className="min-h-screen flex items-center justify-center p-4 relative bg-background">
       {/* Top-left Logo */}
       <div className="absolute top-6 left-6">
-        <Logo variant="light" />
+        <Logo />
+      </div>
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
       </div>
       
       <Card className="w-full max-w-md shadow-2xl border-0 my-8">

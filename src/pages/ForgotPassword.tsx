@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import Logo from "@/components/ui/Logo";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -45,8 +47,15 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+      <div className="absolute top-6 left-6">
+        <Logo />
+      </div>
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
+      </div>
+
+      <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Reset your password</CardTitle>
           <CardDescription className="text-center">

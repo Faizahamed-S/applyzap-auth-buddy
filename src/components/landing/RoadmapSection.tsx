@@ -28,7 +28,7 @@ const RoadmapSection = () => {
   ];
 
   return (
-    <section ref={ref} className="py-24 bg-gradient-hero relative overflow-hidden">
+    <section ref={ref} className="py-24 bg-card relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0">
         <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
@@ -46,10 +46,10 @@ const RoadmapSection = () => {
             <Rocket className="w-4 h-4" />
             Coming Soon
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             The Future of Job Hunting
           </h2>
-          <p className="text-lg text-primary-foreground/70 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             We're just getting started. Here's what's on our roadmap to make your job search even more powerful.
           </p>
         </motion.div>
@@ -63,7 +63,7 @@ const RoadmapSection = () => {
               transition={{ duration: 0.5, delay: 0.2 + i * 0.15 }}
               className="group"
             >
-              <div className="h-full bg-primary-foreground/5 backdrop-blur-sm rounded-2xl p-8 border border-primary-foreground/10 hover:border-primary-foreground/20 hover:bg-primary-foreground/10 transition-all duration-300">
+              <div className="h-full bg-background backdrop-blur-sm rounded-2xl p-8 border border-border hover:border-border/80 hover:bg-muted/50 transition-all duration-300">
                 {/* Status badge */}
                 <span className="inline-block px-3 py-1 rounded-full bg-zap/20 text-zap text-xs font-medium mb-6">
                   {item.status}
@@ -71,14 +71,14 @@ const RoadmapSection = () => {
 
                 {/* Icon */}
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <item.icon className="w-7 h-7 text-primary-foreground" />
+                  <item.icon className="w-7 h-7 text-foreground" />
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-semibold text-primary-foreground mb-3">
+                <h3 className="text-xl font-semibold text-foreground mb-3">
                   {item.title}
                 </h3>
-                <p className="text-primary-foreground/70 leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed">
                   {item.description}
                 </p>
               </div>
@@ -93,8 +93,8 @@ const RoadmapSection = () => {
           transition={{ duration: 0.5, delay: 0.8 }}
           className="text-center mt-16"
         >
-          <p className="text-primary-foreground/60 mb-4">Be the first to know when new features drop</p>
-          <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 transition-colors group">
+          <p className="text-muted-foreground mb-4">Be the first to know when new features drop</p>
+          <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-foreground/10 border border-foreground/20 text-foreground hover:bg-foreground/20 transition-colors group">
             Join the waitlist
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>

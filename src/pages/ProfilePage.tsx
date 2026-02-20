@@ -7,6 +7,7 @@ import { userApi } from '@/lib/userApi';
 import { ProfileData, ProfileExperience, ProfileLink, BasicInfoExtraField, CustomSection } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ArrowLeft, Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import BasicInfoSection from '@/components/profile/BasicInfoSection';
@@ -56,7 +57,6 @@ const ProfilePage = () => {
       setTimezone(user.timezone || '');
       const pd = user.profileData;
       setAboutMe(pd?.aboutMe || pd?.headline || '');
-      // Handle links migration: old format was object, new is array
       if (Array.isArray(pd?.links)) {
         setLinks(pd.links as ProfileLink[]);
       } else if (pd?.links && typeof pd.links === 'object') {
@@ -72,7 +72,6 @@ const ProfilePage = () => {
       setExperiences((pd?.experiences as ProfileExperience[]) || []);
       setBasicInfoExtra((pd?.basicInfoExtra as BasicInfoExtraField[]) || []);
       setCustomSections((pd?.customSections as CustomSection[]) || []);
-      // Restore saved section order
       if (pd?.sectionOrder && Array.isArray(pd.sectionOrder)) {
         setSectionOrder(pd.sectionOrder as SectionOrderItem[]);
       }
@@ -100,7 +99,6 @@ const ProfilePage = () => {
     },
   });
 
-  // Build the section list for the reorder modal (no custom sub-items needed)
   const buildFullSectionList = (): SectionOrderItem[] => {
     return sectionOrder;
   };
@@ -111,34 +109,37 @@ const ProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#050A30] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-electric-blue" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050A30]">
-      <header className="sticky top-0 z-40 bg-[#050A30] border-b border-white/10">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="w-full px-6 py-4 flex items-center justify-between">
-          <Logo variant="light" />
-          <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
+          <Logo />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Profile</h1>
-            <p className="text-white/70 mt-1">Manage your personal information and career profile.</p>
+            <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+            <p className="text-muted-foreground mt-1">Manage your personal information and career profile.</p>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="text-white/60 hover:text-white hover:bg-white/10 h-10 w-10"
+            className="text-muted-foreground hover:text-foreground h-10 w-10"
             onClick={() => setReorderOpen(true)}
             title="Reorder sections"
           >
@@ -186,7 +187,7 @@ const ProfilePage = () => {
         />
 
         <div className="flex justify-end">
-          <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="bg-electric-blue hover:bg-blue-700 text-white">
+          <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
             <Save className="mr-2 h-4 w-4" />
             {saveMutation.isPending ? 'Saving...' : 'Save Profile'}
           </Button>
