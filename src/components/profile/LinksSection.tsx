@@ -39,22 +39,22 @@ const LinksSection = ({ links, onChange }: LinksSectionProps) => {
   };
 
   return (
-    <Card className="bg-white/5 border-white/10">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-white">Links</CardTitle>
+        <CardTitle>Links</CardTitle>
         {!editing ? (
-          <Button variant="ghost" size="sm" onClick={startEdit} className="text-white/60 hover:text-white hover:bg-white/10">
+          <Button variant="ghost" size="sm" onClick={startEdit} className="text-muted-foreground hover:text-foreground">
             <Pencil className="h-4 w-4 mr-1" /> Edit
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={addLink} className="bg-transparent text-white border-white/30 hover:text-white/60 hover:border-white/15 transition-all">
+            <Button variant="outline" size="sm" onClick={addLink}>
               <Plus className="mr-1 h-4 w-4" /> Add Link
             </Button>
-            <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-white/60 hover:text-white hover:bg-white/10">
+            <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-muted-foreground hover:text-foreground">
               <X className="h-4 w-4 mr-1" /> Cancel
             </Button>
-            <Button size="sm" onClick={confirmEdit} className="bg-electric-blue hover:bg-blue-700 text-white">
+            <Button size="sm" onClick={confirmEdit}>
               Save
             </Button>
           </div>
@@ -63,27 +63,27 @@ const LinksSection = ({ links, onChange }: LinksSectionProps) => {
       <CardContent className="space-y-3">
         {editing ? (
           draft.length === 0 ? (
-            <p className="text-white/40 text-sm">No links yet. Click "Add Link" to add one.</p>
+            <p className="text-muted-foreground text-sm">No links yet. Click "Add Link" to add one.</p>
           ) : (
             draft.map((link, i) => (
               <div key={i} className="flex gap-2 items-start">
-                <Input value={link.label} onChange={(e) => updateLink(i, 'label', e.target.value)} placeholder="Label (e.g. GitHub)" className="bg-white/10 border-white/20 text-white placeholder:text-white/30 w-1/3" />
-                <Input value={link.url} onChange={(e) => updateLink(i, 'url', e.target.value)} placeholder="https://..." className="bg-white/10 border-white/20 text-white placeholder:text-white/30 flex-1" />
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0" onClick={() => removeLink(i)}>
+                <Input value={link.label} onChange={(e) => updateLink(i, 'label', e.target.value)} placeholder="Label (e.g. GitHub)" className="w-1/3" />
+                <Input value={link.url} onChange={(e) => updateLink(i, 'url', e.target.value)} placeholder="https://..." className="flex-1" />
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive/80 hover:bg-destructive/10 shrink-0" onClick={() => removeLink(i)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             ))
           )
         ) : links.length === 0 ? (
-          <p className="text-white/40 text-sm">No links added yet</p>
+          <p className="text-muted-foreground text-sm">No links added yet</p>
         ) : (
           <div className="space-y-2">
             {links.map((link, i) => (
               <div key={i} className="flex items-center gap-2">
-                <ExternalLink className="h-4 w-4 text-white/50 shrink-0" />
-                <span className="text-white/60 text-sm">{link.label}:</span>
-                <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-electric-blue hover:underline text-sm truncate">
+                <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground text-sm">{link.label}:</span>
+                <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm truncate">
                   {link.url}
                 </a>
               </div>

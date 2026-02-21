@@ -55,8 +55,8 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
       ref={setNodeRef}
       className={`flex flex-col flex-1 min-w-[200px] min-h-[calc(100vh-220px)] rounded-xl border transition-colors duration-200 ${
         isOver 
-          ? 'border-electric-blue bg-electric-blue/10' 
-          : 'border-white/20'
+          ? 'border-primary bg-primary/10' 
+          : 'border-border'
       }`}
     >
       {/* Column Header */}
@@ -68,21 +68,21 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
           <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${badgeBg}`}>
             {status}
           </span>
-          <span className="text-white font-medium bg-white/20 px-2.5 py-1 rounded-full text-sm" data-badge>
+          <span className="text-muted-foreground font-medium bg-muted px-2.5 py-1 rounded-full text-sm" data-badge>
             {jobs.length}
           </span>
         </div>
       </div>
 
       {/* Separator Line */}
-      <div className="border-b border-white/10 mx-3" />
+      <div className="border-b border-border mx-3" />
 
       {/* Cards area */}
       <div className="flex-1 p-3 space-y-3 overflow-y-auto scrollbar-stealth">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {jobs.length === 0 ? (
-              <div className="flex items-center justify-center h-24 text-white/50 border-2 border-dashed border-white/20 rounded-lg">
+              <div className="flex items-center justify-center h-24 text-muted-foreground border-2 border-dashed border-border rounded-lg">
                 <div className="text-center">
                   <p className="text-sm font-medium">No applications</p>
                   <p className="text-xs mt-1">Drag applications here</p>
