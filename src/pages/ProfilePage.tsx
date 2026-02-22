@@ -6,9 +6,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { userApi } from '@/lib/userApi';
 import { ProfileData, ProfileExperience, ProfileLink, BasicInfoExtraField, CustomSection } from '@/types/user';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/Logo';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { ArrowLeft, Save, Settings } from 'lucide-react';
+import { Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import BasicInfoSection from '@/components/profile/BasicInfoSection';
 import AboutMeSection from '@/components/profile/AboutMeSection';
@@ -16,6 +14,7 @@ import LinksSection from '@/components/profile/LinksSection';
 import ExperienceSection from '@/components/profile/ExperienceSection';
 import CustomSectionsEditor from '@/components/profile/CustomSectionsEditor';
 import SectionReorderModal, { SectionOrderItem } from '@/components/profile/SectionReorderModal';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -116,20 +115,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="w-full px-6 py-4 flex items-center justify-between">
-          <Logo />
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <DashboardLayout>
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -193,7 +179,7 @@ const ProfilePage = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
