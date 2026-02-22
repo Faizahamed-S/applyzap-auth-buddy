@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
@@ -11,7 +10,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { KanbanColumn } from './KanbanColumn';
@@ -23,16 +22,8 @@ import { PaginationControls } from './PaginationControls';
 import { ViewToggle } from './ViewToggle';
 import { AllApplicationsTable } from './AllApplicationsTable';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/Logo';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { Plus, LogOut, User as UserIcon, Settings } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
 import { BoardSettingsModal } from './BoardSettingsModal';
 
@@ -41,7 +32,7 @@ interface JobKanbanBoardProps {
 }
 
 export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeJob, setActiveJob] = useState<JobApplication | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -53,7 +44,6 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const [currentView, setCurrentView] = useState<'kanban' | 'table'>('kanban');
   const [isBoardSettingsOpen, setIsBoardSettingsOpen] = useState(false);
 
-  const queryClient = useQueryClient();
   const { columns: trackerColumns, isLoading: isColumnsLoading } = useTrackerColumns();
 
   const sensors = useSensors(
@@ -122,10 +112,6 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     },
   });
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
-  };
 
   const handleDragStart = (event: DragStartEvent) => {
     const job = applications.find((j) => j.id === event.active.id);
@@ -215,51 +201,9 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     );
   }
 
-  const getUserDisplayName = () => {
-    const firstName = user?.user_metadata?.first_name;
-    const lastName = user?.user_metadata?.last_name;
-    if (firstName && lastName) {
-      return `${firstName} ${lastName}`;
-    }
-    if (firstName) return firstName;
-    return user?.email;
-  };
 
   return (
-    <div className="min-h-screen w-full bg-background">
-      {/* Global Top Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="w-full px-6 py-4 flex items-center justify-between">
-          {/* Left: Logo */}
-          <Logo />
-          
-          {/* Right: Theme Toggle + Profile */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                  <UserIcon className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
-                <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                  {getUserDisplayName()}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  Profile Data
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
-
+    <div className="w-full bg-background">
       {/* Main Content - Constrained Width */}
       <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-8">
         {/* Action Bar - Title on Left, Controls on Right */}
