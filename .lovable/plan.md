@@ -1,86 +1,154 @@
 
 
-# Black & White Theme with Dark/Light Mode Toggle
+# Dashboard Hub with Collapsible Sidebar
 
 ## Overview
-Replace all hardcoded deep-blue backgrounds with a proper black-and-white design system that supports both dark and light modes via a toggle. Dark mode uses near-black backgrounds with white text; light mode uses white/off-white backgrounds with black text.
+Transform `/dashboard` into a central hub with stats, charts, and recent activity. Move the Kanban board to `/tracker`. Add a collapsible sidebar for navigation across all authenticated pages. Use the dedicated analytics API endpoint instead of client-side computation.
 
-## What Changes
+## Architecture
 
-### 1. Set Up Theme Provider (`src/App.tsx`)
-- Wrap the app with `ThemeProvider` from `next-themes` (already installed)
-- Default to dark mode
-
-### 2. Update CSS Variables (`src/index.css`)
-- **Light mode (`:root`)**: White/off-white backgrounds, dark text, light gray cards and borders
-- **Dark mode (`.dark`)**: Near-black backgrounds (`#0A0A0A` / `#111`), white text, dark gray cards and borders
-- Remove all blue-tinted background variables -- keep blue only for primary accent buttons and links
-- Update sidebar variables to match (black in dark, white in light)
-
-### 3. Create Theme Toggle Component
-- New file: `src/components/ui/ThemeToggle.tsx`
-- Simple Sun/Moon icon button using `next-themes` `useTheme()`
-- Compact enough to fit in any header/navbar
-
-### 4. Remove All Hardcoded Colors from Pages
-Replace every `bg-[#050A30]`, `bg-[hsl(230,75%,10%)]`, `text-white`, `text-white/70`, `border-white/10` with theme-aware Tailwind classes:
-
-| Page | Current | New |
+### New Routes
+| Route | Component | Content |
 |---|---|---|
-| `Login.tsx` | `bg-[hsl(230,75%,10%)]` | `bg-background` |
-| `Signup.tsx` | `bg-[hsl(230,75%,10%)]` | `bg-background` |
-| `ForgotPassword.tsx` | `bg-gradient-to-br from-background to-secondary/20` | `bg-background` |
-| `ResetPassword.tsx` | `bg-gradient-to-br from-background to-secondary/20` | `bg-background` |
-| `VerifyEmail.tsx` | `bg-gradient-to-br from-background to-secondary/20` | `bg-background` |
-| `Dashboard.tsx` | `bg-[#050A30]` | `bg-background` |
-| `ProfilePage.tsx` | `bg-[#050A30]`, `text-white`, `border-white/10` | `bg-background`, `text-foreground`, `border-border` |
-| `StatusApplicationsPage.tsx` | `bg-background` (already correct) | No change needed |
-| `NotFound.tsx` | `bg-gray-100` | `bg-background` |
-| `JobKanbanBoard.tsx` | `bg-[#050A30]`, `text-white`, `border-white/10` | `bg-background`, `text-foreground`, `border-border` |
-| `DashboardSidebar.tsx` | `bg-[hsl(230,75%,10%)]` | `bg-sidebar` (uses CSS variable) |
+| `/dashboard` | Dashboard.tsx | Hub with stats cards, velocity chart, recent apps |
+| `/tracker` | TrackerPage.tsx | Current Kanban board (JobKanbanBoard) |
+| `/profile` | ProfilePage.tsx | Existing profile (wrapped in shared layout) |
 
-### 5. Update Landing Page
-- `HeroSection.tsx`: Replace `bg-gradient-hero` with a black-to-dark-gray gradient in dark mode, white-to-gray in light mode (update the CSS variable)
-- `ProblemSection.tsx`, `FeaturesSection.tsx`, `RoadmapSection.tsx`: Use `bg-background`/`bg-card` classes
-- `Footer.tsx`: Already uses `bg-background` -- no change
+### Sidebar Navigation Items
+| Label | Icon | Route | Status |
+|---|---|---|---|
+| Dashboard | LayoutDashboard | /dashboard | Active |
+| Job Tracker | Briefcase | /tracker | Active |
+| Resume Generator | FileText | -- | Coming Soon |
+| Cover Letter | PenTool | -- | Coming Soon |
+| Referral Base | Users | -- | Coming Soon |
+| Analytics | BarChart3 | -- | Coming Soon |
+| Collaborative Apply | Handshake | -- | Coming Soon |
+| Global Apply | Globe | -- | Coming Soon |
+| Profile | UserCircle | /profile | Active |
 
-### 6. Update Logo Component
-- The Logo `variant` prop currently controls text color manually
-- Update so `variant="auto"` follows the theme naturally (dark text in light mode, white text in dark mode)
-
-### 7. Add Toggle to Key Locations
-- Add the theme toggle button to:
-  - Landing page header (HeroSection nav)
-  - Dashboard/Kanban header bar
-  - Profile page header
-  - Auth pages (top-right corner)
+Sidebar is collapsed by default (icons only, ~w-16). Expands to ~w-60 with labels. Tooltips on hover when collapsed. "Coming Soon" items show a toast on click. Footer has logout + theme toggle.
 
 ## Files to Create
-| File | Purpose |
-|---|---|
-| `src/components/ui/ThemeToggle.tsx` | Sun/Moon toggle button |
+
+### 1. `src/lib/analyticsApi.ts`
+New API module for dashboard analytics:
+- `getDashboardAnalytics()` calls `GET /api/analytics/dashboard` on the external backend (`https://tracker-backend-production-535d.up.railway.app/api/analytics/dashboard`)
+- Uses same auth helper pattern as `jobApi.ts`
+- Returns typed `DashboardAnalytics` with `summary` and `recent_activity`
+
+### 2. `src/types/analytics.ts`
+Type definitions:
+```text
+DashboardAnalytics {
+  summary: {
+    totalApplications: number
+    interviews: number
+    offers: number
+    statusCounts: Record<string, number>
+  }
+  recent_activity: Array<{ date: string, count: number }>
+}
+```
+
+### 3. `src/components/dashboard/DashboardLayout.tsx`
+Shared layout wrapper for all authenticated pages:
+- Renders the collapsible sidebar + main content area
+- Main content uses `ml-16` (collapsed) or `ml-60` (expanded) with smooth transition
+- Passes sidebar state down via props or context
+
+### 4. `src/components/dashboard/DashboardHub.tsx`
+Main hub component with three sections:
+- **Stats cards row** (4 cards): Applied (`summary.totalApplications`), In Review (`summary.statusCounts['In Review']`), Interviews (`summary.interviews`), Success Rate (computed)
+- **Application Velocity chart**: `recharts` BarChart fed by `recent_activity` array. X-axis = `date`, Bar = `count`. Blue gradient bars.
+- **Recent Applications list**: Fetches latest 5 from `jobApi.getAllApplications()` (sorted by date desc, sliced). Shows company initial avatar, role, status badge.
+
+### 5. `src/pages/TrackerPage.tsx`
+- Same auth-check as current Dashboard.tsx
+- Renders `DashboardLayout` wrapping `JobKanbanBoard`
 
 ## Files to Edit
-| File | Change |
+
+### 6. `src/App.tsx`
+- Add `/tracker` route pointing to `TrackerPage`
+
+### 7. `src/pages/Dashboard.tsx`
+- Replace `JobKanbanBoard` with `DashboardLayout` wrapping `DashboardHub`
+
+### 8. `src/components/dashboard/DashboardSidebar.tsx`
+Complete rewrite:
+- Collapsed by default (w-16, icons only)
+- Expanded (w-60, icons + labels)
+- Toggle via chevron button at top
+- Tooltips on hover when collapsed (using existing Tooltip component)
+- "Coming Soon" items styled with `opacity-60` and a small badge; click shows `toast.info('Coming soon!')`
+- Logo: icon-only when collapsed, full when expanded
+- Footer: Logout button + ThemeToggle
+- Active route highlighted
+
+### 9. `src/components/kanban/JobKanbanBoard.tsx`
+- Remove the entire header section (Logo, ThemeToggle, profile dropdown) since the sidebar layout handles navigation
+- Keep the action bar (title, Add Application, view toggle, settings)
+
+### 10. `src/pages/ProfilePage.tsx`
+- Remove header section (Logo, ThemeToggle, Back button)
+- Wrap with `DashboardLayout` so sidebar is consistent
+
+## Technical Details
+
+### Analytics API Call
+```text
+GET https://tracker-backend-production-535d.up.railway.app/api/analytics/dashboard
+Authorization: Bearer <token>
+
+Response: {
+  "summary": { "totalApplications": 47, "interviews": 8, "offers": 0, "statusCounts": {...} },
+  "recent_activity": [{ "date": "2023-10-21", "count": 2 }, ...]
+}
+```
+
+### Stats Cards Mapping
+- Applied: `summary.totalApplications`
+- In Review: `summary.statusCounts['In Review'] || 0`
+- Interviews: `summary.interviews`
+- Success Rate: `Math.round((summary.interviews / summary.totalApplications) * 100) || 0`
+
+### Velocity Chart
+- Uses `recharts` BarChart (already installed)
+- `data={recent_activity}`, `dataKey="date"` for X-axis, `dataKey="count"` for Bar
+- Blue gradient fill matching the reference image
+
+### Recent Applications
+- `jobApi.getAllApplications(undefined, 1, 5)` to get the latest 5
+- Each row shows: colored initial circle, company name, role, status badge, date
+
+### Sidebar Behavior
+- Default: collapsed (w-16)
+- Toggle button (ChevronRight/Left) at top
+- Tooltips via existing Tooltip component when collapsed
+- Smooth `transition-all duration-300`
+- Main content `ml-16` or `ml-60` with matching transition
+
+## Summary of All Files
+
+| Action | File |
 |---|---|
-| `src/App.tsx` | Wrap with `ThemeProvider` |
-| `src/index.css` | Update `:root` and `.dark` CSS variables to pure B&W palette |
-| `src/pages/Login.tsx` | Remove hardcoded bg, add theme toggle |
-| `src/pages/Signup.tsx` | Remove hardcoded bg, add theme toggle |
-| `src/pages/ForgotPassword.tsx` | Remove gradient bg, add Logo + theme toggle |
-| `src/pages/ResetPassword.tsx` | Remove gradient bg, add Logo + theme toggle |
-| `src/pages/VerifyEmail.tsx` | Remove gradient bg, add Logo + theme toggle |
-| `src/pages/Dashboard.tsx` | Remove hardcoded `#050A30` |
-| `src/pages/ProfilePage.tsx` | Replace all hardcoded white/blue colors with theme classes |
-| `src/pages/NotFound.tsx` | Replace `bg-gray-100` with `bg-background` |
-| `src/pages/StatusApplicationsPage.tsx` | Minor -- ensure consistency |
-| `src/components/kanban/JobKanbanBoard.tsx` | Replace hardcoded colors, add theme toggle to header |
-| `src/components/dashboard/DashboardSidebar.tsx` | Replace hardcoded bg |
-| `src/components/landing/HeroSection.tsx` | Update gradient + add theme toggle |
-| `src/components/ui/Logo.tsx` | Make `variant="auto"` respect theme |
+| Create | `src/types/analytics.ts` |
+| Create | `src/lib/analyticsApi.ts` |
+| Create | `src/components/dashboard/DashboardLayout.tsx` |
+| Create | `src/components/dashboard/DashboardHub.tsx` |
+| Create | `src/pages/TrackerPage.tsx` |
+| Edit | `src/App.tsx` |
+| Edit | `src/pages/Dashboard.tsx` |
+| Edit | `src/components/dashboard/DashboardSidebar.tsx` |
+| Edit | `src/components/kanban/JobKanbanBoard.tsx` |
+| Edit | `src/pages/ProfilePage.tsx` |
 
 ## No New Dependencies
-`next-themes` is already installed. No other packages needed.
+- `recharts` already installed for charts
+- `next-themes` already installed for theme toggle
+- `lucide-react` has all needed icons
 
 ## No Database Changes
-This is purely a frontend styling update.
+All data comes from the existing external backend API.
+
