@@ -180,14 +180,17 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     queryClient.invalidateQueries({ queryKey: ['job-applications'] });
   };
 
+  const normalizeForCompare = (s: string) =>
+    s.trim().toUpperCase().replace(/\s+/g, '_');
+
   const getJobsByColumn = (columnTitle: string) =>
-    applications.filter((job) => job.status.toUpperCase() === columnTitle.toUpperCase());
+    applications.filter((job) => normalizeForCompare(job.status) === normalizeForCompare(columnTitle));
 
   const columnTitles = useMemo(() => trackerColumns.map(c => c.title), [trackerColumns]);
 
   const unmatchedApps = useMemo(() => {
-    const titleSet = new Set(columnTitles.map(t => t.toUpperCase()));
-    return applications.filter((job) => !titleSet.has(job.status.toUpperCase()));
+    const titleSet = new Set(columnTitles.map(t => normalizeForCompare(t)));
+    return applications.filter((job) => !titleSet.has(normalizeForCompare(job.status)));
   }, [applications, columnTitles]);
 
   if (isLoading || isColumnsLoading) {
