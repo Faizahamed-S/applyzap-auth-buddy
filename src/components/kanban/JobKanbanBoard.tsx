@@ -26,6 +26,7 @@ import { Plus, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
 import { BoardSettingsModal } from './BoardSettingsModal';
+import { normalizeStatus } from '@/lib/statusMapper';
 
 interface JobKanbanBoardProps {
   user: User | null;
@@ -180,17 +181,15 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     queryClient.invalidateQueries({ queryKey: ['job-applications'] });
   };
 
-  const normalizeForCompare = (s: string) =>
-    s.trim().toUpperCase().replace(/\s+/g, '_');
-
+  // Use canonical keys for all matching logic
   const getJobsByColumn = (columnTitle: string) =>
-    applications.filter((job) => normalizeForCompare(job.status) === normalizeForCompare(columnTitle));
+    applications.filter((job) => normalizeStatus(job.status) === normalizeStatus(columnTitle));
 
   const columnTitles = useMemo(() => trackerColumns.map(c => c.title), [trackerColumns]);
 
   const unmatchedApps = useMemo(() => {
-    const titleSet = new Set(columnTitles.map(t => normalizeForCompare(t)));
-    return applications.filter((job) => !titleSet.has(normalizeForCompare(job.status)));
+    const titleSet = new Set(columnTitles.map(t => normalizeStatus(t)));
+    return applications.filter((job) => !titleSet.has(normalizeStatus(job.status)));
   }, [applications, columnTitles]);
 
   if (isLoading || isColumnsLoading) {

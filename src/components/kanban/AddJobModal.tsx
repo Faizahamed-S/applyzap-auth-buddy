@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { CustomFieldsEditor, fieldsToMetadata } from './CustomFieldsEditor';
 import type { CustomFieldEntry } from './CustomFieldsEditor';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
+import { normalizeStatus } from '@/lib/statusMapper';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -57,7 +58,7 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       companyName: '',
       roleName: '',
       dateOfApplication: new Date().toISOString().split('T')[0],
-      status: columns[0]?.title || 'Applied',
+      status: normalizeStatus(columns[0]?.title || 'Applied'),
       jobLink: '',
       tailored: false,
       jobDescription: '',

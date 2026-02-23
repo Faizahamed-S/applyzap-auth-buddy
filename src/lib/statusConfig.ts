@@ -1,3 +1,5 @@
+import { normalizeStatus } from './statusMapper';
+
 interface StatusConfig {
   label: string;
   badgeBg: string;
@@ -27,10 +29,6 @@ const DEFAULT_STATUS_CONFIG: StatusConfig = {
   badgeColor: 'bg-gray-500 text-white',
 };
 
-/**
- * Build a StatusConfig from a tracker column color name.
- * Falls back to gray for unknown colors.
- */
 const configFromColor = (label: string, color?: string): StatusConfig => {
   const bg = COLOR_MAP[color?.toLowerCase() || ''] || 'bg-gray-500';
   return { label, badgeBg: bg, badgeColor: `${bg} text-white` };
@@ -38,16 +36,17 @@ const configFromColor = (label: string, color?: string): StatusConfig => {
 
 /**
  * Get config for any status string.
- * If trackerColumns are provided (from useTrackerColumns), match by column title for accurate color.
- * Otherwise fall back to a generic gray badge.
+ * Matches column title to status using canonical normalization so that
+ * "Offer", "OFFER", and "offer" all resolve to the same column color.
  */
 export const getStatusConfig = (
   status: string,
   trackerColumns?: Array<{ title: string; color: string }>
 ): StatusConfig => {
   if (trackerColumns) {
+    const normalized = normalizeStatus(status);
     const col = trackerColumns.find(
-      (c) => c.title.toLowerCase() === status.toLowerCase()
+      (c) => normalizeStatus(c.title) === normalized
     );
     if (col) return configFromColor(col.title, col.color);
   }
