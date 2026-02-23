@@ -5,12 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
+import { canonicalToLabel } from '@/lib/statusMapper';
 import { Check, X } from 'lucide-react';
 import { StatusInput } from './StatusInput';
 
 interface InlineStatusSelectProps {
   applicationId: string;
-  currentStatus: string;
+  currentStatus: string; // canonical status from API
   onStatusChange?: (newStatus: string) => void;
 }
 
@@ -78,7 +79,7 @@ export const InlineStatusSelect = ({
   return (
     <div className="flex items-center gap-2">
       <Badge className={`${statusConfig.badgeColor} text-sm font-medium px-3 py-1 rounded-full`}>
-        {currentStatus}
+        {canonicalToLabel(currentStatus)}
       </Badge>
       
       <button

@@ -20,6 +20,7 @@ import { InlineStatusSelect } from '@/components/kanban/InlineStatusSelect';
 import { ArrowLeft, Search, Edit2, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
+import { canonicalToLabel } from '@/lib/statusMapper';
 
 type SortField = 'companyName' | 'roleName' | 'dateOfApplication';
 type SortDirection = 'asc' | 'desc';
@@ -174,7 +175,7 @@ const StatusApplicationsPage = () => {
   }
 
   const statusConfig = getStatusConfig(status);
-  const displayLabel = status;
+  const displayLabel = canonicalToLabel(status);
 
   if (isLoading) {
     return (

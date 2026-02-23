@@ -3,6 +3,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useNavigate } from 'react-router-dom';
 import { JobApplication } from '@/types/job';
 import { JobCard } from './JobCard';
+import { canonicalToLabel } from '@/lib/statusMapper';
 
 const COLOR_MAP: Record<string, string> = {
   blue: 'bg-blue-500',
@@ -25,7 +26,7 @@ const getColorClass = (color?: string): string => {
 };
 
 interface KanbanColumnProps {
-  status: string;
+  status: string; // canonical status key (e.g. "TO_APPLY")
   jobs: JobApplication[];
   onEdit: (job: JobApplication) => void;
   onDelete: (id: string) => void;
@@ -43,6 +44,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
     }
   });
   const badgeBg = getColorClass(color);
+  const displayLabel = canonicalToLabel(status);
 
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest('[data-badge]')) {
@@ -66,7 +68,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
       >
         <div className="flex items-center justify-between">
           <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${badgeBg}`}>
-            {status}
+            {displayLabel}
           </span>
           <span className="text-muted-foreground font-medium bg-muted px-2.5 py-1 rounded-full text-sm" data-badge>
             {jobs.length}
