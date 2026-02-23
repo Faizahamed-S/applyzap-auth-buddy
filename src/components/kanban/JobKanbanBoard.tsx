@@ -181,13 +181,13 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   };
 
   const getJobsByColumn = (columnTitle: string) =>
-    applications.filter((job) => job.status === columnTitle);
+    applications.filter((job) => job.status.toUpperCase() === columnTitle.toUpperCase());
 
   const columnTitles = useMemo(() => trackerColumns.map(c => c.title), [trackerColumns]);
 
   const unmatchedApps = useMemo(() => {
-    const titleSet = new Set(columnTitles);
-    return applications.filter((job) => !titleSet.has(job.status));
+    const titleSet = new Set(columnTitles.map(t => t.toUpperCase()));
+    return applications.filter((job) => !titleSet.has(job.status.toUpperCase()));
   }, [applications, columnTitles]);
 
   if (isLoading || isColumnsLoading) {
