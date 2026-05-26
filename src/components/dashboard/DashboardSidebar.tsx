@@ -40,7 +40,7 @@ const navItems: NavItem[] = [
   { icon: PenTool, label: 'Cover Letter', comingSoon: true },
   { icon: Users, label: 'Referral Base', comingSoon: true },
   { icon: BarChart3, label: 'Analytics', comingSoon: true },
-  { icon: Handshake, label: 'Collaborative Apply', comingSoon: true },
+  { icon: Handshake, label: 'Collaborative Tracker', href: '/groups' },
   { icon: Globe, label: 'Global Apply', comingSoon: true },
   { icon: UserCircle, label: 'Profile', href: '/profile' },
 ];
