@@ -1,154 +1,70 @@
+## Phase 1: My Groups Dashboard
 
+Unlock the sidebar "Collaborative Apply" item (the locked "coming soon" entry that matches "Collaborative job tracker") and wire it to a new `/groups` route that lists and creates groups.
 
-# Dashboard Hub with Collapsible Sidebar
+### Files to create
 
-## Overview
-Transform `/dashboard` into a central hub with stats, charts, and recent activity. Move the Kanban board to `/tracker`. Add a collapsible sidebar for navigation across all authenticated pages. Use the dedicated analytics API endpoint instead of client-side computation.
+1. **`src/lib/groupsApi.ts`** — new API client
+   - `API_BASE = "http://localhost:8080"`
+   - Reuses Supabase session token (same pattern as `jobApi.ts`) to build `Authorization: Bearer <token>` header.
+   - `listGroups(): Promise<Group[]>` → `GET /api/groups`
+   - `createGroup(name: string): Promise<Group>` → `POST /api/groups` with `{ name }`
+   - Both throw a typed error carrying `status` + parsed message so callers can branch on 500 / limit errors locally (no global handler).
+   - `Group` type: `{ id: number; name: string; ownerId: number; createdAt: string }`.
 
-## Architecture
+2. **`src/pages/GroupsPage.tsx`** — new route
+   - Wrapped in `DashboardLayout` (same shell as `/dashboard` and `/tracker`).
+   - Auth guard mirroring `Dashboard.tsx` (redirect to `/login` if no Supabase session).
+   - Renders `<MyGroupsHub />`.
 
-### New Routes
-| Route | Component | Content |
-|---|---|---|
-| `/dashboard` | Dashboard.tsx | Hub with stats cards, velocity chart, recent apps |
-| `/tracker` | TrackerPage.tsx | Current Kanban board (JobKanbanBoard) |
-| `/profile` | ProfilePage.tsx | Existing profile (wrapped in shared layout) |
+3. **`src/components/groups/MyGroupsHub.tsx`** — main view
+   - Uses `@tanstack/react-query` `useQuery(['groups'], groupsApi.listGroups)`.
+   - Header: "My Groups" + "Create New Group" button (top-right).
+   - Loading skeleton, empty state ("No groups yet — create your first"), and error state with retry.
+   - Grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`) of `GroupCard`s.
+   - Local try/catch around fetch: on 500 / network error → `toast.error("Couldn't load groups. Please try again.")`. No global handler.
 
-### Sidebar Navigation Items
-| Label | Icon | Route | Status |
-|---|---|---|---|
-| Dashboard | LayoutDashboard | /dashboard | Active |
-| Job Tracker | Briefcase | /tracker | Active |
-| Resume Generator | FileText | -- | Coming Soon |
-| Cover Letter | PenTool | -- | Coming Soon |
-| Referral Base | Users | -- | Coming Soon |
-| Analytics | BarChart3 | -- | Coming Soon |
-| Collaborative Apply | Handshake | -- | Coming Soon |
-| Global Apply | Globe | -- | Coming Soon |
-| Profile | UserCircle | /profile | Active |
+4. **`src/components/groups/GroupCard.tsx`**
+   - Card shows group name, small "Created {relative date}" subtitle.
+   - Primary button "Enter group" → `navigate(/groups/${id})` (route added in next phase; for now it just navigates — fine since route doesn't exist yet, but we'll guard with a toast "Coming in next phase" to avoid a 404 until then).
 
-Sidebar is collapsed by default (icons only, ~w-16). Expands to ~w-60 with labels. Tooltips on hover when collapsed. "Coming Soon" items show a toast on click. Footer has logout + theme toggle.
+5. **`src/components/groups/CreateGroupModal.tsx`**
+   - Shadcn `Dialog` + `Input` + `Button`.
+   - Form: single text input (name, required, trimmed, max ~60 chars).
+   - On submit → `useMutation(groupsApi.createGroup)`.
+   - Local error handling:
+     - If `err.status === 403` or message indicates group limit (e.g. "limit", "maximum", "2") → `toast.error("You can own a maximum of 2 groups. Delete one to create another.")`.
+     - Other 4xx → show server-provided message via toast.
+     - 5xx / network → `toast.error("Something went wrong creating the group. Please try again.")`.
+   - On success → `toast.success("Group created")`, `queryClient.invalidateQueries(['groups'])`, close modal, reset input.
 
-## Files to Create
+### Files to modify
 
-### 1. `src/lib/analyticsApi.ts`
-New API module for dashboard analytics:
-- `getDashboardAnalytics()` calls `GET /api/analytics/dashboard` on the external backend (`https://tracker-backend-production-535d.up.railway.app/api/analytics/dashboard`)
-- Uses same auth helper pattern as `jobApi.ts`
-- Returns typed `DashboardAnalytics` with `summary` and `recent_activity`
+6. **`src/components/dashboard/DashboardSidebar.tsx`**
+   - Replace the `Collaborative Apply` nav item:
+     - Remove `comingSoon: true`.
+     - Set `href: '/groups'`.
+     - Optionally relabel to "Collaborative Tracker" to match the user's wording (kept short for collapsed-sidebar fit). Keep the `Handshake` icon.
 
-### 2. `src/types/analytics.ts`
-Type definitions:
+7. **`src/App.tsx`**
+   - Import `GroupsPage` and add `<Route path="/groups" element={<GroupsPage />} />` above the catch-all.
+
+### Technical notes
+
+- **Auth header**: built per-request from `supabase.auth.getSession()` — same pattern as `jobApi.ts`. No new env vars; backend base URL is hard-coded to `http://localhost:8080` as specified.
+- **CORS / mixed content**: the deployed preview is HTTPS, so calls to `http://localhost:8080` will be blocked by the browser in the hosted preview. This will work when running the frontend locally against the local backend. Flagging so you're not surprised when testing from the lovable preview URL.
+- **No global error handler**: errors are caught inside each component/mutation and surfaced via `sonner` toasts.
+- **Next phase placeholder**: `/groups/:groupId` is intentionally out of scope; "Enter group" button will just show an info toast until that phase lands.
+
+### Out of scope (Phase 2+)
+
+- Group detail page, membership, invites, deletion, permissions UI.
+
 ```text
-DashboardAnalytics {
-  summary: {
-    totalApplications: number
-    interviews: number
-    offers: number
-    statusCounts: Record<string, number>
-  }
-  recent_activity: Array<{ date: string, count: number }>
-}
+sidebar (Collaborative Apply unlocked)
+        │
+        ▼
+   /groups  ──►  MyGroupsHub
+                 ├── Create button ──► CreateGroupModal ──► POST /api/groups
+                 └── GroupCard grid  ◄── GET /api/groups
 ```
-
-### 3. `src/components/dashboard/DashboardLayout.tsx`
-Shared layout wrapper for all authenticated pages:
-- Renders the collapsible sidebar + main content area
-- Main content uses `ml-16` (collapsed) or `ml-60` (expanded) with smooth transition
-- Passes sidebar state down via props or context
-
-### 4. `src/components/dashboard/DashboardHub.tsx`
-Main hub component with three sections:
-- **Stats cards row** (4 cards): Applied (`summary.totalApplications`), In Review (`summary.statusCounts['In Review']`), Interviews (`summary.interviews`), Success Rate (computed)
-- **Application Velocity chart**: `recharts` BarChart fed by `recent_activity` array. X-axis = `date`, Bar = `count`. Blue gradient bars.
-- **Recent Applications list**: Fetches latest 5 from `jobApi.getAllApplications()` (sorted by date desc, sliced). Shows company initial avatar, role, status badge.
-
-### 5. `src/pages/TrackerPage.tsx`
-- Same auth-check as current Dashboard.tsx
-- Renders `DashboardLayout` wrapping `JobKanbanBoard`
-
-## Files to Edit
-
-### 6. `src/App.tsx`
-- Add `/tracker` route pointing to `TrackerPage`
-
-### 7. `src/pages/Dashboard.tsx`
-- Replace `JobKanbanBoard` with `DashboardLayout` wrapping `DashboardHub`
-
-### 8. `src/components/dashboard/DashboardSidebar.tsx`
-Complete rewrite:
-- Collapsed by default (w-16, icons only)
-- Expanded (w-60, icons + labels)
-- Toggle via chevron button at top
-- Tooltips on hover when collapsed (using existing Tooltip component)
-- "Coming Soon" items styled with `opacity-60` and a small badge; click shows `toast.info('Coming soon!')`
-- Logo: icon-only when collapsed, full when expanded
-- Footer: Logout button + ThemeToggle
-- Active route highlighted
-
-### 9. `src/components/kanban/JobKanbanBoard.tsx`
-- Remove the entire header section (Logo, ThemeToggle, profile dropdown) since the sidebar layout handles navigation
-- Keep the action bar (title, Add Application, view toggle, settings)
-
-### 10. `src/pages/ProfilePage.tsx`
-- Remove header section (Logo, ThemeToggle, Back button)
-- Wrap with `DashboardLayout` so sidebar is consistent
-
-## Technical Details
-
-### Analytics API Call
-```text
-GET https://tracker-backend-production-535d.up.railway.app/api/analytics/dashboard
-Authorization: Bearer <token>
-
-Response: {
-  "summary": { "totalApplications": 47, "interviews": 8, "offers": 0, "statusCounts": {...} },
-  "recent_activity": [{ "date": "2023-10-21", "count": 2 }, ...]
-}
-```
-
-### Stats Cards Mapping
-- Applied: `summary.totalApplications`
-- In Review: `summary.statusCounts['In Review'] || 0`
-- Interviews: `summary.interviews`
-- Success Rate: `Math.round((summary.interviews / summary.totalApplications) * 100) || 0`
-
-### Velocity Chart
-- Uses `recharts` BarChart (already installed)
-- `data={recent_activity}`, `dataKey="date"` for X-axis, `dataKey="count"` for Bar
-- Blue gradient fill matching the reference image
-
-### Recent Applications
-- `jobApi.getAllApplications(undefined, 1, 5)` to get the latest 5
-- Each row shows: colored initial circle, company name, role, status badge, date
-
-### Sidebar Behavior
-- Default: collapsed (w-16)
-- Toggle button (ChevronRight/Left) at top
-- Tooltips via existing Tooltip component when collapsed
-- Smooth `transition-all duration-300`
-- Main content `ml-16` or `ml-60` with matching transition
-
-## Summary of All Files
-
-| Action | File |
-|---|---|
-| Create | `src/types/analytics.ts` |
-| Create | `src/lib/analyticsApi.ts` |
-| Create | `src/components/dashboard/DashboardLayout.tsx` |
-| Create | `src/components/dashboard/DashboardHub.tsx` |
-| Create | `src/pages/TrackerPage.tsx` |
-| Edit | `src/App.tsx` |
-| Edit | `src/pages/Dashboard.tsx` |
-| Edit | `src/components/dashboard/DashboardSidebar.tsx` |
-| Edit | `src/components/kanban/JobKanbanBoard.tsx` |
-| Edit | `src/pages/ProfilePage.tsx` |
-
-## No New Dependencies
-- `recharts` already installed for charts
-- `next-themes` already installed for theme toggle
-- `lucide-react` has all needed icons
-
-## No Database Changes
-All data comes from the existing external backend API.
-
