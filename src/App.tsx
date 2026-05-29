@@ -17,8 +17,8 @@ import TrackerPage from "./pages/TrackerPage";
 import GroupsPage from "./pages/GroupsPage";
 import GroupDetailPage from "./pages/GroupDetailPage";
 import GroupBoardPage from "./pages/GroupBoardPage";
-import StatusApplicationsPage from "./pages/StatusApplicationsPage";
 import NotFound from "./pages/NotFound";
+
 
 
 const queryClient = new QueryClient();
