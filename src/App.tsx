@@ -41,6 +41,7 @@ const App = () => (
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:groupId" element={<GroupDetailPage />} />
             <Route path="/groups/:groupId/board" element={<GroupBoardPage />} />
+            <Route path="/invite/:token" element={<InviteAcceptPage />} />
 
 
 
