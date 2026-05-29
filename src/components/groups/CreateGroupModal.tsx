@@ -19,8 +19,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-const LIMIT_MESSAGE = "You can own a maximum of 2 groups. Delete one to create another.";
 const LIMIT_MESSAGE = "You can own at most 2 groups.";
+
 
 const looksLikeLimitError = (err: GroupsApiError) => {
   const msg = (err.message || "").toLowerCase();
