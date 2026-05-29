@@ -21,6 +21,13 @@ export interface GroupDetail extends Group {
   members: GroupMember[];
 }
 
+export interface GroupInviteInfo {
+  groupName: string;
+  inviterName: string;
+  email: string;
+  valid: boolean;
+}
+
 export class GroupsApiError extends Error {
   status: number;
   body?: unknown;
