@@ -17,6 +17,7 @@ import TrackerPage from "./pages/TrackerPage";
 import GroupsPage from "./pages/GroupsPage";
 import GroupDetailPage from "./pages/GroupDetailPage";
 import GroupBoardPage from "./pages/GroupBoardPage";
+import InviteAcceptPage from "./pages/InviteAcceptPage";
 import NotFound from "./pages/NotFound";
 
 
