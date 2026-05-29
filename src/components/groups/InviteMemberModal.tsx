@@ -45,13 +45,27 @@ export const InviteMemberModal = ({ open, onOpenChange, groupId, groupName }: Pr
     onError: (err: unknown) => {
       if (err instanceof GroupsApiError) {
         if (err.status === 401) return toast.error("Please sign in again");
-        if (err.status === 400) return toast.error(err.message || "Invalid email.");
-        if (err.status === 403) return toast.error("Only the owner can invite members.");
-        if (err.status === 404) return toast.error("Group not found");
-        if (err.status === 409)
-          return toast.error("That person is already invited or in the group.");
-        if (err.status >= 500) return toast.error("Couldn't create invite. Please try again.");
-        return toast.error(err.message || "Couldn't create invite.");
+        if (err.status === 409) {
+          const msg = (err.message || "").toLowerCase();
+          if (msg.includes("member") || msg.includes("already"))
+            return toast.error("That person is already a member of this group.");
+          return toast.error(err.message || "That person is already invited.");
+        }
+        // Surface backend response body for all other errors
+        const serverMsg = err.message?.trim();
+        const fallback =
+          err.status === 400
+            ? "Invalid email."
+            : err.status === 403
+              ? "Only the owner can invite members."
+              : err.status === 404
+                ? "Group not found."
+                : err.status >= 500
+                  ? "Couldn't create invite. Please try again."
+                  : "Couldn't create invite.";
+        return toast.error(serverMsg || fallback, {
+          description: serverMsg ? `Status ${err.status}` : undefined,
+        });
       }
       toast.error("Network error. Please try again.");
     },
