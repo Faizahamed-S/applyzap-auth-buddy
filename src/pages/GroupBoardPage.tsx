@@ -1,0 +1,56 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, LayoutGrid } from "lucide-react";
+
+const GroupBoardPage = () => {
+  const navigate = useNavigate();
+  const { groupId } = useParams<{ groupId: string }>();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/login"); return; }
+      setLoading(false);
+    };
+    checkAuth();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="max-w-[1100px] w-[92%] mx-auto py-8 space-y-6">
+        <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
+          <Link to={`/groups/${groupId}`}>
+            <ArrowLeft className="h-4 w-4" />
+            Back to group
+          </Link>
+        </Button>
+        <Card className="border border-border bg-card">
+          <CardContent className="p-10 text-center space-y-3">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+              <LayoutGrid className="h-6 w-6" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Collaborative board
+            </h1>
+            <p className="text-muted-foreground">Coming in Phase 3.</p>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default GroupBoardPage;

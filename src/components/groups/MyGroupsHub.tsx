@@ -7,9 +7,14 @@ import { toast } from "sonner";
 import { groupsApi, GroupsApiError } from "@/lib/groupsApi";
 import { GroupCard } from "./GroupCard";
 import { CreateGroupModal } from "./CreateGroupModal";
+import { TutorialPreview } from "./TutorialPreview";
+import { isTutorialDismissed } from "@/lib/collabTutorialSamples";
 
 export const MyGroupsHub = () => {
   const [createOpen, setCreateOpen] = useState(false);
+  const [tutorialDismissed, setTutorialDismissed] = useState(() =>
+    isTutorialDismissed(),
+  );
 
   const { data: groups, isLoading, isError, error, refetch, isRefetching } = useQuery({
     queryKey: ["groups"],
@@ -28,8 +33,10 @@ export const MyGroupsHub = () => {
     }
   }, [isError, error]);
 
-  return (
+  const showTutorial =
+    !isLoading && !isError && (!groups || groups.length === 0) && !tutorialDismissed;
 
+  return (
     <div className="max-w-[1400px] w-[90%] mx-auto py-8 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -43,6 +50,10 @@ export const MyGroupsHub = () => {
           Create New Group
         </Button>
       </div>
+
+      {showTutorial && (
+        <TutorialPreview onDismiss={() => setTutorialDismissed(true)} />
+      )}
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -75,7 +86,7 @@ export const MyGroupsHub = () => {
             </div>
             <Button onClick={() => setCreateOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
-              Create New Group
+              Create your first group
             </Button>
           </CardContent>
         </Card>

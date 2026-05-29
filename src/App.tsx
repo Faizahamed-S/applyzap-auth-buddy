@@ -16,8 +16,10 @@ import ProfilePage from "./pages/ProfilePage";
 import TrackerPage from "./pages/TrackerPage";
 import GroupsPage from "./pages/GroupsPage";
 import GroupDetailPage from "./pages/GroupDetailPage";
-
+import GroupBoardPage from "./pages/GroupBoardPage";
 import NotFound from "./pages/NotFound";
+
+
 
 const queryClient = new QueryClient();
 
@@ -36,8 +38,10 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tracker" element={<TrackerPage />} />
             <Route path="/groups" element={<GroupsPage />} />
-            <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:groupId" element={<GroupDetailPage />} />
+            <Route path="/groups/:groupId/board" element={<GroupBoardPage />} />
+
+
 
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
