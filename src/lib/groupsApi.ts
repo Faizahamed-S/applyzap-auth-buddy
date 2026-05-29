@@ -138,4 +138,20 @@ export const groupsApi = {
     });
     if (!res.ok) throw await parseError(res);
   },
+
+  getInviteInfo: async (token: string): Promise<GroupInviteInfo> => {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/groups/invites/${token}`, { headers });
+    if (!res.ok) throw await parseError(res);
+    return res.json();
+  },
+
+  acceptInvite: async (token: string): Promise<void> => {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/groups/invites/${token}/accept`, {
+      method: "POST",
+      headers,
+    });
+    if (!res.ok) throw await parseError(res);
+  },
 };
