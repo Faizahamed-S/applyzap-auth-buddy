@@ -1,89 +1,66 @@
-## Phase 1 patch — Collaborative Groups + API base URL fix
+# Group Invite Flow — Frontend Delivery
 
-Strict-scope patch. No redesign, no global error handler, no Phase 2/3 features (no invites, members, or group board).
+Backend creates invite tokens but does not send email. Frontend must surface the link to the inviter and run the accept flow on the invitee's side.
 
-### 1. Centralize backend base URL
+## Scope
+- No UI redesign outside the invite modal + new accept page.
+- No global error handler; all errors stay local toasts.
+- Reuse `API_BASE_URL` from `src/lib/apiConfig.ts` and Supabase access token.
 
-Create `src/lib/apiConfig.ts`:
+## Files
 
-```ts
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  "https://tracker-backend-production-535d.up.railway.app";
-```
+### 1. `src/lib/groupsApi.ts` (edit)
+Add two methods + one type:
+- `GroupInviteInfo = { groupName: string; inviterName: string; email: string; valid: boolean }`
+- `getInviteInfo(token: string): Promise<GroupInviteInfo>` → `GET /api/groups/invites/{token}` (Bearer).
+- `acceptInvite(token: string): Promise<void>` → `POST /api/groups/invites/{token}/accept` (Bearer).
+- Keep existing `inviteMember` — it already returns the token string.
 
-Document the variable in `.env.example` (create if missing):
+### 2. `src/components/groups/InviteMemberModal.tsx` (rewrite behavior, same shell)
+Replace the "Invite sent" success toast with a two-step modal state:
+- **Step 1 — Form**: email input + "Create invite" button (unchanged UI).
+- **Step 2 — Share** (after 201 success):
+  - Title: "Invite created"
+  - Body: `Share this link with them. They must sign in as {email} to join.`
+  - Read-only input showing `inviteUrl = ${window.location.origin}/invite/${token}`
+  - **Copy link** button (uses `navigator.clipboard.writeText`, toast on success)
+  - **Email link** button → `mailto:{email}?subject=Join {groupName} on ApplyZap&body={inviteUrl}` (opens user's mail client; we do not claim backend sent email)
+  - **Done** button closes modal; **Invite another** resets to step 1
+- Drop the dev-only auto-copy of the raw token.
+- Keep local error toasts for 400/403/409/500.
 
-```
-VITE_API_BASE_URL=http://localhost:8080
-```
+### 3. `src/pages/InviteAcceptPage.tsx` (new)
+Route `/invite/:token`. Flow:
+1. Check Supabase session. If none → `navigate('/login?returnTo=/invite/' + token, { replace: true })`.
+2. On mount (signed in) → `groupsApi.getInviteInfo(token)`.
+3. Render card with:
+   - Title: `Join {groupName}`
+   - Subtext: `{inviterName} invited {email} to collaborate.`
+   - Warning banner if `info.valid === false` OR if current Supabase user email !== `info.email` → "This invite is for {email}. Sign in with that account to accept." (Sign out button → supabase signOut + redirect to login with returnTo).
+   - **Accept invite** button → `acceptInvite(token)` → on success: toast "Joined {groupName}", `navigate(`/groups/${groupId}`)` (need groupId — see note below).
+   - **Decline** → `navigate('/groups')`.
+4. Error states (local toasts + inline message):
+   - 401 → re-login with returnTo
+   - 404/410 → "This invite is no longer valid."
+   - 409 → "You're already a member." + button to `/groups`
+   - 500 → generic retry
 
-Note: `.env` is auto-managed and not edited; users set `VITE_API_BASE_URL` in their local env. Production build uses the Railway fallback when the var is unset (matches current prod behavior).
+Note on `groupId` after accept: `GroupInviteInfoDTO` shape per spec does not include groupId. After accept, navigate to `/groups` (groups list) as the safe default. If backend later adds `groupId` to the info DTO or the accept response, switch to `/groups/{id}`. Add a `// TODO` comment.
 
-### 2. Replace hardcoded hosts in API modules
+### 4. `src/pages/Login.tsx` (small edit)
+Honor `?returnTo=` query param after successful sign-in (and after Google OAuth callback). If absent, keep current behavior (redirect to `/dashboard`).
 
-**Before / After base URL usage:**
+### 5. `src/App.tsx` (edit)
+Register `<Route path="/invite/:token" element={<InviteAcceptPage />} />` above the catch-all.
 
-| File | Before | After |
-|---|---|---|
-| `src/lib/jobApi.ts` | `const API_BASE_URL = "https://tracker-backend-production-535d.up.railway.app/board"` | `import { API_BASE_URL as BASE } from "./apiConfig"; const API_BASE_URL = ${'`${BASE}/board`'}` |
-| `src/lib/userApi.ts` | `"https://tracker-backend-production-535d.up.railway.app/api/user"` | ${'`${BASE}/api/user`'} |
-| `src/lib/analyticsApi.ts` | `"https://tracker-backend-production-535d.up.railway.app"` | uses `BASE` directly for `/api/analytics/dashboard` |
-| `src/lib/groupsApi.ts` | `const API_BASE = "http://localhost:8080"` | uses `BASE` for `/api/groups` |
+## Out of scope
+- Backend changes (it already returns plain string token + has accept endpoint per spec).
+- Sidebar, dashboard, board, profile, analytics — untouched.
+- No new global error handler, no axios interceptors.
 
-No other behavior changes in jobApi/userApi/analyticsApi — auth header logic untouched, no global error handler added.
-
-### 3. Groups Phase 1
-
-**`src/lib/groupsApi.ts`** — switch to shared `BASE`. Keep existing `GroupsApiError`, `listGroups`, `createGroup`. Add limit detection helper to also match backend's 500 message `"Maximum number of groups"`.
-
-**`src/components/groups/CreateGroupModal.tsx`** — update `looksLikeLimitError` to also match `"maximum number of groups"` substring (covers 500 with that text). Limit toast text changed to: `"You can own at most 2 groups."` per spec.
-
-**`src/components/groups/GroupCard.tsx`** — replace placeholder toast with real navigation:
-```tsx
-const handleEnter = () => navigate(`/groups/${group.id}`);
-```
-
-**`src/pages/GroupDetailPage.tsx`** (new) — minimal placeholder:
-- Reads `:groupId` from URL.
-- Renders inside `DashboardLayout` with heading "Group workspace" and copy "Coming in Phase 2." plus a back link to `/groups`.
-- No API calls.
-
-**`src/App.tsx`** — add route:
-```tsx
-<Route path="/groups/:groupId" element={<GroupDetailPage />} />
-```
-
-**Dashboard sidebar button** — `src/components/dashboard/DashboardSidebar.tsx` already routes `Collaborative Tracker` to `/groups` (unlocked previously). No change needed.
-
-**`MyGroupsHub.tsx`** — local error toasts already cover 401 / 500 / generic. Tweak the 401 message to `"Please sign in again"` to match spec.
-
-### 4. Out of scope (explicitly NOT doing)
-
-- No group job board, invites, or members UI.
-- No global API error handler / interceptor.
-- No refactor of unrelated pages.
-- No changes to board query params (we don't touch `jobApi` call sites).
-
-### Files changed
-
-- `src/lib/apiConfig.ts` (new)
-- `.env.example` (new, documentation only)
-- `src/lib/jobApi.ts` (base URL only)
-- `src/lib/userApi.ts` (base URL only)
-- `src/lib/analyticsApi.ts` (base URL only)
-- `src/lib/groupsApi.ts` (base URL + limit message match)
-- `src/components/groups/CreateGroupModal.tsx` (limit detection + toast text)
-- `src/components/groups/GroupCard.tsx` (real navigation)
-- `src/components/groups/MyGroupsHub.tsx` (401 toast text)
-- `src/pages/GroupDetailPage.tsx` (new placeholder)
-- `src/App.tsx` (new route)
-
-### Acceptance checks
-
-1. With `VITE_API_BASE_URL=http://localhost:8080`, all `/board`, `/api/user`, `/api/analytics`, `/api/groups` calls hit localhost.
-2. Without the var (prod build), all calls hit Railway.
-3. Signed-in user can list and create groups; second create over limit shows `"You can own at most 2 groups."`
-4. Personal board/profile/analytics unaffected (only base URL string changed).
-5. Clicking "Enter group" navigates to `/groups/{id}` placeholder page.
-6. No global error handler added — confirmed; all error toasts remain local to `MyGroupsHub` and `CreateGroupModal`.
+## Acceptance
+1. Owner invites email → modal shows shareable `/invite/{token}` URL with copy + mailto buttons.
+2. Visiting `/invite/{token}` while signed out redirects to login with returnTo and returns after auth.
+3. Signed-in invitee sees group name + inviter; Accept joins group, lands on `/groups`.
+4. Wrong-account warning appears when session email differs from invite email.
+5. All requests use `API_BASE_URL` + Bearer; no global error handler added.
