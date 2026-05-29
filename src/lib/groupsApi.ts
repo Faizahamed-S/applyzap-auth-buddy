@@ -1,12 +1,24 @@
 import { supabase } from "@/integrations/supabase/client";
 import { API_BASE_URL as API_BASE } from "./apiConfig";
 
-
 export interface Group {
   id: number;
   name: string;
   ownerId: number;
   createdAt: string;
+}
+
+export type GroupMemberRole = "OWNER" | "MEMBER";
+
+export interface GroupMember {
+  memberId: number;
+  displayName: string;
+  role: GroupMemberRole;
+  userId: number;
+}
+
+export interface GroupDetail extends Group {
+  members: GroupMember[];
 }
 
 export class GroupsApiError extends Error {
@@ -70,5 +82,53 @@ export const groupsApi = {
     });
     if (!res.ok) throw await parseError(res);
     return res.json();
+  },
+
+  getGroup: async (groupId: number | string): Promise<GroupDetail> => {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/groups/${groupId}`, { headers });
+    if (!res.ok) throw await parseError(res);
+    return res.json();
+  },
+
+  inviteMember: async (groupId: number | string, email: string): Promise<string> => {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/groups/${groupId}/invites`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) throw await parseError(res);
+    // Backend returns invite token string (may be plain text or JSON-wrapped).
+    const text = await res.text();
+    try {
+      const parsed = JSON.parse(text);
+      if (typeof parsed === "string") return parsed;
+      if (parsed && typeof parsed === "object") {
+        const p = parsed as { token?: string; inviteToken?: string };
+        return p.token || p.inviteToken || text;
+      }
+    } catch {
+      // not JSON, fall through
+    }
+    return text;
+  },
+
+  leaveGroup: async (groupId: number | string): Promise<void> => {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/groups/${groupId}/members/me`, {
+      method: "DELETE",
+      headers,
+    });
+    if (!res.ok) throw await parseError(res);
+  },
+
+  deleteGroup: async (groupId: number | string): Promise<void> => {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/groups/${groupId}`, {
+      method: "DELETE",
+      headers,
+    });
+    if (!res.ok) throw await parseError(res);
   },
 };
