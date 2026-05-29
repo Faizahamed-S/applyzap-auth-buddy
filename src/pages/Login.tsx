@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,9 @@ const loginSchema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
+  const safeReturnTo = returnTo && returnTo.startsWith("/") ? returnTo : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +46,7 @@ const Login = () => {
         }
       } else {
         toast.success("Logged in successfully!");
-        navigate("/dashboard");
+        navigate(safeReturnTo ?? "/dashboard");
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -55,8 +58,11 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
+    const redirectUri = safeReturnTo
+      ? `${window.location.origin}${safeReturnTo}`
+      : window.location.origin;
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: redirectUri,
     });
     if (error) {
       toast.error("Google sign-in failed. Please try again.");

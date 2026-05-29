@@ -17,6 +17,7 @@ import TrackerPage from "./pages/TrackerPage";
 import GroupsPage from "./pages/GroupsPage";
 import GroupDetailPage from "./pages/GroupDetailPage";
 import GroupBoardPage from "./pages/GroupBoardPage";
+import InviteAcceptPage from "./pages/InviteAcceptPage";
 import NotFound from "./pages/NotFound";
 
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:groupId" element={<GroupDetailPage />} />
             <Route path="/groups/:groupId/board" element={<GroupBoardPage />} />
+            <Route path="/invite/:token" element={<InviteAcceptPage />} />
 
 
 
