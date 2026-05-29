@@ -15,6 +15,8 @@ import ResetPassword from "./pages/ResetPassword";
 import ProfilePage from "./pages/ProfilePage";
 import TrackerPage from "./pages/TrackerPage";
 import GroupsPage from "./pages/GroupsPage";
+import GroupDetailPage from "./pages/GroupDetailPage";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,7 +36,9 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tracker" element={<TrackerPage />} />
             <Route path="/groups" element={<GroupsPage />} />
-            <Route path="/status/:status" element={<StatusApplicationsPage />} />
+            <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/groups/:groupId" element={<GroupDetailPage />} />
+
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<ProfilePage />} />

@@ -19,13 +19,15 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-const LIMIT_MESSAGE = "You can own a maximum of 2 groups. Delete one to create another.";
+const LIMIT_MESSAGE = "You can own at most 2 groups.";
+
 
 const looksLikeLimitError = (err: GroupsApiError) => {
   const msg = (err.message || "").toLowerCase();
   return (
     err.status === 403 ||
     err.status === 409 ||
+    msg.includes("maximum number of groups") ||
     msg.includes("limit") ||
     msg.includes("maximum") ||
     msg.includes("max ") ||
@@ -33,6 +35,7 @@ const looksLikeLimitError = (err: GroupsApiError) => {
     msg.includes("two groups")
   );
 };
+
 
 export const CreateGroupModal = ({ open, onOpenChange }: Props) => {
   const [name, setName] = useState("");

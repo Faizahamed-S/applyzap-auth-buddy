@@ -1,7 +1,7 @@
 import { DashboardAnalytics } from "@/types/analytics";
 import { supabase } from "@/integrations/supabase/client";
+import { API_BASE_URL } from "./apiConfig";
 
-const API_BASE_URL = "https://tracker-backend-production-535d.up.railway.app";
 
 const getAuthHeaders = async () => {
   const { data: { session } } = await supabase.auth.getSession();

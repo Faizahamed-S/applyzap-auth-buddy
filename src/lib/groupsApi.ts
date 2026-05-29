@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { API_BASE_URL as API_BASE } from "./apiConfig";
 
-const API_BASE = "http://localhost:8080";
 
 export interface Group {
   id: number;

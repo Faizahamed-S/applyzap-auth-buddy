@@ -2,7 +2,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import type { Group } from "@/lib/groupsApi";
 
@@ -14,9 +13,7 @@ export const GroupCard = ({ group }: Props) => {
   const navigate = useNavigate();
 
   const handleEnter = () => {
-    // Phase 2 route — show graceful message until it ships.
-    toast.info("Group workspace coming in the next phase.");
-    // navigate(`/groups/${group.id}`);
+    navigate(`/groups/${group.id}`);
   };
 
   let createdLabel = "";
