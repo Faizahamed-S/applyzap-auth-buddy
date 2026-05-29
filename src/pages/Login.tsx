@@ -46,7 +46,7 @@ const Login = () => {
         }
       } else {
         toast.success("Logged in successfully!");
-        navigate("/dashboard");
+        navigate(safeReturnTo ?? "/dashboard");
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
