@@ -19,9 +19,6 @@ export const MyGroupsHub = () => {
 
   useEffect(() => {
     if (!isError) return;
-    if (error instanceof GroupsApiError && error.status >= 500) {
-      toast.error("Couldn't load groups. Please try again.");
-    } else if (error instanceof GroupsApiError && error.status === 401) {
     if (error instanceof GroupsApiError && error.status === 401) {
       toast.error("Please sign in again");
     } else if (error instanceof GroupsApiError && error.status >= 500) {
@@ -29,6 +26,9 @@ export const MyGroupsHub = () => {
     } else {
       toast.error("Couldn't load groups. Please try again.");
     }
+  }, [isError, error]);
+
+  return (
 
     <div className="max-w-[1400px] w-[90%] mx-auto py-8 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
