@@ -40,3 +40,47 @@ export const dismissTutorial = () => {
     // ignore
   }
 };
+
+// ----- Phase 3: sample board for empty-state preview -----
+
+import type { GroupBoard } from "./groupJobsApi";
+
+export const sampleGroupBoard: GroupBoard = {
+  id: -100,
+  name: "Tutorial board",
+  members: [
+    { memberId: -1, displayName: "Alex (you)", role: "OWNER", userId: -1 },
+    { memberId: -2, displayName: "Jordan", role: "MEMBER", userId: -2 },
+  ],
+  jobs: [
+    {
+      jobId: -1,
+      normalizedUrl: "https://example.com/acme-swe",
+      originalUrl: "https://example.com/acme-swe",
+      companyName: "📘 Acme Corp",
+      roleName: "Software Engineer",
+      dateAdded: new Date().toISOString(),
+      addedByUserId: -1,
+      addedByMemberId: -1,
+      statuses: [
+        { memberId: -1, status: "APPLIED" },
+        { memberId: -2, status: "NA" },
+      ],
+    },
+    {
+      jobId: -2,
+      normalizedUrl: "https://example.com/globex-intern",
+      originalUrl: "https://example.com/globex-intern",
+      companyName: "📘 Globex",
+      roleName: "Product Intern",
+      dateAdded: new Date().toISOString(),
+      addedByUserId: -2,
+      addedByMemberId: -2,
+      statuses: [
+        { memberId: -1, status: "NA" },
+        { memberId: -2, status: "EXPIRED" },
+      ],
+    },
+  ],
+};
+
