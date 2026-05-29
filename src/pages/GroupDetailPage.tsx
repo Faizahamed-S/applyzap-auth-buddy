@@ -233,6 +233,7 @@ const GroupDetailPage = () => {
               open={inviteOpen}
               onOpenChange={setInviteOpen}
               groupId={group.id}
+              groupName={group.name}
             />
 
             <AlertDialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
