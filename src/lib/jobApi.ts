@@ -1,8 +1,10 @@
 import { JobApplication, CreateJobApplication, UpdateJobApplication } from "@/types/job";
 import { transformForBackend, transformFromBackend } from "./statusMapper";
 import { supabase } from "@/integrations/supabase/client";
+import { API_BASE_URL as BASE } from "./apiConfig";
 
-const API_BASE_URL = "https://tracker-backend-production-535d.up.railway.app/board";
+const API_BASE_URL = `${BASE}/board`;
+
 
 // Helper to get auth token
 const getAuthToken = async (): Promise<string> => {

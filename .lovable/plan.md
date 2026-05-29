@@ -1,70 +1,89 @@
-## Phase 1: My Groups Dashboard
+## Phase 1 patch — Collaborative Groups + API base URL fix
 
-Unlock the sidebar "Collaborative Apply" item (the locked "coming soon" entry that matches "Collaborative job tracker") and wire it to a new `/groups` route that lists and creates groups.
+Strict-scope patch. No redesign, no global error handler, no Phase 2/3 features (no invites, members, or group board).
 
-### Files to create
+### 1. Centralize backend base URL
 
-1. **`src/lib/groupsApi.ts`** — new API client
-   - `API_BASE = "http://localhost:8080"`
-   - Reuses Supabase session token (same pattern as `jobApi.ts`) to build `Authorization: Bearer <token>` header.
-   - `listGroups(): Promise<Group[]>` → `GET /api/groups`
-   - `createGroup(name: string): Promise<Group>` → `POST /api/groups` with `{ name }`
-   - Both throw a typed error carrying `status` + parsed message so callers can branch on 500 / limit errors locally (no global handler).
-   - `Group` type: `{ id: number; name: string; ownerId: number; createdAt: string }`.
+Create `src/lib/apiConfig.ts`:
 
-2. **`src/pages/GroupsPage.tsx`** — new route
-   - Wrapped in `DashboardLayout` (same shell as `/dashboard` and `/tracker`).
-   - Auth guard mirroring `Dashboard.tsx` (redirect to `/login` if no Supabase session).
-   - Renders `<MyGroupsHub />`.
-
-3. **`src/components/groups/MyGroupsHub.tsx`** — main view
-   - Uses `@tanstack/react-query` `useQuery(['groups'], groupsApi.listGroups)`.
-   - Header: "My Groups" + "Create New Group" button (top-right).
-   - Loading skeleton, empty state ("No groups yet — create your first"), and error state with retry.
-   - Grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`) of `GroupCard`s.
-   - Local try/catch around fetch: on 500 / network error → `toast.error("Couldn't load groups. Please try again.")`. No global handler.
-
-4. **`src/components/groups/GroupCard.tsx`**
-   - Card shows group name, small "Created {relative date}" subtitle.
-   - Primary button "Enter group" → `navigate(/groups/${id})` (route added in next phase; for now it just navigates — fine since route doesn't exist yet, but we'll guard with a toast "Coming in next phase" to avoid a 404 until then).
-
-5. **`src/components/groups/CreateGroupModal.tsx`**
-   - Shadcn `Dialog` + `Input` + `Button`.
-   - Form: single text input (name, required, trimmed, max ~60 chars).
-   - On submit → `useMutation(groupsApi.createGroup)`.
-   - Local error handling:
-     - If `err.status === 403` or message indicates group limit (e.g. "limit", "maximum", "2") → `toast.error("You can own a maximum of 2 groups. Delete one to create another.")`.
-     - Other 4xx → show server-provided message via toast.
-     - 5xx / network → `toast.error("Something went wrong creating the group. Please try again.")`.
-   - On success → `toast.success("Group created")`, `queryClient.invalidateQueries(['groups'])`, close modal, reset input.
-
-### Files to modify
-
-6. **`src/components/dashboard/DashboardSidebar.tsx`**
-   - Replace the `Collaborative Apply` nav item:
-     - Remove `comingSoon: true`.
-     - Set `href: '/groups'`.
-     - Optionally relabel to "Collaborative Tracker" to match the user's wording (kept short for collapsed-sidebar fit). Keep the `Handshake` icon.
-
-7. **`src/App.tsx`**
-   - Import `GroupsPage` and add `<Route path="/groups" element={<GroupsPage />} />` above the catch-all.
-
-### Technical notes
-
-- **Auth header**: built per-request from `supabase.auth.getSession()` — same pattern as `jobApi.ts`. No new env vars; backend base URL is hard-coded to `http://localhost:8080` as specified.
-- **CORS / mixed content**: the deployed preview is HTTPS, so calls to `http://localhost:8080` will be blocked by the browser in the hosted preview. This will work when running the frontend locally against the local backend. Flagging so you're not surprised when testing from the lovable preview URL.
-- **No global error handler**: errors are caught inside each component/mutation and surfaced via `sonner` toasts.
-- **Next phase placeholder**: `/groups/:groupId` is intentionally out of scope; "Enter group" button will just show an info toast until that phase lands.
-
-### Out of scope (Phase 2+)
-
-- Group detail page, membership, invites, deletion, permissions UI.
-
-```text
-sidebar (Collaborative Apply unlocked)
-        │
-        ▼
-   /groups  ──►  MyGroupsHub
-                 ├── Create button ──► CreateGroupModal ──► POST /api/groups
-                 └── GroupCard grid  ◄── GET /api/groups
+```ts
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ??
+  "https://tracker-backend-production-535d.up.railway.app";
 ```
+
+Document the variable in `.env.example` (create if missing):
+
+```
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+Note: `.env` is auto-managed and not edited; users set `VITE_API_BASE_URL` in their local env. Production build uses the Railway fallback when the var is unset (matches current prod behavior).
+
+### 2. Replace hardcoded hosts in API modules
+
+**Before / After base URL usage:**
+
+| File | Before | After |
+|---|---|---|
+| `src/lib/jobApi.ts` | `const API_BASE_URL = "https://tracker-backend-production-535d.up.railway.app/board"` | `import { API_BASE_URL as BASE } from "./apiConfig"; const API_BASE_URL = ${'`${BASE}/board`'}` |
+| `src/lib/userApi.ts` | `"https://tracker-backend-production-535d.up.railway.app/api/user"` | ${'`${BASE}/api/user`'} |
+| `src/lib/analyticsApi.ts` | `"https://tracker-backend-production-535d.up.railway.app"` | uses `BASE` directly for `/api/analytics/dashboard` |
+| `src/lib/groupsApi.ts` | `const API_BASE = "http://localhost:8080"` | uses `BASE` for `/api/groups` |
+
+No other behavior changes in jobApi/userApi/analyticsApi — auth header logic untouched, no global error handler added.
+
+### 3. Groups Phase 1
+
+**`src/lib/groupsApi.ts`** — switch to shared `BASE`. Keep existing `GroupsApiError`, `listGroups`, `createGroup`. Add limit detection helper to also match backend's 500 message `"Maximum number of groups"`.
+
+**`src/components/groups/CreateGroupModal.tsx`** — update `looksLikeLimitError` to also match `"maximum number of groups"` substring (covers 500 with that text). Limit toast text changed to: `"You can own at most 2 groups."` per spec.
+
+**`src/components/groups/GroupCard.tsx`** — replace placeholder toast with real navigation:
+```tsx
+const handleEnter = () => navigate(`/groups/${group.id}`);
+```
+
+**`src/pages/GroupDetailPage.tsx`** (new) — minimal placeholder:
+- Reads `:groupId` from URL.
+- Renders inside `DashboardLayout` with heading "Group workspace" and copy "Coming in Phase 2." plus a back link to `/groups`.
+- No API calls.
+
+**`src/App.tsx`** — add route:
+```tsx
+<Route path="/groups/:groupId" element={<GroupDetailPage />} />
+```
+
+**Dashboard sidebar button** — `src/components/dashboard/DashboardSidebar.tsx` already routes `Collaborative Tracker` to `/groups` (unlocked previously). No change needed.
+
+**`MyGroupsHub.tsx`** — local error toasts already cover 401 / 500 / generic. Tweak the 401 message to `"Please sign in again"` to match spec.
+
+### 4. Out of scope (explicitly NOT doing)
+
+- No group job board, invites, or members UI.
+- No global API error handler / interceptor.
+- No refactor of unrelated pages.
+- No changes to board query params (we don't touch `jobApi` call sites).
+
+### Files changed
+
+- `src/lib/apiConfig.ts` (new)
+- `.env.example` (new, documentation only)
+- `src/lib/jobApi.ts` (base URL only)
+- `src/lib/userApi.ts` (base URL only)
+- `src/lib/analyticsApi.ts` (base URL only)
+- `src/lib/groupsApi.ts` (base URL + limit message match)
+- `src/components/groups/CreateGroupModal.tsx` (limit detection + toast text)
+- `src/components/groups/GroupCard.tsx` (real navigation)
+- `src/components/groups/MyGroupsHub.tsx` (401 toast text)
+- `src/pages/GroupDetailPage.tsx` (new placeholder)
+- `src/App.tsx` (new route)
+
+### Acceptance checks
+
+1. With `VITE_API_BASE_URL=http://localhost:8080`, all `/board`, `/api/user`, `/api/analytics`, `/api/groups` calls hit localhost.
+2. Without the var (prod build), all calls hit Railway.
+3. Signed-in user can list and create groups; second create over limit shows `"You can own at most 2 groups."`
+4. Personal board/profile/analytics unaffected (only base URL string changed).
+5. Clicking "Enter group" navigates to `/groups/{id}` placeholder page.
+6. No global error handler added — confirmed; all error toasts remain local to `MyGroupsHub` and `CreateGroupModal`.

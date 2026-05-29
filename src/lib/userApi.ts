@@ -1,7 +1,9 @@
 import { User, UserProfileUpdateDTO } from "@/types/user";
 import { supabase } from "@/integrations/supabase/client";
+import { API_BASE_URL as BASE } from "./apiConfig";
 
-const API_BASE_URL = "https://tracker-backend-production-535d.up.railway.app/api/user";
+const API_BASE_URL = `${BASE}/api/user`;
+
 
 const getAuthToken = async (): Promise<string> => {
   const { data: { session } } = await supabase.auth.getSession();
