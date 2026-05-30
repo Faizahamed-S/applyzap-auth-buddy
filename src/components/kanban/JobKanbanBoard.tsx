@@ -13,7 +13,6 @@ import { User } from '@supabase/supabase-js';
 
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
-import { groupJobsApi } from '@/lib/groupJobsApi';
 import { getGroupsCache, setLastSelectedGroupIds } from '@/lib/groupsCache';
 import { KanbanColumn } from './KanbanColumn';
 import { JobCard } from './JobCard';
