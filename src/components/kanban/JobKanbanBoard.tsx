@@ -156,9 +156,50 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     patchMutation.mutate({ id: jobId, data: { status: newStatus } });
   };
 
-  const handleAddJob = (data: any) => {
-    createMutation.mutate(data);
+  const handleAddJob = async (data: any) => {
+    const { __groupIds = [], ...personal } = data as { __groupIds?: number[] } & Record<string, unknown>;
+    try {
+      await createMutation.mutateAsync(personal as any);
+    } catch {
+      return;
+    }
+
+    if (!Array.isArray(__groupIds) || __groupIds.length === 0) {
+      toast.success('Application added successfully!');
+      return;
+    }
+
+    setLastSelectedGroupIds(__groupIds);
+    const cachedGroups = getGroupsCache()?.groups ?? [];
+    const payload = {
+      jobLink: (personal as any).jobLink || '',
+      companyName: (personal as any).companyName,
+      roleName: (personal as any).roleName,
+    };
+    const results = await Promise.allSettled(
+      __groupIds.map((id) => groupJobsApi.createJob(id, payload)),
+    );
+    const failedNames = results
+      .map((r, i) => ({
+        r,
+        name: cachedGroups.find((g) => g.id === __groupIds[i])?.name ?? `Group #${__groupIds[i]}`,
+      }))
+      .filter(({ r }) => r.status === 'rejected')
+      .map(({ name }) => name);
+
+    if (failedNames.length === 0) {
+      toast.success(
+        __groupIds.length === 1
+          ? 'Added to board and group'
+          : 'Added to board and groups',
+      );
+    } else if (failedNames.length === __groupIds.length) {
+      toast.warning(`Saved to board; failed for ${failedNames.join(', ')}`);
+    } else {
+      toast.warning(`Saved to board; failed for ${failedNames.join(', ')}`);
+    }
   };
+
 
   const handleEditJob = (id: string, data: any) => {
     updateMutation.mutate({ id, data });
