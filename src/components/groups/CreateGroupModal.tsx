@@ -47,6 +47,7 @@ export const CreateGroupModal = ({ open, onOpenChange }: Props) => {
     onSuccess: () => {
       toast.success("Group created");
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+      refreshGroupsCache();
       setName("");
       onOpenChange(false);
     },
