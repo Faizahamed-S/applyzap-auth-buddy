@@ -47,6 +47,7 @@ const Login = () => {
         }
       } else {
         toast.success("Logged in successfully!");
+        refreshGroupsCache();
         navigate(safeReturnTo ?? "/dashboard");
       }
     } catch (err) {
