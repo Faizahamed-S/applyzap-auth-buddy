@@ -95,6 +95,7 @@ const GroupDetailPage = () => {
     onSuccess: () => {
       toast.success("Group deleted");
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+      refreshGroupsCache();
       navigate("/groups");
     },
     onError: (err: unknown) => {
