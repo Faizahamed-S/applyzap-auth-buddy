@@ -43,6 +43,7 @@ const InviteAcceptPage = () => {
     mutationFn: () => groupsApi.acceptInvite(token!),
     onSuccess: () => {
       toast.success(`Joined ${infoQuery.data?.groupName ?? "group"}`);
+      refreshGroupsCache();
       // TODO: navigate to /groups/{id} once backend returns groupId in invite info or accept response.
       navigate("/groups");
     },
