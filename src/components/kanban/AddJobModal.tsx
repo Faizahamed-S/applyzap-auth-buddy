@@ -292,6 +292,62 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
 
             <CustomFieldsEditor fields={customFields} onChange={setCustomFields} />
 
+            <Separator />
+
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">
+                    Also add to collaborative group(s)
+                  </Label>
+                  <div className="text-sm text-muted-foreground">
+                    {groupsLoading
+                      ? 'Loading your groups…'
+                      : groups.length === 0
+                        ? 'Join or create a group first.'
+                        : 'Share this job with your group boards.'}
+                  </div>
+                </div>
+                <Switch
+                  checked={postToGroups}
+                  onCheckedChange={handleToggleGroups}
+                  disabled={groupsLoading || groups.length === 0}
+                />
+              </div>
+
+              {groups.length === 0 && !groupsLoading && (
+                <Button asChild variant="ghost" size="sm" className="h-auto p-0 text-primary">
+                  <Link to="/groups">Go to groups →</Link>
+                </Button>
+              )}
+
+              {postToGroups && groups.length > 0 && (
+                <div className="space-y-2">
+                  <div className="max-h-40 overflow-y-auto space-y-2 rounded-md border border-border p-2">
+                    {groups.map((g) => {
+                      const checked = selectedGroupIds.includes(g.id);
+                      return (
+                        <label
+                          key={g.id}
+                          className="flex items-center gap-2 cursor-pointer text-sm py-1"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => toggleGroup(g.id, v === true)}
+                          />
+                          <span className="truncate">{g.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {groupError && (
+                    <p className="text-sm text-destructive">{groupError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+
             <div className="flex gap-3 justify-end pt-4">
               <Button
                 type="button"
