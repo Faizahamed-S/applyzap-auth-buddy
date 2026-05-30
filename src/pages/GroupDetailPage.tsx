@@ -74,6 +74,7 @@ const GroupDetailPage = () => {
     onSuccess: () => {
       toast.success("You've left the group");
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+      refreshGroupsCache();
       navigate("/groups");
     },
     onError: (err: unknown) => {
