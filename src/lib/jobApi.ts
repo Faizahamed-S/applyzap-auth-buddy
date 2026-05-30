@@ -5,6 +5,14 @@ import { API_BASE_URL as BASE } from "./apiConfig";
 
 const API_BASE_URL = `${BASE}/board`;
 
+export interface GroupAddResult {
+  groupId: number;
+  success: boolean;
+  jobId: number | null;
+  error: string | null;
+}
+
+
 
 // Helper to get auth token
 const getAuthToken = async (): Promise<string> => {
@@ -61,20 +69,37 @@ export const jobApi = {
     return result.map(transformFromBackend);
   },
 
-  // Create new application
-  createApplication: async (data: CreateJobApplication): Promise<JobApplication> => {
+  // Create new application (optionally fan-out to collaborative groups in same request)
+  createApplication: async (
+    data: CreateJobApplication,
+    groupIds?: number[],
+  ): Promise<{ application: JobApplication; groupResults: GroupAddResult[] }> => {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
+
+    const body =
+      groupIds && groupIds.length > 0
+        ? { ...transformedData, groupIds }
+        : transformedData;
 
     const response = await fetch(`${API_BASE_URL}/applications`, {
       method: "POST",
       headers,
-      body: JSON.stringify(transformedData),
+      body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Failed to create application");
     const result = await response.json();
-    return transformFromBackend(result);
+
+    // New wrapper shape: { application, groupResults }. Fallback to legacy flat shape.
+    if (result && typeof result === "object" && "application" in result) {
+      return {
+        application: transformFromBackend(result.application),
+        groupResults: Array.isArray(result.groupResults) ? result.groupResults : [],
+      };
+    }
+    return { application: transformFromBackend(result), groupResults: [] };
   },
+
 
   // Update application (full)
   updateApplication: async (id: string, data: UpdateJobApplication): Promise<JobApplication> => {

@@ -13,7 +13,6 @@ import { User } from '@supabase/supabase-js';
 
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
-import { groupJobsApi } from '@/lib/groupJobsApi';
 import { getGroupsCache, setLastSelectedGroupIds } from '@/lib/groupsCache';
 import { KanbanColumn } from './KanbanColumn';
 import { JobCard } from './JobCard';
@@ -63,7 +62,8 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   });
 
   const createMutation = useMutation({
-    mutationFn: jobApi.createApplication,
+    mutationFn: ({ data, groupIds }: { data: any; groupIds: number[] }) =>
+      jobApi.createApplication(data, groupIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
@@ -157,48 +157,44 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   };
 
   const handleAddJob = async (data: any) => {
-    const { __groupIds = [], ...personal } = data as { __groupIds?: number[] } & Record<string, unknown>;
+    const { __groupIds = [], ...personal } = data as {
+      __groupIds?: number[];
+    } & Record<string, unknown>;
+    const groupIds = Array.isArray(__groupIds) ? __groupIds : [];
+
+    let result;
     try {
-      await createMutation.mutateAsync(personal as any);
+      result = await createMutation.mutateAsync({ data: personal as any, groupIds });
     } catch {
       return;
     }
 
-    if (!Array.isArray(__groupIds) || __groupIds.length === 0) {
+    if (groupIds.length === 0) {
       toast.success('Application added successfully!');
       return;
     }
 
-    setLastSelectedGroupIds(__groupIds);
+    setLastSelectedGroupIds(groupIds);
     const cachedGroups = getGroupsCache()?.groups ?? [];
-    const payload = {
-      jobLink: (personal as any).jobLink || '',
-      companyName: (personal as any).companyName,
-      roleName: (personal as any).roleName,
-    };
-    const results = await Promise.allSettled(
-      __groupIds.map((id) => groupJobsApi.createJob(id, payload)),
-    );
-    const failedNames = results
-      .map((r, i) => ({
-        r,
-        name: cachedGroups.find((g) => g.id === __groupIds[i])?.name ?? `Group #${__groupIds[i]}`,
-      }))
-      .filter(({ r }) => r.status === 'rejected')
-      .map(({ name }) => name);
+    const failedNames = (result.groupResults ?? [])
+      .filter((r) => !r.success)
+      .map(
+        (r) =>
+          cachedGroups.find((g) => g.id === r.groupId)?.name ??
+          `Group #${r.groupId}`,
+      );
 
     if (failedNames.length === 0) {
       toast.success(
-        __groupIds.length === 1
+        groupIds.length === 1
           ? 'Added to board and group'
           : 'Added to board and groups',
       );
-    } else if (failedNames.length === __groupIds.length) {
-      toast.warning(`Saved to board; failed for ${failedNames.join(', ')}`);
     } else {
       toast.warning(`Saved to board; failed for ${failedNames.join(', ')}`);
     }
   };
+
 
 
   const handleEditJob = (id: string, data: any) => {
