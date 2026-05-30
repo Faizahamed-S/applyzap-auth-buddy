@@ -61,6 +61,12 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
   const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
   const { columns } = useTrackerColumns();
 
+  const [groups, setGroups] = useState<GroupSummary[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [postToGroups, setPostToGroups] = useState(false);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
+  const [groupError, setGroupError] = useState<string | null>(null);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,13 +81,61 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
     },
   });
 
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setGroupsLoading(true);
+    ensureGroupsCache()
+      .then((list) => {
+        if (cancelled) return;
+        setGroups(list);
+        const remembered = getLastSelectedGroupIds();
+        const valid = remembered.filter((id) => list.some((g) => g.id === id));
+        setSelectedGroupIds(valid);
+      })
+      .finally(() => {
+        if (!cancelled) setGroupsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  const handleToggleGroups = async (checked: boolean) => {
+    setPostToGroups(checked);
+    setGroupError(null);
+    if (checked) {
+      const fresh = await refreshGroupsCache();
+      setGroups(fresh);
+      setSelectedGroupIds((prev) => prev.filter((id) => fresh.some((g) => g.id === id)));
+    }
+  };
+
+  const toggleGroup = (id: number, checked: boolean) => {
+    setGroupError(null);
+    setSelectedGroupIds((prev) =>
+      checked ? [...prev, id] : prev.filter((x) => x !== id),
+    );
+  };
+
   const handleSubmit = async (data: FormValues) => {
+    if (postToGroups && selectedGroupIds.length === 0) {
+      setGroupError('Select at least one group, or turn the toggle off.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const metadata = fieldsToMetadata(customFields);
-      await onSubmit({ ...data, ...(metadata ? { applicationMetadata: metadata } : {}) } as any);
+      const groupIds = postToGroups ? selectedGroupIds : [];
+      await onSubmit({
+        ...data,
+        ...(metadata ? { applicationMetadata: metadata } : {}),
+        __groupIds: groupIds,
+      } as any);
       form.reset();
       setCustomFields([]);
+      setPostToGroups(false);
+      setGroupError(null);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
