@@ -5,6 +5,14 @@ import { API_BASE_URL as BASE } from "./apiConfig";
 
 const API_BASE_URL = `${BASE}/board`;
 
+export interface GroupAddResult {
+  groupId: number;
+  success: boolean;
+  jobId: number | null;
+  error: string | null;
+}
+
+
 
 // Helper to get auth token
 const getAuthToken = async (): Promise<string> => {
