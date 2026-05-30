@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import Logo from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { refreshGroupsCache } from "@/lib/groupsCache";
 
 
 const loginSchema = z.object({
@@ -46,6 +47,7 @@ const Login = () => {
         }
       } else {
         toast.success("Logged in successfully!");
+        refreshGroupsCache();
         navigate(safeReturnTo ?? "/dashboard");
       }
     } catch (err) {

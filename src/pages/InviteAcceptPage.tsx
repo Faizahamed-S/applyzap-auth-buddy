@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import Logo from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { groupsApi, GroupsApiError } from "@/lib/groupsApi";
+import { refreshGroupsCache } from "@/lib/groupsCache";
 
 const InviteAcceptPage = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const InviteAcceptPage = () => {
     mutationFn: () => groupsApi.acceptInvite(token!),
     onSuccess: () => {
       toast.success(`Joined ${infoQuery.data?.groupName ?? "group"}`);
+      refreshGroupsCache();
       // TODO: navigate to /groups/{id} once backend returns groupId in invite info or accept response.
       navigate("/groups");
     },

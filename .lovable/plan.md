@@ -1,66 +1,100 @@
-# Group Invite Flow — Frontend Delivery
+# Add to collaborative group(s) on job creation
 
-Backend creates invite tokens but does not send email. Frontend must surface the link to the inviter and run the accept flow on the invitee's side.
-
-## Scope
-- No UI redesign outside the invite modal + new accept page.
-- No global error handler; all errors stay local toasts.
-- Reuse `API_BASE_URL` from `src/lib/apiConfig.ts` and Supabase access token.
+Add an optional toggle in the personal "Add Application" modal that also posts the new job (subset fields only) to one or more collaborative groups.
 
 ## Files
 
-### 1. `src/lib/groupsApi.ts` (edit)
-Add two methods + one type:
-- `GroupInviteInfo = { groupName: string; inviterName: string; email: string; valid: boolean }`
-- `getInviteInfo(token: string): Promise<GroupInviteInfo>` → `GET /api/groups/invites/{token}` (Bearer).
-- `acceptInvite(token: string): Promise<void>` → `POST /api/groups/invites/{token}/accept` (Bearer).
-- Keep existing `inviteMember` — it already returns the token string.
+**New**
+- `src/lib/groupsCache.ts` — localStorage-backed cache of group summaries.
 
-### 2. `src/components/groups/InviteMemberModal.tsx` (rewrite behavior, same shell)
-Replace the "Invite sent" success toast with a two-step modal state:
-- **Step 1 — Form**: email input + "Create invite" button (unchanged UI).
-- **Step 2 — Share** (after 201 success):
-  - Title: "Invite created"
-  - Body: `Share this link with them. They must sign in as {email} to join.`
-  - Read-only input showing `inviteUrl = ${window.location.origin}/invite/${token}`
-  - **Copy link** button (uses `navigator.clipboard.writeText`, toast on success)
-  - **Email link** button → `mailto:{email}?subject=Join {groupName} on ApplyZap&body={inviteUrl}` (opens user's mail client; we do not claim backend sent email)
-  - **Done** button closes modal; **Invite another** resets to step 1
-- Drop the dev-only auto-copy of the raw token.
-- Keep local error toasts for 400/403/409/500.
+**Edited**
+- `src/components/kanban/AddJobModal.tsx` — add toggle + group multi-select + remembered selection.
+- `src/components/kanban/JobKanbanBoard.tsx` — extend `handleAddJob` to fan out to group endpoints after personal create.
+- `src/components/groups/CreateGroupModal.tsx`, `src/pages/GroupDetailPage.tsx` (delete), `src/pages/InviteAcceptPage.tsx` (accept) — call `refreshGroupsCache()` after success.
+- `src/pages/Login.tsx` — call `refreshGroupsCache()` after successful sign-in (email/password + OAuth callback path).
 
-### 3. `src/pages/InviteAcceptPage.tsx` (new)
-Route `/invite/:token`. Flow:
-1. Check Supabase session. If none → `navigate('/login?returnTo=/invite/' + token, { replace: true })`.
-2. On mount (signed in) → `groupsApi.getInviteInfo(token)`.
-3. Render card with:
-   - Title: `Join {groupName}`
-   - Subtext: `{inviterName} invited {email} to collaborate.`
-   - Warning banner if `info.valid === false` OR if current Supabase user email !== `info.email` → "This invite is for {email}. Sign in with that account to accept." (Sign out button → supabase signOut + redirect to login with returnTo).
-   - **Accept invite** button → `acceptInvite(token)` → on success: toast "Joined {groupName}", `navigate(`/groups/${groupId}`)` (need groupId — see note below).
-   - **Decline** → `navigate('/groups')`.
-4. Error states (local toasts + inline message):
-   - 401 → re-login with returnTo
-   - 404/410 → "This invite is no longer valid."
-   - 409 → "You're already a member." + button to `/groups`
-   - 500 → generic retry
+## Cache (`src/lib/groupsCache.ts`)
 
-Note on `groupId` after accept: `GroupInviteInfoDTO` shape per spec does not include groupId. After accept, navigate to `/groups` (groups list) as the safe default. If backend later adds `groupId` to the info DTO or the accept response, switch to `/groups/{id}`. Add a `// TODO` comment.
+```ts
+type GroupSummary = { id: number; name: string };
+const KEY = "applyzap_groups_cache";
+const TTL_MS = 30 * 60 * 1000;
+```
 
-### 4. `src/pages/Login.tsx` (small edit)
-Honor `?returnTo=` query param after successful sign-in (and after Google OAuth callback). If absent, keep current behavior (redirect to `/dashboard`).
+- `getGroupsCache(): { groups, fetchedAt } | null` — returns parsed entry (no TTL check; caller decides).
+- `isFresh(entry): boolean` — `Date.now() - fetchedAt < TTL_MS`.
+- `refreshGroupsCache(): Promise<GroupSummary[]>` — calls `groupsApi.listGroups()`, maps to `{id, name}`, writes to localStorage, returns array. Silent on failure (returns existing cache or `[]`).
+- `ensureGroupsCache(): Promise<GroupSummary[]>` — return cached if fresh, else `refreshGroupsCache()`.
+- `clearGroupsCache()`.
 
-### 5. `src/App.tsx` (edit)
-Register `<Route path="/invite/:token" element={<InviteAcceptPage />} />` above the catch-all.
+Last-selected ids helper:
+- `getLastSelectedGroupIds(): number[]` / `setLastSelectedGroupIds(ids)` against key `applyzap_last_group_ids`.
+
+## AddJobModal changes
+
+- On `open` transition to true: call `ensureGroupsCache()` once, store result in `groups` state; if toggle later turned on while cache is stale, `refreshGroupsCache()` again.
+- New form state (outside zod schema to keep submit payload clean):
+  - `postToGroups: boolean` (default `false`).
+  - `selectedGroupIds: number[]` (init from `getLastSelectedGroupIds()` intersected with available groups).
+- UI block placed above the action buttons:
+  - If `groups.length === 0`: render disabled switch with helper text "Join or create a group first" linking to `/groups`.
+  - Else: `<Switch>` labeled "Also add to collaborative group(s)".
+  - When toggle is ON: render a bordered list of checkboxes (group name per row, scrollable max-h).
+  - Inline error below list when toggle ON and `selectedGroupIds.length === 0` and submit attempted.
+- On submit:
+  - Block submit (set local error, do not call `onSubmit`) if toggle ON and no group selected.
+  - Pass extra `__groupIds: number[]` alongside form values to `onSubmit` (keeps `AddJobModal` API additive; consumer strips before sending to personal endpoint).
+  - Persist `setLastSelectedGroupIds(selectedGroupIds)` on successful submit.
+
+## JobKanbanBoard submit flow
+
+Replace `handleAddJob`:
+
+```ts
+const handleAddJob = async (data: any) => {
+  const { __groupIds = [], ...personal } = data;
+  let created: JobApplication;
+  try {
+    created = await jobApi.createApplication(personal);
+  } catch {
+    toast.error("Failed to add application");
+    return;
+  }
+  queryClient.invalidateQueries({ queryKey: ["job-applications"] });
+  queryClient.invalidateQueries({ queryKey: ["unique-statuses"] });
+
+  if (__groupIds.length === 0) {
+    toast.success("Application added successfully!");
+    return;
+  }
+
+  const groups = getGroupsCache()?.groups ?? [];
+  const payload = {
+    jobLink: personal.jobLink || "",
+    companyName: personal.companyName,
+    roleName: personal.roleName,
+  };
+  const results = await Promise.allSettled(
+    __groupIds.map((id) => groupJobsApi.createJob(id, payload))
+  );
+  const failed = results
+    .map((r, i) => ({ r, name: groups.find(g => g.id === __groupIds[i])?.name ?? `#${__groupIds[i]}` }))
+    .filter(({ r }) => r.status === "rejected");
+
+  if (failed.length === 0) toast.success("Added to board and group(s)");
+  else toast.warning(`Saved to board; failed for ${failed.map(f => f.name).join(", ")}`);
+};
+```
+
+Drop `createMutation`'s `onSuccess` toast (handled inline now) or convert to a no-op success.
+
+## Edge cases handled
+
+- Dedup: backend returns 200/201 with existing job — both are non-error, counted as success.
+- 403: surfaces in the partial-failure toast naming the group.
+- Toggle on, zero selected: blocked client-side, no requests fired.
+- No `jobLink` in personal form: send empty string (backend currently rejects invalid URLs; if user left blank, the group POST would 400 — captured in partial-failure toast). Out of scope to change schema.
 
 ## Out of scope
-- Backend changes (it already returns plain string token + has accept endpoint per spec).
-- Sidebar, dashboard, board, profile, analytics — untouched.
-- No new global error handler, no axios interceptors.
 
-## Acceptance
-1. Owner invites email → modal shows shareable `/invite/{token}` URL with copy + mailto buttons.
-2. Visiting `/invite/{token}` while signed out redirects to login with returnTo and returns after auth.
-3. Signed-in invitee sees group name + inviter; Accept joins group, lands on `/groups`.
-4. Wrong-account warning appears when session email differs from invite email.
-5. All requests use `API_BASE_URL` + Bearer; no global error handler added.
+Chrome extension; group `jobDescription`; backend composite endpoint; edit-application sync to groups.

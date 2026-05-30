@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { groupsApi, GroupsApiError } from "@/lib/groupsApi";
+import { refreshGroupsCache } from "@/lib/groupsCache";
 
 interface Props {
   open: boolean;
@@ -46,6 +47,7 @@ export const CreateGroupModal = ({ open, onOpenChange }: Props) => {
     onSuccess: () => {
       toast.success("Group created");
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+      refreshGroupsCache();
       setName("");
       onOpenChange(false);
     },

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,10 +24,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { CustomFieldsEditor, fieldsToMetadata } from './CustomFieldsEditor';
 import type { CustomFieldEntry } from './CustomFieldsEditor';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
 import { normalizeStatus } from '@/lib/statusMapper';
+import {
+  ensureGroupsCache,
+  refreshGroupsCache,
+  getLastSelectedGroupIds,
+  type GroupSummary,
+} from '@/lib/groupsCache';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -52,6 +61,12 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
   const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
   const { columns } = useTrackerColumns();
 
+  const [groups, setGroups] = useState<GroupSummary[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [postToGroups, setPostToGroups] = useState(false);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
+  const [groupError, setGroupError] = useState<string | null>(null);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,13 +81,61 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
     },
   });
 
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setGroupsLoading(true);
+    ensureGroupsCache()
+      .then((list) => {
+        if (cancelled) return;
+        setGroups(list);
+        const remembered = getLastSelectedGroupIds();
+        const valid = remembered.filter((id) => list.some((g) => g.id === id));
+        setSelectedGroupIds(valid);
+      })
+      .finally(() => {
+        if (!cancelled) setGroupsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  const handleToggleGroups = async (checked: boolean) => {
+    setPostToGroups(checked);
+    setGroupError(null);
+    if (checked) {
+      const fresh = await refreshGroupsCache();
+      setGroups(fresh);
+      setSelectedGroupIds((prev) => prev.filter((id) => fresh.some((g) => g.id === id)));
+    }
+  };
+
+  const toggleGroup = (id: number, checked: boolean) => {
+    setGroupError(null);
+    setSelectedGroupIds((prev) =>
+      checked ? [...prev, id] : prev.filter((x) => x !== id),
+    );
+  };
+
   const handleSubmit = async (data: FormValues) => {
+    if (postToGroups && selectedGroupIds.length === 0) {
+      setGroupError('Select at least one group, or turn the toggle off.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const metadata = fieldsToMetadata(customFields);
-      await onSubmit({ ...data, ...(metadata ? { applicationMetadata: metadata } : {}) } as any);
+      const groupIds = postToGroups ? selectedGroupIds : [];
+      await onSubmit({
+        ...data,
+        ...(metadata ? { applicationMetadata: metadata } : {}),
+        __groupIds: groupIds,
+      } as any);
       form.reset();
       setCustomFields([]);
+      setPostToGroups(false);
+      setGroupError(null);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -228,6 +291,62 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
             <Separator />
 
             <CustomFieldsEditor fields={customFields} onChange={setCustomFields} />
+
+            <Separator />
+
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">
+                    Also add to collaborative group(s)
+                  </Label>
+                  <div className="text-sm text-muted-foreground">
+                    {groupsLoading
+                      ? 'Loading your groups…'
+                      : groups.length === 0
+                        ? 'Join or create a group first.'
+                        : 'Share this job with your group boards.'}
+                  </div>
+                </div>
+                <Switch
+                  checked={postToGroups}
+                  onCheckedChange={handleToggleGroups}
+                  disabled={groupsLoading || groups.length === 0}
+                />
+              </div>
+
+              {groups.length === 0 && !groupsLoading && (
+                <Button asChild variant="ghost" size="sm" className="h-auto p-0 text-primary">
+                  <Link to="/groups">Go to groups →</Link>
+                </Button>
+              )}
+
+              {postToGroups && groups.length > 0 && (
+                <div className="space-y-2">
+                  <div className="max-h-40 overflow-y-auto space-y-2 rounded-md border border-border p-2">
+                    {groups.map((g) => {
+                      const checked = selectedGroupIds.includes(g.id);
+                      return (
+                        <label
+                          key={g.id}
+                          className="flex items-center gap-2 cursor-pointer text-sm py-1"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => toggleGroup(g.id, v === true)}
+                          />
+                          <span className="truncate">{g.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {groupError && (
+                    <p className="text-sm text-destructive">{groupError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
 
             <div className="flex gap-3 justify-end pt-4">
               <Button

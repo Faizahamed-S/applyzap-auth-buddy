@@ -19,6 +19,7 @@ import { ArrowLeft, UserPlus, LayoutGrid, LogOut, Trash2, Users } from "lucide-r
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { groupsApi, GroupsApiError } from "@/lib/groupsApi";
+import { refreshGroupsCache } from "@/lib/groupsCache";
 import { userApi } from "@/lib/userApi";
 import { MemberList } from "@/components/groups/MemberList";
 import { InviteMemberModal } from "@/components/groups/InviteMemberModal";
@@ -73,6 +74,7 @@ const GroupDetailPage = () => {
     onSuccess: () => {
       toast.success("You've left the group");
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+      refreshGroupsCache();
       navigate("/groups");
     },
     onError: (err: unknown) => {
@@ -93,6 +95,7 @@ const GroupDetailPage = () => {
     onSuccess: () => {
       toast.success("Group deleted");
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+      refreshGroupsCache();
       navigate("/groups");
     },
     onError: (err: unknown) => {
