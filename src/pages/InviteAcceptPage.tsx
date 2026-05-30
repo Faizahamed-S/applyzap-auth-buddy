@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import Logo from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { groupsApi, GroupsApiError } from "@/lib/groupsApi";
+import { refreshGroupsCache } from "@/lib/groupsCache";
 
 const InviteAcceptPage = () => {
   const navigate = useNavigate();
