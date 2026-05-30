@@ -67,12 +67,13 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
-      toast.success('Application added successfully!');
     },
     onError: () => {
       toast.error('Failed to add application');
     },
   });
+
+
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
