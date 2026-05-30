@@ -62,7 +62,8 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   });
 
   const createMutation = useMutation({
-    mutationFn: jobApi.createApplication,
+    mutationFn: ({ data, groupIds }: { data: any; groupIds: number[] }) =>
+      jobApi.createApplication(data, groupIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
