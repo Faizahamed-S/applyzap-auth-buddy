@@ -21,16 +21,36 @@ interface Props {
   groupId: number | string;
 }
 
+const URL_HINT = "Paste the full job URL (e.g. https://company.com/careers/123)";
+
 export const AddGroupJobModal = ({ open, onOpenChange, groupId }: Props) => {
   const [jobLink, setJobLink] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [roleName, setRoleName] = useState("");
+  const [linkError, setLinkError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const reset = () => {
     setJobLink("");
     setCompanyName("");
     setRoleName("");
+    setLinkError(null);
+  };
+
+  const mapErrorMessage = (err: GroupsApiError): string => {
+    const msg = err.message ?? "";
+    if (
+      msg.includes("Invalid job link") ||
+      msg.includes("Invalid job URL") ||
+      msg.includes("Job link is required")
+    ) {
+      return "Invalid link — use a full URL starting with https://";
+    }
+    if (msg.includes("Not a member")) return "You don't have access to this group";
+    if (msg.includes("Group not found")) return "Group not found";
+    if (err.status === 401) return "Please sign in again";
+    if (err.status === 409) return "That job is already on the board.";
+    return msg || "Couldn't add job. Try again.";
   };
 
   const mutation = useMutation({
@@ -48,13 +68,8 @@ export const AddGroupJobModal = ({ open, onOpenChange, groupId }: Props) => {
     },
     onError: (err: unknown) => {
       if (err instanceof GroupsApiError) {
-        if (err.status === 400) return toast.error("That job link doesn't look valid.");
-        if (err.status === 401) return toast.error("Please sign in again");
-        if (err.status === 403) return toast.error("You aren't a member of this group.");
-        if (err.status === 404) return toast.error("Group not found");
-        if (err.status === 409) return toast.error("That job is already on the board.");
-        if (err.status >= 500) return toast.error("Couldn't add job. Please try again.");
-        return toast.error(err.message || "Couldn't add job.");
+        toast.error(mapErrorMessage(err));
+        return;
       }
       toast.error("Network error. Please try again.");
     },
@@ -63,13 +78,24 @@ export const AddGroupJobModal = ({ open, onOpenChange, groupId }: Props) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const link = jobLink.trim();
-    if (!link) return toast.error("Job link is required.");
+    if (!link) {
+      setLinkError("Job link is required.");
+      toast.error("Job link is required.");
+      return;
+    }
+    if (!/^https?:\/\//i.test(link)) {
+      setLinkError("Invalid link — use a full URL starting with https://");
+      toast.error("Invalid link — use a full URL starting with https://");
+      return;
+    }
     try {
-      // basic URL sanity
       new URL(link);
     } catch {
-      return toast.error("Please enter a valid URL.");
+      setLinkError("Please enter a valid URL.");
+      toast.error("Please enter a valid URL.");
+      return;
     }
+    setLinkError(null);
     mutation.mutate();
   };
 
@@ -93,11 +119,24 @@ export const AddGroupJobModal = ({ open, onOpenChange, groupId }: Props) => {
             <Input
               id="job-link"
               value={jobLink}
-              onChange={(e) => setJobLink(e.target.value)}
+              onChange={(e) => {
+                setJobLink(e.target.value);
+                if (linkError) setLinkError(null);
+              }}
               placeholder="https://company.com/jobs/123"
               autoFocus
               disabled={mutation.isPending}
+              aria-invalid={!!linkError}
             />
+            <p
+              className={
+                linkError
+                  ? "text-xs text-destructive"
+                  : "text-xs text-muted-foreground"
+              }
+            >
+              {linkError ?? URL_HINT}
+            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
