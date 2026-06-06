@@ -52,21 +52,21 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col w-[220px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
+      className={`flex flex-col w-[260px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
         isOver ? 'border-primary bg-primary/10' : 'border-border'
       }`}
     >
       {/* Sticky Column Header */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm rounded-t-xl transition-all duration-200">
         <div
-          className="cursor-pointer hover:opacity-90 transition-opacity px-3 py-2.5"
+          className="cursor-pointer hover:opacity-90 transition-opacity p-4"
           onClick={handleHeaderClick}
         >
           <div className="flex items-center justify-between">
-            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold text-white ${badgeBg}`}>
+            <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${badgeBg}`}>
               {displayLabel}
             </span>
-            <span className="text-muted-foreground font-medium bg-muted px-2 py-0.5 rounded-full text-xs" data-badge>
+            <span className="text-muted-foreground font-medium bg-muted px-2.5 py-1 rounded-full text-sm" data-badge>
               {jobs.length}
             </span>
           </div>
