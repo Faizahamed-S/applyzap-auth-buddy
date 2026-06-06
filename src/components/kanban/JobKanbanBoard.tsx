@@ -14,7 +14,7 @@ import { User } from '@supabase/supabase-js';
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { getGroupsCache, setLastSelectedGroupIds } from '@/lib/groupsCache';
-import { KanbanColumn } from './KanbanColumn';
+import { KanbanColumn, ColumnHeader } from './KanbanColumn';
 import { JobCard } from './JobCard';
 import { AddJobModal } from './AddJobModal';
 import { EditJobModal } from './EditJobModal';
@@ -287,7 +287,30 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex gap-6 items-start pb-4">
+              {/* Sticky header row — all statuses always visible */}
+              <div className="sticky top-0 z-20 bg-background pt-1 pb-3 mb-2">
+                <div className="flex gap-4 items-center px-2">
+                  {trackerColumns.map((col) => (
+                    <ColumnHeader
+                      key={`h-${col.id}`}
+                      status={col.title}
+                      count={getJobsByColumn(col.title).length}
+                      color={col.color}
+                    />
+                  ))}
+                  {unmatchedApps.length > 0 && (
+                    <ColumnHeader
+                      key="h-other"
+                      status="Other"
+                      count={unmatchedApps.length}
+                      color="gray"
+                    />
+                  )}
+                </div>
+                <div className="border-b border-border mt-2" />
+              </div>
+
+              <div className="flex gap-4 items-start pb-4">
                 {trackerColumns.map((col) => (
                   <KanbanColumn
                     key={col.id}
@@ -296,7 +319,6 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
                     onEdit={handleOpenEdit}
                     onDelete={handleDeleteJob}
                     onViewDetails={handleViewDetails}
-                    color={col.color}
                   />
                 ))}
                 {unmatchedApps.length > 0 && (
@@ -307,7 +329,6 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
                     onEdit={handleOpenEdit}
                     onDelete={handleDeleteJob}
                     onViewDetails={handleViewDetails}
-                    color="gray"
                   />
                 )}
               </div>
