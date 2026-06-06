@@ -280,14 +280,14 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
       {/* Scrollable Board Area */}
       <div className="flex-1 overflow-auto">
-        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
+        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6 min-h-full flex flex-col">
           {currentView === 'kanban' ? (
             <DndContext
               sensors={sensors}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex gap-4 items-stretch pb-4 min-h-full">
+              <div className="flex gap-4 items-stretch pb-4 flex-1 min-h-full">
                 {trackerColumns.map((col) => (
                   <KanbanColumn
                     key={col.id}
