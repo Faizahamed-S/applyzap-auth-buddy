@@ -42,7 +42,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const [editingJob, setEditingJob] = useState<JobApplication | null>(null);
   const [viewingJobId, setViewingJobId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(100);
+  const [itemsPerPage] = useState(200);
   const [currentView, setCurrentView] = useState<'kanban' | 'table'>('kanban');
   const [isBoardSettingsOpen, setIsBoardSettingsOpen] = useState(false);
 
@@ -285,7 +285,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex gap-6 pb-4 overflow-x-auto">
+            <div className="flex gap-6 items-start pb-4 overflow-x-auto">
                 {trackerColumns.map((col) => (
                   <KanbanColumn
                     key={col.id}
@@ -332,7 +332,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
           />
         )}
 
-        {applications.length > 0 && (
+        {currentView === 'table' && applications.length > 0 && (
           <div className="mt-6">
             <PaginationControls
               currentPage={currentPage}

@@ -53,34 +53,44 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
   };
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
-      className={`flex flex-col flex-1 min-w-[200px] min-h-[calc(100vh-220px)] rounded-xl border transition-colors duration-200 ${
-        isOver 
-          ? 'border-primary bg-primary/10' 
-          : 'border-border'
+      className={`flex flex-col w-[280px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
+        isOver ? 'border-primary bg-primary/10' : 'border-border'
       }`}
     >
-      {/* Column Header */}
-      <div 
-        className="cursor-pointer hover:opacity-90 transition-opacity p-4"
-        onClick={handleHeaderClick}
-      >
-        <div className="flex items-center justify-between">
-          <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${badgeBg}`}>
-            {displayLabel}
-          </span>
-          <span className="text-muted-foreground font-medium bg-muted px-2.5 py-1 rounded-full text-sm" data-badge>
-            {jobs.length}
-          </span>
+      {/* Sticky Column Header */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur rounded-t-xl">
+        <div
+          className="cursor-pointer hover:opacity-90 transition-opacity p-4"
+          onClick={handleHeaderClick}
+        >
+          <div className="flex items-center justify-between">
+            <span className={`px-3 py-1.5 rounded-full text-sm font-semibold text-white ${badgeBg}`}>
+              {displayLabel}
+            </span>
+            <span className="text-muted-foreground font-medium bg-muted px-2.5 py-1 rounded-full text-sm" data-badge>
+              {jobs.length}
+            </span>
+          </div>
+          {jobs.length > 20 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/status/${status}`);
+              }}
+              className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              View all {jobs.length} →
+            </button>
+          )}
         </div>
+        <div className="border-b border-border mx-3" />
       </div>
 
-      {/* Separator Line */}
-      <div className="border-b border-border mx-3" />
-
-      {/* Cards area */}
-      <div className="flex-1 p-3 space-y-3 overflow-y-auto scrollbar-stealth">
+      {/* Cards area — natural height, no internal scroll */}
+      <div className="p-3 space-y-3">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {jobs.length === 0 ? (
