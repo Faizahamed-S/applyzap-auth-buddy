@@ -1,51 +1,32 @@
-# Fix Add-Group-Job error UX
+## Goal
+Make the group's collaborative board the default view when entering a group, and move the current group detail (members, invite, leave/delete) behind a "Member settings" button.
 
-Scope: `src/components/groups/AddGroupJobModal.tsx` and `src/lib/groupJobsApi.ts`. Personal board flow untouched.
+## Changes
 
-## 1. Backend message parsing (`groupJobsApi.createJob`)
+### 1. Routing (`src/App.tsx`)
+Swap which component is mounted at each route:
+- `/groups/:groupId` → `GroupBoardPage` (was `GroupDetailPage`)
+- `/groups/:groupId/settings` → `GroupDetailPage` (new route; replaces `/groups/:groupId/board`)
 
-`parseError` already JSON-parses and extracts `message`/`error`. Keep it — `GroupsApiError.message` will carry the backend message. Verify the `Authorization` header in `getAuthHeaders` already uses `session.access_token` (it does); no change needed.
+Keep `/groups/:groupId/board` as a redirect to `/groups/:groupId` for any existing links/bookmarks.
 
-## 2. Map messages to friendly toasts (`AddGroupJobModal.onError`)
+### 2. `GroupBoardPage` (now the group landing page)
+- Update "Back" link target from `/groups/:groupId` → `/groups` (back to groups list).
+- Add a **"Member settings"** button (icon: `Users` or `Settings`) in the header next to "Add job" that navigates to `/groups/:groupId/settings`.
+- Keep all existing board functionality (add job, status cycling, delete job, tutorial preview).
 
-Replace the current status-based switch with message-content matching first, falling back to status-based hints:
+### 3. `GroupDetailPage` (now the settings page)
+- Update "Back" link from `/groups` → `/groups/:groupId` (back to the board).
+- Update page title context (e.g. "{group.name} — Members & settings") so it's clear this is a sub-page.
+- Remove the "Open collaborative board" button (board is now the parent page) — or replace it with a subtle "View board" link. Recommend removing since back-button already returns to board.
+- Keep Invite member (owner only), member list, Leave group, Delete group (owner only).
 
-```text
-msg = err.message ?? ""
-
-if msg includes "Invalid job link" | "Invalid job URL" | "Job link is required"
-    → "Invalid link — use a full URL starting with https://"
-else if msg includes "Not a member"
-    → "You don't have access to this group"
-else if msg includes "Group not found"
-    → "Group not found"
-else if err.status === 401
-    → "Please sign in again"
-else if err.status === 409
-    → "That job is already on the board."
-else
-    → msg || "Couldn't add job. Try again."
-```
-
-No more generic "Unable to add" when a specific backend message exists.
-
-## 3. Client-side validation before submit
-
-In `handleSubmit`:
-- Block submit if `jobLink.trim()` is empty → inline error + toast
-- Block submit if it does not start with `http://` or `https://` → inline error + toast
-- Keep `new URL()` sanity check
-
-## 4. Inline hint under the Job link field
-
-Always render helper text:
-> "Paste the full job URL (e.g. https://company.com/careers/123)"
-
-Switch to red/destructive copy when the inline validation error is set.
-
-## Files touched
-- `src/components/groups/AddGroupJobModal.tsx` — validation, inline hint, new error mapping
-- (No change needed in `src/lib/groupJobsApi.ts` — `parseError` already extracts `message`; auth header already uses session token.)
+### 4. Entry points that link into a group
+Audit and update any `navigate("/groups/${id}")` or `<Link to="/groups/...">` callers that previously expected the detail page. These should now naturally land on the board, which is the desired behavior. Specifically check:
+- `MyGroupsHub` / `GroupCard` — clicking a group card lands on the board ✓ (desired)
+- `InviteAcceptPage` — after accepting invite, lands on board ✓ (desired)
+- Any internal "Open board" buttons → can be removed or repointed.
 
 ## Out of scope
-Personal board create flow, other group endpoints, AddJobModal in kanban.
+- No changes to board logic, members API, invite flow, or styling beyond the new button.
+- No backend changes.

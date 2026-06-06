@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus, X, Users } from "lucide-react";
 import { toast } from "sonner";
 import { GroupsApiError } from "@/lib/groupsApi";
 import {
@@ -160,9 +160,9 @@ const GroupBoardPage = () => {
     <DashboardLayout>
       <div className="max-w-[1400px] w-[92%] mx-auto py-8 space-y-6">
         <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
-          <Link to={`/groups/${groupId}`}>
+          <Link to="/groups">
             <ArrowLeft className="h-4 w-4" />
-            Back to group
+            Back to groups
           </Link>
         </Button>
 
@@ -199,10 +199,20 @@ const GroupBoardPage = () => {
                   cell to cycle: NA → APPLIED → EXPIRED.
                 </p>
               </div>
-              <Button onClick={() => setAddOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add job
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate(`/groups/${groupId}/settings`)}
+                  className="gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Member settings
+                </Button>
+                <Button onClick={() => setAddOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add job
+                </Button>
+              </div>
             </div>
 
             {board.jobs.length > 0 ? (
