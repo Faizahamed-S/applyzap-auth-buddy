@@ -247,7 +247,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   return (
     <div className="w-full h-screen flex flex-col bg-background">
       {/* Fixed Header */}
-      <div className="shrink-0 border-b border-border bg-background">
+      <div className="shrink-0 bg-background">
         <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
