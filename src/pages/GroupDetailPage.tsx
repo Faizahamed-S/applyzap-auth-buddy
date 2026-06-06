@@ -164,7 +164,7 @@ const GroupDetailPage = () => {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="space-y-1 min-w-0">
                 <h1 className="text-3xl font-bold text-foreground truncate">
-                  {group.name}
+                  {group.name} — Members & settings
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {(() => {
@@ -180,13 +180,6 @@ const GroupDetailPage = () => {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => navigate(`/groups/${group.id}/board`)}
-                  className="gap-2"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                  Open collaborative board
-                </Button>
                 {isOwner && (
                   <Button
                     variant="secondary"
