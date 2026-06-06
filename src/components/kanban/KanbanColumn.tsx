@@ -55,12 +55,12 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col w-[280px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
+      className={`flex flex-col w-[260px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
         isOver ? 'border-primary bg-primary/10' : 'border-border'
       }`}
     >
       {/* Sticky Column Header */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur rounded-t-xl">
+      <div className="sticky top-0 z-10 bg-background rounded-t-xl">
         <div
           className="cursor-pointer hover:opacity-90 transition-opacity p-4"
           onClick={handleHeaderClick}
@@ -73,18 +73,6 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
               {jobs.length}
             </span>
           </div>
-          {jobs.length > 20 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/status/${status}`);
-              }}
-              className="mt-2 text-xs text-muted-foreground hover:text-foreground"
-            >
-              View all {jobs.length} →
-            </button>
-          )}
         </div>
         <div className="border-b border-border mx-3" />
       </div>
