@@ -245,47 +245,49 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
 
   return (
-    <div className="w-full bg-background">
-      {/* Main Content - Constrained Width */}
-      <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-8">
-        {/* Action Bar - Title on Left, Controls on Right */}
-        <div className="flex items-center justify-between mb-8">
-          {/* Left: Page Title + Tagline */}
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Job Application Tracker</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your job search with drag-and-drop simplicity
-            </p>
-          </div>
-          
-          {/* Right: Controls */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => setIsBoardSettingsOpen(true)}
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-            <Button 
-              onClick={() => setIsAddModalOpen(true)} 
-              className="active:scale-95 transition-all duration-150"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Application
-            </Button>
-            <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+    <div className="w-full h-screen flex flex-col bg-background">
+      {/* Fixed Header */}
+      <div className="shrink-0 border-b border-border bg-background">
+        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Job Application Tracker</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage your job search with drag-and-drop simplicity
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setIsBoardSettingsOpen(true)}
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="active:scale-95 transition-all duration-150"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Application
+              </Button>
+              <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+            </div>
           </div>
         </div>
+      </div>
 
-        {currentView === 'kanban' ? (
-          <DndContext
-            sensors={sensors}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="flex gap-6 items-start pb-4 overflow-x-auto">
+      {/* Scrollable Board Area */}
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
+          {currentView === 'kanban' ? (
+            <DndContext
+              sensors={sensors}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="flex gap-6 items-start pb-4">
                 {trackerColumns.map((col) => (
                   <KanbanColumn
                     key={col.id}
@@ -324,25 +326,26 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               </DragOverlay>
             </DndContext>
           ) : (
-          <AllApplicationsTable
-            applications={applications}
-            onEdit={handleOpenEdit}
-            onDelete={handleDeleteJob}
-            onStatusChange={handleStatusChange}
-          />
-        )}
-
-        {currentView === 'table' && applications.length > 0 && (
-          <div className="mt-6">
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={Math.ceil(applications.length / itemsPerPage)}
-              onPageChange={setCurrentPage}
-              totalItems={applications.length}
-              itemsPerPage={itemsPerPage}
+            <AllApplicationsTable
+              applications={applications}
+              onEdit={handleOpenEdit}
+              onDelete={handleDeleteJob}
+              onStatusChange={handleStatusChange}
             />
-          </div>
-        )}
+          )}
+
+          {currentView === 'table' && applications.length > 0 && (
+            <div className="mt-6">
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={Math.ceil(applications.length / itemsPerPage)}
+                onPageChange={setCurrentPage}
+                totalItems={applications.length}
+                itemsPerPage={itemsPerPage}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <AddJobModal
