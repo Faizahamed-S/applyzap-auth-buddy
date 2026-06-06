@@ -132,9 +132,9 @@ const GroupDetailPage = () => {
     <DashboardLayout>
       <div className="max-w-[1100px] w-[92%] mx-auto py-8 space-y-6">
         <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
-          <Link to="/groups">
+          <Link to={`/groups/${groupId}`}>
             <ArrowLeft className="h-4 w-4" />
-            Back to groups
+            Back to board
           </Link>
         </Button>
 
