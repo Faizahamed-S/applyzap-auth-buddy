@@ -41,10 +41,10 @@ export const StatusInput = ({ value, onChange }: StatusInputProps) => {
           key={status}
           type="button"
           onClick={() => onChange(status)}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors border ${
             normalizeStatus(value) === status
-              ? 'bg-electric-blue text-white'
-              : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
+              ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
+              : 'bg-background text-foreground border-border hover:bg-muted'
           }`}
         >
           {canonicalToLabel(status)}
