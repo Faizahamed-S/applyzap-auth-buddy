@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus, X, Users } from "lucide-react";
 import { toast } from "sonner";
 import { GroupsApiError } from "@/lib/groupsApi";
 import {
