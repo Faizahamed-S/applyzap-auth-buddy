@@ -14,7 +14,7 @@ import { User } from '@supabase/supabase-js';
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { getGroupsCache, setLastSelectedGroupIds } from '@/lib/groupsCache';
-import { KanbanColumn, ColumnHeader } from './KanbanColumn';
+import { KanbanColumn } from './KanbanColumn';
 import { JobCard } from './JobCard';
 import { AddJobModal } from './AddJobModal';
 import { EditJobModal } from './EditJobModal';
