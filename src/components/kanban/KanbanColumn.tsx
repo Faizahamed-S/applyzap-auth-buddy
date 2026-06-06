@@ -71,6 +71,9 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
       ref={setNodeRef}
       className="flex flex-col w-[220px] shrink-0"
     >
+      {/* Sentinel — detects when the sticky header becomes pinned */}
+      <div ref={sentinelRef} className="h-px" />
+
       {/* Sticky Column Header — pinned for full board height */}
       <div
         className={`sticky top-0 z-10 bg-background/90 backdrop-blur-sm rounded-t-xl border-t border-x ${borderColor} transition-colors duration-200`}
@@ -88,7 +91,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
             </span>
           </div>
         </div>
-        <div className="border-b border-border mx-3" />
+        <div className={`border-b border-border mx-3 transition-opacity duration-300 ${isStuck ? 'opacity-0' : 'opacity-100'}`} />
       </div>
 
       {/* Cards panel — natural height, sized to this column's applications */}
