@@ -42,7 +42,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const [editingJob, setEditingJob] = useState<JobApplication | null>(null);
   const [viewingJobId, setViewingJobId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(100);
+  const [itemsPerPage] = useState(200);
   const [currentView, setCurrentView] = useState<'kanban' | 'table'>('kanban');
   const [isBoardSettingsOpen, setIsBoardSettingsOpen] = useState(false);
 
