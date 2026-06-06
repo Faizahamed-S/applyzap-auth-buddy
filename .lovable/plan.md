@@ -1,30 +1,28 @@
-## Goal
-Hide the thin bottom divider inside each sticky status header **only while that header is pinned** (i.e. user has scrolled past the top). When viewing the top of the board, the divider stays visible as it is today. The change is a smooth opacity transition, not an abrupt hide.
+# Responsive Tracker Spacing
 
-## Approach
+**Problem:** Currently both the header and board use `max-w-[1600px] w-[85%] mx-auto`. At narrow widths, that fixed 85% steals ~15% of the screen as empty side margin — wasteful and visually awkward. At wide widths, centering is good but the 85% cap can feel arbitrary.
 
-Per `KanbanColumn`, detect when its sticky header is in the "stuck" state and toggle the inner divider's opacity accordingly.
+**Fix (best-practice responsive container):** Replace the `w-[85%]` rule with a responsive horizontal padding scale, keep the `max-w-[1600px]` cap, and keep `mx-auto` so content centers once the viewport exceeds the max width.
 
-Technique: place a 1px **sentinel** `<div>` immediately above the sticky header inside the column. Use an `IntersectionObserver` (root = the scrollable board area) to watch the sentinel:
-- Sentinel visible → header is at the top → show divider (`opacity-100`)
-- Sentinel not visible → header is pinned/stuck → hide divider (`opacity-0`)
+## Change
 
-This is the standard, jank-free way to detect a "stuck" sticky element without scroll listeners, and works independently per column.
+In `src/components/kanban/JobKanbanBoard.tsx`, both wrapper divs (header row + scrollable board row) currently use:
 
-## Changes
+```
+max-w-[1600px] w-[85%] mx-auto px-4 py-6
+```
 
-### `src/components/kanban/KanbanColumn.tsx`
-1. Add a ref for the sentinel and `isStuck` state.
-2. Set up an `IntersectionObserver` in `useEffect` watching the sentinel; update `isStuck` based on `entry.isIntersecting`.
-3. Render the sentinel `<div ref={sentinelRef} className="h-px" />` just before the sticky header wrapper.
-4. Apply a transition on the existing divider line:
-   ```
-   <div className={`border-b border-border mx-3 transition-opacity duration-300 ${isStuck ? 'opacity-0' : 'opacity-100'}`} />
-   ```
+Replace with:
 
-### `src/components/kanban/JobKanbanBoard.tsx`
-No structural changes. The scrollable container (`flex-1 overflow-auto`) already exists and acts as the IntersectionObserver root (defaulting to the document viewport also works, since the header sticks within this scroll container — we'll use `root: null` which observes against the nearest scroll ancestor / viewport; if needed we pass the scroll container ref via context, but the simpler `null` root works because the sentinel sits inside the same scroll container and its visibility transition tracks the pin state correctly).
+```
+max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16 py-6
+```
 
-## Out of scope
-- No changes to column widths, card sizing, header styling, colors, or sticky behavior itself.
-- No change to the outer column borders — only the inner divider line under the badge fades.
+Behavior:
+- **Small screens (<640px):** `px-3` only → near edge-to-edge, no wasted side space.
+- **Medium (≥640px):** `px-6` → comfortable breathing room.
+- **Large (≥1024px):** `px-10`.
+- **XL (≥1280px):** `px-16` → generous gutters.
+- **Beyond 1600px:** `mx-auto` centers the capped container, giving symmetric left/right space.
+
+No other files change. No logic, no kanban column behavior, no sticky-header changes.

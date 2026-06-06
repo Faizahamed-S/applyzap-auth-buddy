@@ -248,7 +248,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     <div className="w-full h-screen flex flex-col bg-background">
       {/* Fixed Header */}
       <div className="shrink-0 bg-background">
-        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6">
+        <div className="max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Job Application Tracker</h1>
@@ -280,7 +280,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
       {/* Scrollable Board Area */}
       <div className="flex-1 overflow-auto">
-        <div className="max-w-[1600px] w-[85%] mx-auto px-4 py-6 min-h-full flex flex-col">
+        <div className="max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16 py-6 min-h-full flex flex-col">
           {currentView === 'kanban' ? (
             <DndContext
               sensors={sensors}
