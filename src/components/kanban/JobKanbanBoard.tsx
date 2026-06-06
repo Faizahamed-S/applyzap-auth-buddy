@@ -332,7 +332,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
           />
         )}
 
-        {applications.length > 0 && (
+        {currentView === 'table' && applications.length > 0 && (
           <div className="mt-6">
             <PaginationControls
               currentPage={currentPage}
