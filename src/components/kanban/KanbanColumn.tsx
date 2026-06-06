@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +44,20 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
   const badgeBg = getColorClass(color);
   const displayLabel = canonicalToLabel(status);
 
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [isStuck, setIsStuck] = useState(false);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsStuck(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest('[data-badge]')) {
       navigate(`/status/${status}`);
@@ -56,6 +71,9 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
       ref={setNodeRef}
       className="flex flex-col w-[220px] shrink-0"
     >
+      {/* Sentinel — detects when the sticky header becomes pinned */}
+      <div ref={sentinelRef} className="h-px" />
+
       {/* Sticky Column Header — pinned for full board height */}
       <div
         className={`sticky top-0 z-10 bg-background/90 backdrop-blur-sm rounded-t-xl border-t border-x ${borderColor} transition-colors duration-200`}
@@ -73,7 +91,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
             </span>
           </div>
         </div>
-        <div className="border-b border-border mx-3" />
+        <div className={`border-b border-border mx-3 transition-opacity duration-300 ${isStuck ? 'opacity-0' : 'opacity-100'}`} />
       </div>
 
       {/* Cards panel — natural height, sized to this column's applications */}

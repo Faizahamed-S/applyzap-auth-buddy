@@ -1,25 +1,30 @@
-Implement the kanban columns as two layers so both requested behaviors can coexist:
+## Goal
+Hide the thin bottom divider inside each sticky status header **only while that header is pinned** (i.e. user has scrolled past the top). When viewing the top of the board, the divider stays visible as it is today. The change is a smooth opacity transition, not an abrupt hide.
 
-1. **Keep every status heading sticky while scrolling**
-   - Make each column’s outer wrapper tall enough to participate in the full board scroll area.
-   - Keep the status header inside that wrapper with `sticky top-0`, so every heading remains pinned independently even for empty or short statuses.
+## Approach
 
-2. **Make each visible status box use its own content height**
-   - Move the visible bordered column/background styling to an inner panel that only wraps the header area and that column’s cards.
-   - Keep the cards area natural height, so a status with 1 application is short, a status with 5 applications is longer, and no column stretches to match the tallest one.
+Per `KanbanColumn`, detect when its sticky header is in the "stuck" state and toggle the inner divider's opacity accordingly.
 
-3. **Preserve the current sticky styling**
-   - Keep the existing separated status-box appearance, rounded corners, borders, blur/background behavior, and card spacing.
-   - Only adjust layout structure/classes needed to separate “sticky scroll range” from “visible box height”.
+Technique: place a 1px **sentinel** `<div>` immediately above the sticky header inside the column. Use an `IntersectionObserver` (root = the scrollable board area) to watch the sentinel:
+- Sentinel visible → header is at the top → show divider (`opacity-100`)
+- Sentinel not visible → header is pinned/stuck → hide divider (`opacity-0`)
 
-Technical approach:
-- In `JobKanbanBoard.tsx`, keep the board row aligned at the top but give the row/columns enough scroll height for sticky headers.
-- In `KanbanColumn.tsx`, restructure the column markup so:
+This is the standard, jank-free way to detect a "stuck" sticky element without scroll listeners, and works independently per column.
 
-```text
-outer invisible full-height column wrapper
-  sticky header / top panel
-  natural-height visible cards panel
-```
+## Changes
 
-This avoids the previous trade-off where short boxes caused sticky headers to stop early, while stretched boxes made every status match the tallest column.
+### `src/components/kanban/KanbanColumn.tsx`
+1. Add a ref for the sentinel and `isStuck` state.
+2. Set up an `IntersectionObserver` in `useEffect` watching the sentinel; update `isStuck` based on `entry.isIntersecting`.
+3. Render the sentinel `<div ref={sentinelRef} className="h-px" />` just before the sticky header wrapper.
+4. Apply a transition on the existing divider line:
+   ```
+   <div className={`border-b border-border mx-3 transition-opacity duration-300 ${isStuck ? 'opacity-0' : 'opacity-100'}`} />
+   ```
+
+### `src/components/kanban/JobKanbanBoard.tsx`
+No structural changes. The scrollable container (`flex-1 overflow-auto`) already exists and acts as the IntersectionObserver root (defaulting to the document viewport also works, since the header sticks within this scroll container — we'll use `root: null` which observes against the nearest scroll ancestor / viewport; if needed we pass the scroll container ref via context, but the simpler `null` root works because the sentinel sits inside the same scroll container and its visibility transition tracks the pin state correctly).
+
+## Out of scope
+- No changes to column widths, card sizing, header styling, colors, or sticky behavior itself.
+- No change to the outer column borders — only the inner divider line under the badge fades.
