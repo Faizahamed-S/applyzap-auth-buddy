@@ -44,6 +44,20 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
   const badgeBg = getColorClass(color);
   const displayLabel = canonicalToLabel(status);
 
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [isStuck, setIsStuck] = useState(false);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsStuck(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest('[data-badge]')) {
       navigate(`/status/${status}`);
