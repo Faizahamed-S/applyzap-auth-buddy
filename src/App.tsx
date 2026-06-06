@@ -39,8 +39,9 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tracker" element={<TrackerPage />} />
             <Route path="/groups" element={<GroupsPage />} />
-            <Route path="/groups/:groupId" element={<GroupDetailPage />} />
-            <Route path="/groups/:groupId/board" element={<GroupBoardPage />} />
+            <Route path="/groups/:groupId" element={<GroupBoardPage />} />
+            <Route path="/groups/:groupId/settings" element={<GroupDetailPage />} />
+            <Route path="/groups/:groupId/board" element={<Navigate to="/groups/:groupId" replace />} />
             <Route path="/invite/:token" element={<InviteAcceptPage />} />
 
 
