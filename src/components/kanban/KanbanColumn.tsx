@@ -20,36 +20,9 @@ const COLOR_MAP: Record<string, string> = {
   gray: 'bg-gray-500',
 };
 
-export const getColorClass = (color?: string): string => {
+const getColorClass = (color?: string): string => {
   if (!color) return 'bg-gray-500';
   return COLOR_MAP[color.toLowerCase()] || 'bg-gray-500';
-};
-
-interface ColumnHeaderProps {
-  status: string;
-  count: number;
-  color?: string;
-}
-
-export const ColumnHeader = ({ status, count, color }: ColumnHeaderProps) => {
-  const navigate = useNavigate();
-  const badgeBg = getColorClass(color);
-  const displayLabel = canonicalToLabel(status);
-  return (
-    <div
-      className="w-[220px] shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
-      onClick={() => navigate(`/status/${status}`)}
-    >
-      <div className="flex items-center justify-between">
-        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold text-white ${badgeBg}`}>
-          {displayLabel}
-        </span>
-        <span className="text-muted-foreground font-medium bg-muted px-2 py-0.5 rounded-full text-xs">
-          {count}
-        </span>
-      </div>
-    </div>
-  );
 };
 
 interface KanbanColumnProps {
@@ -58,21 +31,50 @@ interface KanbanColumnProps {
   onEdit: (job: JobApplication) => void;
   onDelete: (id: string) => void;
   onViewDetails: (id: string) => void;
+  color?: string;
 }
 
-export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails }: KanbanColumnProps) => {
+export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, color }: KanbanColumnProps) => {
+  const navigate = useNavigate();
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     data: { type: 'status', status },
   });
+  const badgeBg = getColorClass(color);
+  const displayLabel = canonicalToLabel(status);
+
+  const handleHeaderClick = (e: React.MouseEvent) => {
+    if (!(e.target as HTMLElement).closest('[data-badge]')) {
+      navigate(`/status/${status}`);
+    }
+  };
 
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col w-[220px] shrink-0 self-start rounded-lg border transition-colors duration-200 ${
-        isOver ? 'border-primary bg-primary/10' : 'border-transparent'
+      className={`flex flex-col w-[220px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
+        isOver ? 'border-primary bg-primary/10' : 'border-border'
       }`}
     >
+      {/* Sticky Column Header */}
+      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm rounded-t-xl transition-all duration-200">
+        <div
+          className="cursor-pointer hover:opacity-90 transition-opacity px-3 py-2.5"
+          onClick={handleHeaderClick}
+        >
+          <div className="flex items-center justify-between">
+            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold text-white ${badgeBg}`}>
+              {displayLabel}
+            </span>
+            <span className="text-muted-foreground font-medium bg-muted px-2 py-0.5 rounded-full text-xs" data-badge>
+              {jobs.length}
+            </span>
+          </div>
+        </div>
+        <div className="border-b border-border mx-3" />
+      </div>
+
+      {/* Cards area — natural height */}
       <div className="p-2 space-y-2">
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
