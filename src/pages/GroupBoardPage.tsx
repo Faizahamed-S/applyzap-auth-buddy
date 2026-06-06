@@ -199,10 +199,20 @@ const GroupBoardPage = () => {
                   cell to cycle: NA → APPLIED → EXPIRED.
                 </p>
               </div>
-              <Button onClick={() => setAddOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add job
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate(`/groups/${groupId}/settings`)}
+                  className="gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Member settings
+                </Button>
+                <Button onClick={() => setAddOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add job
+                </Button>
+              </div>
             </div>
 
             {board.jobs.length > 0 ? (
