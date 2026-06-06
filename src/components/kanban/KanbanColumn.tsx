@@ -52,7 +52,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col w-[260px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
+      className={`flex flex-col w-[220px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
         isOver ? 'border-primary bg-primary/10' : 'border-border'
       }`}
     >
