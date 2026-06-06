@@ -287,7 +287,7 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex gap-4 items-start pb-4">
+              <div className="flex gap-4 items-stretch pb-4 min-h-full">
                 {trackerColumns.map((col) => (
                   <KanbanColumn
                     key={col.id}
