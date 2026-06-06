@@ -49,15 +49,17 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
     }
   };
 
+  const borderColor = isOver ? 'border-primary' : 'border-border';
+
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col w-[220px] shrink-0 self-start rounded-xl border transition-colors duration-200 ${
-        isOver ? 'border-primary bg-primary/10' : 'border-border'
-      }`}
+      className="flex flex-col w-[220px] shrink-0"
     >
-      {/* Sticky Column Header */}
-      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm rounded-t-xl transition-all duration-200">
+      {/* Sticky Column Header — pinned for full board height */}
+      <div
+        className={`sticky top-0 z-10 bg-background/90 backdrop-blur-sm rounded-t-xl border-t border-x ${borderColor} transition-colors duration-200`}
+      >
         <div
           className="cursor-pointer hover:opacity-90 transition-opacity px-3 py-3"
           onClick={handleHeaderClick}
@@ -74,8 +76,10 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
         <div className="border-b border-border mx-3" />
       </div>
 
-      {/* Cards area — natural height */}
-      <div className="p-2 space-y-2">
+      {/* Cards panel — natural height, sized to this column's applications */}
+      <div
+        className={`p-2 space-y-2 rounded-b-xl border-b border-x ${borderColor} ${isOver ? 'bg-primary/10' : ''} transition-colors duration-200`}
+      >
         <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {jobs.length === 0 ? (
