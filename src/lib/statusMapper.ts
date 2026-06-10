@@ -35,11 +35,10 @@ const backendJobSchema = z.object({
   applicationMetadata: z.record(z.unknown()).optional().nullable(),
 }).passthrough();
 
-export const transformFromBackend = (data: any) => {
+export const transformFromBackend = (data: any): any => {
   const parsed = backendJobSchema.safeParse(data);
   if (!parsed.success) {
     console.warn('Backend response failed validation', parsed.error.flatten());
-    // Return a minimally-safe fallback to avoid runtime crashes in the UI.
     return {
       id: String((data && data.id) ?? ''),
       companyName: '',
@@ -52,4 +51,5 @@ export const transformFromBackend = (data: any) => {
   }
   return parsed.data;
 };
+
 
