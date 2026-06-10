@@ -57,13 +57,7 @@ serve(async (req) => {
       dateOfBirth: user.user_metadata?.dob,
     };
 
-    console.log("📦 Extracted user data:", {
-      userId: payload.userId,
-      email: payload.email,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      dateOfBirth: payload.dateOfBirth,
-    });
+    console.log("📦 Processing user sync for userId:", payload.userId);
 
     // Forward to Spring Boot backend
     const backendUrl = "https://tracker-backend-production-535d.up.railway.app/api/user-sync";
