@@ -74,7 +74,6 @@ serve(async (req) => {
 
     const backendData = await backendResponse.text();
     console.log("📥 Backend response status:", backendResponse.status);
-    console.log("📥 Backend response data:", backendData);
 
     // Return backend response to frontend
     return new Response(backendData, {
