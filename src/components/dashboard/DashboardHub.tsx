@@ -69,13 +69,13 @@ export const DashboardHub = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Streaks</p>
-                <div className="flex items-baseline gap-3 mt-1">
+                <div className="flex items-start gap-4 mt-1">
                   <div className="flex flex-col">
-                    <p className="text-3xl font-bold text-foreground">{summary?.current_streak ?? 0}</p>
+                    <p className="text-3xl font-bold text-foreground leading-none">{summary?.current_streak ?? 0}</p>
                     <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Current</p>
                   </div>
-                  <div className="border-l border-border pl-3 flex flex-col">
-                    <p className="text-3xl font-bold text-foreground">{summary?.longest_streak ?? 0}</p>
+                  <div className="flex flex-col">
+                    <p className="text-3xl font-bold text-foreground leading-none">{summary?.longest_streak ?? 0}</p>
                     <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Best</p>
                   </div>
                 </div>
