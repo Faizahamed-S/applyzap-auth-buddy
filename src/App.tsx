@@ -19,6 +19,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ProfilePage from "./pages/ProfilePage";
 import TrackerPage from "./pages/TrackerPage";
+import ReferralsPage from "./pages/ReferralsPage";
 import GroupsPage from "./pages/GroupsPage";
 import GroupDetailPage from "./pages/GroupDetailPage";
 import GroupBoardPage from "./pages/GroupBoardPage";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tracker" element={<TrackerPage />} />
+            <Route path="/referrals" element={<ReferralsPage />} />
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:groupId" element={<GroupBoardPage />} />
             <Route path="/groups/:groupId/settings" element={<GroupDetailPage />} />
