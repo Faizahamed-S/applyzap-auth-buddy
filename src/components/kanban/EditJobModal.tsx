@@ -63,6 +63,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
       tailored: false,
       jobDescription: '',
       referral: false,
+      referralId: null,
     },
   });
 
@@ -77,6 +78,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
         tailored: job.tailored,
         jobDescription: job.jobDescription || '',
         referral: job.referral || false,
+        referralId: job.referralId ?? null,
       });
       setCustomFields(metadataToFields(job.applicationMetadata));
     }
