@@ -1,55 +1,83 @@
-# Dashboard Streak Relocation + Card Reorder + Hover Tooltips
+# Referral Base CRM
 
-Two changes, both confined to `src/components/dashboard/DashboardHub.tsx` (plus a tiny type tweak if needed — type already supports all fields).
+Frontend-only build against a mocked API client. When the Spring Boot endpoints land, only `src/lib/referralApi.ts` needs to be swapped — the rest of the UI stays as-is.
 
-## 1. Move streak to the Dashboard header
+## Architecture
 
-Remove the dedicated "Streaks" stat card. Place the current streak inline at the top-right of the header row, next to the "Dashboard" title block — the typical "🔥 5" pattern used by Duolingo/GitHub.
-
-Layout:
 ```text
-┌──────────────────────────────────────────────────────────┐
-│ Dashboard                                    🔥  5       │
-│ Your job search at a glance                              │
-└──────────────────────────────────────────────────────────┘
+src/
+├── types/referral.ts                       # types
+├── lib/referralApi.ts                      # mocked API (localStorage), same shape as future REST
+├── hooks/useReferrals.ts                   # react-query hooks
+├── pages/ReferralsPage.tsx                 # route /referrals
+└── components/referrals/
+    ├── ReferralBaseHub.tsx                 # table + header + empty state
+    ├── ReferralTable.tsx                   # directory (Name, Company, Mobile, Email, LinkedIn)
+    ├── AddEditReferralModal.tsx            # create / edit form
+    ├── ReferralDetailModal.tsx             # centered modal, contact + custom fields + linked apps
+    ├── CustomFieldsTemplateModal.tsx       # manage user's custom-field template
+    └── ReferralCombobox.tsx                # search/select used by job modals
 ```
 
-- Wrap header in `flex items-start justify-between`.
-- Right side: a small pill `flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card` containing `<Flame className="h-5 w-5 text-orange-500" />` and `<span className="text-lg font-bold">{summary?.current_streak ?? 0}</span>`.
-- Wrap the pill in a Tooltip showing: "Current streak: consecutive active days. Best: {longest_streak}".
+## Data model (mock + future REST contract)
 
-## 2. Reorder the 4 stat cards
+```ts
+type Referral = {
+  id: string;
+  name: string;
+  companyName?: string;
+  mobile?: string;
+  email?: string;
+  linkedinUrl?: string;
+  notes?: string;
+  customFields?: Record<string, string>;  // keys come from template
+  createdAt: string;
+  updatedAt: string;
+};
 
-Drop "Streaks" from the grid. New order:
+type ReferralFieldTemplate = {
+  fields: { key: string; label: string }[];  // e.g. "Met At", "Relationship Strength"
+};
+```
 
-1. **Total Applied** — `summary.totalApplications` — `Briefcase`, `text-primary`
-2. **Interviews** — `summary.interviews` — `Users`, `text-green-500`
-3. **Referrals** — `summary.referral_count` — `UserPlus`, `text-accent`
-4. **Tailored Applications** — `summary.tailored_count` — `Sparkles` (lucide-react), `text-primary`
+Mock client persists to `localStorage` under `applyzap.referrals.v1` and `applyzap.referralTemplate.v1`. Methods: `list`, `get`, `create`, `update`, `delete`, `getTemplate`, `updateTemplate`.
 
-All four keep the identical structure already in use (`py-4 px-6`, `text-3xl font-bold`, icon in `p-3 rounded-xl bg-muted`). No layout differences between cards.
+## Component 1 — Referrals directory (`/referrals`)
 
-## 3. Hover effects + tooltips
+- New route in `src/App.tsx` wrapped in `DashboardLayout`, auth-guarded like `TrackerPage`.
+- Sidebar: remove `comingSoon` from "Referral Base" item in `DashboardSidebar.tsx`, set `href: '/referrals'`.
+- Header row: page title + "Manage Custom Fields" (ghost) + "Add Referral" (primary).
+- Table columns: **Name** (font-semibold), Company (muted), Mobile, Email (renders `<a href="mailto:…">`), LinkedIn (icon link, `target="_blank" rel="noreferrer"`), row actions (Edit, Delete).
+- Row click → open `ReferralDetailModal`.
+- Empty state: centered icon + "No referrals added yet" + CTA "Add your first referral".
 
-Two layers of hover feedback on every stat card:
+## Component 2 — Referral detail modal
 
-**Visual hover (CSS):**
-- Add `transition-all hover:border-primary/40 hover:shadow-md cursor-default` to each `Card`.
+Centered `Dialog` matching `ApplicationDetailModal` styling:
+- Top: name (h2), company, contact rows (mailto, tel, LinkedIn), notes block.
+- Custom fields grid (only keys present in template).
+- **Associated Applications** section: filter `jobApi.getAllApplications()` cached list by `referralId === this.id`. Each row shows Company • Role • Date; clicking opens existing `ApplicationDetailModal` (pass selected `JobApplication`).
+- Empty linked-apps state: "No applications linked yet."
+- Footer: Edit, Close.
 
-**Tooltip (shadcn `Tooltip`):**
-Wrap each Card in `<Tooltip><TooltipTrigger asChild>…</TooltipTrigger><TooltipContent>…</TooltipContent></Tooltip>` with copy taken from the backend semantics you provided:
+## Component 3 — Tracker integration
 
-| Card | Tooltip text |
-|---|---|
-| Total Applied | "Snapshot — all saved applications across every status." |
-| Interviews | "Snapshot — applications currently in an Interview status." |
-| Referrals | "Snapshot — applications marked as referrals." |
-| Tailored Applications | "Snapshot — applications with a tailored resume/CV." |
-| Streak pill (header) | "Historical — consecutive active days. Best ever: {longest_streak}." |
+Edit `AddJobModal.tsx` and `EditJobModal.tsx`:
+- Keep existing `referral` boolean switch (backward compat per decision).
+- When ON, reveal `ReferralCombobox` (shadcn `Command` inside `Popover`) — search by name/company, plus inline "+ Add new referral" that opens `AddEditReferralModal`.
+- Selected referral persisted to form state as `referralId: string | null`.
+- Add `referralId?: string` to `JobApplication`, `CreateJobApplication`, `UpdateJobApplication` in `src/types/job.ts`. Pass through transformers in `statusMapper.ts` untouched (string passthrough). Backend will ignore until ready — non-breaking.
 
-Wrap the whole DashboardHub return in a single `<TooltipProvider delayDuration={150}>`.
+## Custom fields template
 
-## Files touched
-- `src/components/dashboard/DashboardHub.tsx` — header restructure, card reorder, tooltip + hover.
+`CustomFieldsTemplateModal` reuses the visual pattern of `CustomFieldsEditor.tsx`: list of `{label}` rows with add/remove. Template applies to all referrals; when editing a referral, the form renders one input per template field.
 
-No other files, no backend, no API changes.
+## Styling
+
+Uses existing tokens only — `Card`, `Dialog`, `Input`, `Button`, `Table`, `Command`, `Popover`, `Tooltip`. No hardcoded colors. Matches density of `AllApplicationsTable` and `ApplicationDetailModal`.
+
+## Out of scope
+
+- Real backend endpoints (mock only; swap `referralApi.ts` later).
+- Import/export, dedupe, bulk actions.
+- Tags, avatars, activity timeline.
