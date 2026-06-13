@@ -1,62 +1,55 @@
-# Dashboard Stat Cards Update
+# Dashboard Streak Relocation + Card Reorder + Hover Tooltips
 
-Replace 2 of the 4 stat cards on `/dashboard` while keeping Total Applied and Interviews unchanged.
+Two changes, both confined to `src/components/dashboard/DashboardHub.tsx` (plus a tiny type tweak if needed — type already supports all fields).
 
-## Final card order
-1. **Total Applied** — unchanged
-2. **Streaks** — NEW, side-by-side split (Current | Best)
-3. **Interviews** — unchanged
-4. **Referrals** — NEW, replaces Success Rate
+## 1. Move streak to the Dashboard header
 
-## Changes
+Remove the dedicated "Streaks" stat card. Place the current streak inline at the top-right of the header row, next to the "Dashboard" title block — the typical "🔥 5" pattern used by Duolingo/GitHub.
 
-### 1. `src/types/analytics.ts`
-Extend the `summary` shape to include the new backend fields:
-
-```ts
-summary: {
-  totalApplications: number;
-  interviews: number;
-  offers: number;
-  statusCounts: Record<string, number>;
-  referral_count: number;
-  tailored_count: number;
-  current_streak: number;
-  longest_streak: number;
-}
+Layout:
+```text
+┌──────────────────────────────────────────────────────────┐
+│ Dashboard                                    🔥  5       │
+│ Your job search at a glance                              │
+└──────────────────────────────────────────────────────────┘
 ```
 
-### 2. `src/components/dashboard/DashboardHub.tsx`
-- Remove the `successRate` calculation.
-- Replace the `statsCards` array entries for "In Review" and "Success Rate".
-- Render the Streaks card with a custom split layout (the other three keep the existing single-value layout). The simplest way: keep `statsCards` as a uniform list of 4, but allow an optional `render` override for the Streaks card so its `CardContent` shows two stacked number+label pairs separated by a vertical divider.
+- Wrap header in `flex items-start justify-between`.
+- Right side: a small pill `flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card` containing `<Flame className="h-5 w-5 text-orange-500" />` and `<span className="text-lg font-bold">{summary?.current_streak ?? 0}</span>`.
+- Wrap the pill in a Tooltip showing: "Current streak: consecutive active days. Best: {longest_streak}".
 
-Streaks card layout (inside the same bordered Card used by the others):
-```
-┌───────────────────────────────────────┐
-│  Streaks                       [icon] │
-│  ┌──────────┬──────────┐              │
-│  │  5       │   12     │              │
-│  │ Current  │   Best   │              │
-│  └──────────┴──────────┘              │
-└───────────────────────────────────────┘
-```
-- Left half: `summary.current_streak` (big number) + "Current" label
-- Right half: `summary.longest_streak` (big number) + "Best" label
-- Divider: `border-l border-border` on the right half
-- Icon: `Flame` from `lucide-react` (orange-500), placed top-right like the other cards
-- Numbers use `text-3xl font-bold` (same as other cards) so visual rhythm is preserved
-- On very narrow widths the grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`) already stacks cards, and the inner two-column split stays since it only needs ~140px
+## 2. Reorder the 4 stat cards
 
-Referrals card:
-- `title: 'Referrals'`
-- `value: summary?.referral_count ?? 0`
-- `icon: UserPlus` (lucide-react), color `text-accent` (or keep `text-zap` for visual variety — will use `text-accent` to match the brand accent and free `text-zap` for "coming soon" usage per memory)
+Drop "Streaks" from the grid. New order:
 
-### 3. No other files
-No backend, no API client, no routing changes — `analyticsApi.getDashboardAnalytics` already returns the full payload; only the TS type needs widening.
+1. **Total Applied** — `summary.totalApplications` — `Briefcase`, `text-primary`
+2. **Interviews** — `summary.interviews` — `Users`, `text-green-500`
+3. **Referrals** — `summary.referral_count` — `UserPlus`, `text-accent`
+4. **Tailored Applications** — `summary.tailored_count` — `Sparkles` (lucide-react), `text-primary`
 
-## Notes
-- All colors via semantic tokens (`text-accent`, `border-border`, `bg-muted`) — no hardcoded hex.
-- No changes to loading/empty states.
-- Memory `mem://tech/analytics-integration` may want updating after build to record the new fields consumed; will do that post-implementation.
+All four keep the identical structure already in use (`py-4 px-6`, `text-3xl font-bold`, icon in `p-3 rounded-xl bg-muted`). No layout differences between cards.
+
+## 3. Hover effects + tooltips
+
+Two layers of hover feedback on every stat card:
+
+**Visual hover (CSS):**
+- Add `transition-all hover:border-primary/40 hover:shadow-md cursor-default` to each `Card`.
+
+**Tooltip (shadcn `Tooltip`):**
+Wrap each Card in `<Tooltip><TooltipTrigger asChild>…</TooltipTrigger><TooltipContent>…</TooltipContent></Tooltip>` with copy taken from the backend semantics you provided:
+
+| Card | Tooltip text |
+|---|---|
+| Total Applied | "Snapshot — all saved applications across every status." |
+| Interviews | "Snapshot — applications currently in an Interview status." |
+| Referrals | "Snapshot — applications marked as referrals." |
+| Tailored Applications | "Snapshot — applications with a tailored resume/CV." |
+| Streak pill (header) | "Historical — consecutive active days. Best ever: {longest_streak}." |
+
+Wrap the whole DashboardHub return in a single `<TooltipProvider delayDuration={150}>`.
+
+## Files touched
+- `src/components/dashboard/DashboardHub.tsx` — header restructure, card reorder, tooltip + hover.
+
+No other files, no backend, no API changes.
