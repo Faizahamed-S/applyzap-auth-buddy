@@ -66,20 +66,22 @@ export const DashboardHub = () => {
         {/* Streaks (split) */}
         <Card className="border border-border bg-card">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-muted-foreground">Streaks</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Streaks</p>
+                <div className="flex items-baseline gap-3 mt-1">
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-bold text-foreground leading-none">{summary?.current_streak ?? 0}</span>
+                    <span className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Current</span>
+                  </div>
+                  <div className="border-l border-border pl-3 flex flex-col">
+                    <span className="text-3xl font-bold text-foreground leading-none">{summary?.longest_streak ?? 0}</span>
+                    <span className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Best</span>
+                  </div>
+                </div>
+              </div>
               <div className="p-3 rounded-xl bg-muted text-orange-500">
                 <Flame className="h-6 w-6" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <p className="text-3xl font-bold text-foreground leading-none">{summary?.current_streak ?? 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">Current</p>
-              </div>
-              <div className="border-l border-border pl-3">
-                <p className="text-3xl font-bold text-foreground leading-none">{summary?.longest_streak ?? 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">Best</p>
               </div>
             </div>
           </CardContent>
