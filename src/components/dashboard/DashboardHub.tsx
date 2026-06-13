@@ -3,7 +3,7 @@ import { analyticsApi } from '@/lib/analyticsApi';
 import { jobApi } from '@/lib/jobApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, ClipboardCheck, Users, TrendingUp } from 'lucide-react';
+import { Briefcase, Users, TrendingUp, Flame, UserPlus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
@@ -19,36 +19,6 @@ export const DashboardHub = () => {
   });
 
   const summary = analytics?.summary;
-  const successRate = summary && summary.totalApplications > 0
-    ? Math.round((summary.interviews / summary.totalApplications) * 100)
-    : 0;
-
-  const statsCards = [
-    {
-      title: 'Total Applied',
-      value: summary?.totalApplications ?? '—',
-      icon: Briefcase,
-      color: 'text-primary',
-    },
-    {
-      title: 'In Review',
-      value: summary?.statusCounts?.['In Review'] ?? 0,
-      icon: ClipboardCheck,
-      color: 'text-accent',
-    },
-    {
-      title: 'Interviews',
-      value: summary?.interviews ?? 0,
-      icon: Users,
-      color: 'text-green-500',
-    },
-    {
-      title: 'Success Rate',
-      value: `${successRate}%`,
-      icon: TrendingUp,
-      color: 'text-zap',
-    },
-  ];
 
   const chartData = (analytics?.recent_activity ?? []).map(item => ({
     date: (() => {
@@ -78,22 +48,74 @@ export const DashboardHub = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((card) => (
-          <Card key={card.title} className="border border-border bg-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{card.title}</p>
-                  <p className="text-3xl font-bold text-foreground mt-1">{card.value}</p>
-                </div>
-                <div className={`p-3 rounded-xl bg-muted ${card.color}`}>
-                  <card.icon className="h-6 w-6" />
-                </div>
+        {/* Total Applied */}
+        <Card className="border border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Applied</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{summary?.totalApplications ?? '—'}</p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+              <div className="p-3 rounded-xl bg-muted text-primary">
+                <Briefcase className="h-6 w-6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Streaks (split) */}
+        <Card className="border border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-muted-foreground">Streaks</p>
+              <div className="p-3 rounded-xl bg-muted text-orange-500">
+                <Flame className="h-6 w-6" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="text-3xl font-bold text-foreground leading-none">{summary?.current_streak ?? 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">Current</p>
+              </div>
+              <div className="border-l border-border pl-3">
+                <p className="text-3xl font-bold text-foreground leading-none">{summary?.longest_streak ?? 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">Best</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Interviews */}
+        <Card className="border border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Interviews</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{summary?.interviews ?? 0}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-muted text-green-500">
+                <Users className="h-6 w-6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Referrals */}
+        <Card className="border border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Referrals</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{summary?.referral_count ?? 0}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-muted text-accent">
+                <UserPlus className="h-6 w-6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
 
       {/* Velocity Chart */}
       <Card className="border border-border bg-card">
