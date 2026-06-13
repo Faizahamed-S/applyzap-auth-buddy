@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { JobApplication } from '@/types/job';
 import { CustomFieldsEditor, metadataToFields, fieldsToMetadata, CustomFieldEntry } from './CustomFieldsEditor';
+import { ReferralCombobox } from '@/components/referrals/ReferralCombobox';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -35,6 +36,7 @@ const formSchema = z.object({
   tailored: z.boolean().default(false),
   jobDescription: z.string().optional(),
   referral: z.boolean().default(false),
+  referralId: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
