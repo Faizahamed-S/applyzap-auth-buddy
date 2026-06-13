@@ -3,8 +3,9 @@ import { analyticsApi } from '@/lib/analyticsApi';
 import { jobApi } from '@/lib/jobApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, Users, TrendingUp, Flame, UserPlus } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Briefcase, Users, Flame, UserPlus, Sparkles } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
 export const DashboardHub = () => {
@@ -39,84 +40,83 @@ export const DashboardHub = () => {
   }
 
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="max-w-[1400px] w-[90%] mx-auto py-8 space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Your job search at a glance</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Your job search at a glance</p>
+        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card cursor-default transition-all hover:border-orange-500/40 hover:shadow-md">
+              <Flame className="h-5 w-5 text-orange-500" />
+              <span className="text-lg font-bold text-foreground leading-none">{summary?.current_streak ?? 0}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            Historical — consecutive active days. Best ever: {summary?.longest_streak ?? 0}.
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Applied */}
-        <Card className="border border-border bg-card">
-          <CardContent className="py-4 px-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Applied</p>
-                <p className="text-3xl font-bold text-foreground mt-1">{summary?.totalApplications ?? '—'}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted text-primary">
-                <Briefcase className="h-6 w-6" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Streaks (split) */}
-        <Card className="border border-border bg-card">
-          <CardContent className="py-4 px-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Streaks</p>
-                <div className="flex items-start gap-4 mt-1">
-                  <div className="flex flex-col">
-                    <p className="text-3xl font-bold text-foreground leading-none">{summary?.current_streak ?? 0}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Current</p>
-                  </div>
-                  <div className="flex flex-col">
-                    <p className="text-3xl font-bold text-foreground leading-none">{summary?.longest_streak ?? 0}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Best</p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-3 rounded-xl bg-muted text-orange-500">
-                <Flame className="h-6 w-6" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Interviews */}
-        <Card className="border border-border bg-card">
-          <CardContent className="py-4 px-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Interviews</p>
-                <p className="text-3xl font-bold text-foreground mt-1">{summary?.interviews ?? 0}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted text-green-500">
-                <Users className="h-6 w-6" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Referrals */}
-        <Card className="border border-border bg-card">
-          <CardContent className="py-4 px-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Referrals</p>
-                <p className="text-3xl font-bold text-foreground mt-1">{summary?.referral_count ?? 0}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted text-accent">
-                <UserPlus className="h-6 w-6" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {[
+          {
+            title: 'Total Applied',
+            value: summary?.totalApplications ?? '—',
+            icon: Briefcase,
+            iconClass: 'text-primary',
+            tooltip: 'Snapshot — all saved applications across every status.',
+          },
+          {
+            title: 'Interviews',
+            value: summary?.interviews ?? 0,
+            icon: Users,
+            iconClass: 'text-green-500',
+            tooltip: 'Snapshot — applications currently in an Interview status.',
+          },
+          {
+            title: 'Referrals',
+            value: summary?.referral_count ?? 0,
+            icon: UserPlus,
+            iconClass: 'text-accent',
+            tooltip: 'Snapshot — applications marked as referrals.',
+          },
+          {
+            title: 'Tailored Applications',
+            value: summary?.tailored_count ?? 0,
+            icon: Sparkles,
+            iconClass: 'text-primary',
+            tooltip: 'Snapshot — applications with a tailored resume/CV.',
+          },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Tooltip key={stat.title}>
+              <TooltipTrigger asChild>
+                <Card className="border border-border bg-card cursor-default transition-all hover:border-primary/40 hover:shadow-md">
+                  <CardContent className="py-4 px-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">{stat.title}</p>
+                        <p className="text-3xl font-bold text-foreground mt-1">{stat.value}</p>
+                      </div>
+                      <div className={`p-3 rounded-xl bg-muted ${stat.iconClass}`}>
+                        <Icon className="h-6 w-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>{stat.tooltip}</TooltipContent>
+            </Tooltip>
+          );
+        })}
       </div>
+
 
 
       {/* Velocity Chart */}
@@ -132,7 +132,7 @@ export const DashboardHub = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} />
-                <Tooltip
+                <RechartsTooltip
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
@@ -192,5 +192,6 @@ export const DashboardHub = () => {
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 };
