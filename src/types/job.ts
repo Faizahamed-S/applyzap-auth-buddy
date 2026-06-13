@@ -9,6 +9,7 @@ export interface JobApplication {
   tailored: boolean;
   jobDescription?: string;
   referral?: boolean;
+  referralId?: string | null;
   status: JobStatus;
   applicationMetadata?: Record<string, unknown>;
 }

@@ -31,6 +31,7 @@ const backendJobSchema = z.object({
   tailored: z.boolean().optional().default(false),
   jobDescription: z.string().max(50000).optional().nullable(),
   referral: z.boolean().optional().default(false),
+  referralId: z.string().nullable().optional(),
   status: z.string().max(200).default(''),
   applicationMetadata: z.record(z.unknown()).optional().nullable(),
 }).passthrough();

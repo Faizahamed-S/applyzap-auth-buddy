@@ -38,7 +38,7 @@ const navItems: NavItem[] = [
   { icon: Briefcase, label: 'Job Tracker', href: '/tracker' },
   { icon: FileText, label: 'Resume Generator', comingSoon: true },
   { icon: PenTool, label: 'Cover Letter', comingSoon: true },
-  { icon: Users, label: 'Referral Base', comingSoon: true },
+  { icon: Users, label: 'Referral Base', href: '/referrals' },
   { icon: BarChart3, label: 'Analytics', comingSoon: true },
   { icon: Handshake, label: 'Collaborative Tracker', href: '/groups' },
   { icon: Globe, label: 'Global Apply', comingSoon: true },

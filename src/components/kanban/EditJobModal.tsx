@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { JobApplication } from '@/types/job';
 import { CustomFieldsEditor, metadataToFields, fieldsToMetadata, CustomFieldEntry } from './CustomFieldsEditor';
+import { ReferralCombobox } from '@/components/referrals/ReferralCombobox';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -35,6 +36,7 @@ const formSchema = z.object({
   tailored: z.boolean().default(false),
   jobDescription: z.string().optional(),
   referral: z.boolean().default(false),
+  referralId: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -61,6 +63,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
       tailored: false,
       jobDescription: '',
       referral: false,
+      referralId: null,
     },
   });
 
@@ -75,6 +78,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
         tailored: job.tailored,
         jobDescription: job.jobDescription || '',
         referral: job.referral || false,
+        referralId: job.referralId ?? null,
       });
       setCustomFields(metadataToFields(job.applicationMetadata));
     }
@@ -183,19 +187,43 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
               control={form.control}
               name="referral"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border border-border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel>Referral</FormLabel>
-                    <div className="text-sm text-muted-foreground">
-                      Do you have a referral for this position?
+                <FormItem className="rounded-lg border border-border p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>Referral</FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        Do you have a referral for this position?
+                      </div>
                     </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={(v) => {
+                          field.onChange(v);
+                          if (!v) form.setValue('referralId', null);
+                        }}
+                      />
+                    </FormControl>
                   </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                  {field.value && (
+                    <FormField
+                      control={form.control}
+                      name="referralId"
+                      render={({ field: refField }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-muted-foreground">
+                            Link a referral (optional)
+                          </FormLabel>
+                          <FormControl>
+                            <ReferralCombobox
+                              value={refField.value ?? null}
+                              onChange={refField.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
+                  )}
                 </FormItem>
               )}
             />
