@@ -192,5 +192,6 @@ export const DashboardHub = () => {
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 };
