@@ -28,6 +28,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { CustomFieldsEditor, fieldsToMetadata } from './CustomFieldsEditor';
 import type { CustomFieldEntry } from './CustomFieldsEditor';
+import { ReferralCombobox } from '@/components/referrals/ReferralCombobox';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
 import { normalizeStatus } from '@/lib/statusMapper';
 import {
@@ -46,6 +47,7 @@ const formSchema = z.object({
   tailored: z.boolean().default(false),
   jobDescription: z.string().optional(),
   referral: z.boolean().default(false),
+  referralId: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
