@@ -1,28 +1,62 @@
-# Responsive Tracker Spacing
+# Dashboard Stat Cards Update
 
-**Problem:** Currently both the header and board use `max-w-[1600px] w-[85%] mx-auto`. At narrow widths, that fixed 85% steals ~15% of the screen as empty side margin — wasteful and visually awkward. At wide widths, centering is good but the 85% cap can feel arbitrary.
+Replace 2 of the 4 stat cards on `/dashboard` while keeping Total Applied and Interviews unchanged.
 
-**Fix (best-practice responsive container):** Replace the `w-[85%]` rule with a responsive horizontal padding scale, keep the `max-w-[1600px]` cap, and keep `mx-auto` so content centers once the viewport exceeds the max width.
+## Final card order
+1. **Total Applied** — unchanged
+2. **Streaks** — NEW, side-by-side split (Current | Best)
+3. **Interviews** — unchanged
+4. **Referrals** — NEW, replaces Success Rate
 
-## Change
+## Changes
 
-In `src/components/kanban/JobKanbanBoard.tsx`, both wrapper divs (header row + scrollable board row) currently use:
+### 1. `src/types/analytics.ts`
+Extend the `summary` shape to include the new backend fields:
 
+```ts
+summary: {
+  totalApplications: number;
+  interviews: number;
+  offers: number;
+  statusCounts: Record<string, number>;
+  referral_count: number;
+  tailored_count: number;
+  current_streak: number;
+  longest_streak: number;
+}
 ```
-max-w-[1600px] w-[85%] mx-auto px-4 py-6
+
+### 2. `src/components/dashboard/DashboardHub.tsx`
+- Remove the `successRate` calculation.
+- Replace the `statsCards` array entries for "In Review" and "Success Rate".
+- Render the Streaks card with a custom split layout (the other three keep the existing single-value layout). The simplest way: keep `statsCards` as a uniform list of 4, but allow an optional `render` override for the Streaks card so its `CardContent` shows two stacked number+label pairs separated by a vertical divider.
+
+Streaks card layout (inside the same bordered Card used by the others):
 ```
-
-Replace with:
-
+┌───────────────────────────────────────┐
+│  Streaks                       [icon] │
+│  ┌──────────┬──────────┐              │
+│  │  5       │   12     │              │
+│  │ Current  │   Best   │              │
+│  └──────────┴──────────┘              │
+└───────────────────────────────────────┘
 ```
-max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16 py-6
-```
+- Left half: `summary.current_streak` (big number) + "Current" label
+- Right half: `summary.longest_streak` (big number) + "Best" label
+- Divider: `border-l border-border` on the right half
+- Icon: `Flame` from `lucide-react` (orange-500), placed top-right like the other cards
+- Numbers use `text-3xl font-bold` (same as other cards) so visual rhythm is preserved
+- On very narrow widths the grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`) already stacks cards, and the inner two-column split stays since it only needs ~140px
 
-Behavior:
-- **Small screens (<640px):** `px-3` only → near edge-to-edge, no wasted side space.
-- **Medium (≥640px):** `px-6` → comfortable breathing room.
-- **Large (≥1024px):** `px-10`.
-- **XL (≥1280px):** `px-16` → generous gutters.
-- **Beyond 1600px:** `mx-auto` centers the capped container, giving symmetric left/right space.
+Referrals card:
+- `title: 'Referrals'`
+- `value: summary?.referral_count ?? 0`
+- `icon: UserPlus` (lucide-react), color `text-accent` (or keep `text-zap` for visual variety — will use `text-accent` to match the brand accent and free `text-zap` for "coming soon" usage per memory)
 
-No other files change. No logic, no kanban column behavior, no sticky-header changes.
+### 3. No other files
+No backend, no API client, no routing changes — `analyticsApi.getDashboardAnalytics` already returns the full payload; only the TS type needs widening.
+
+## Notes
+- All colors via semantic tokens (`text-accent`, `border-border`, `bg-muted`) — no hardcoded hex.
+- No changes to loading/empty states.
+- Memory `mem://tech/analytics-integration` may want updating after build to record the new fields consumed; will do that post-implementation.
