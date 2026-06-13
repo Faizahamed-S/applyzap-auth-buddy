@@ -80,6 +80,7 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       tailored: false,
       jobDescription: '',
       referral: false,
+      referralId: null,
     },
   });
 
