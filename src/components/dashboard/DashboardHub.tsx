@@ -71,12 +71,12 @@ export const DashboardHub = () => {
                 <p className="text-sm text-muted-foreground">Streaks</p>
                 <div className="flex items-baseline gap-3 mt-1">
                   <div className="flex flex-col">
-                    <span className="text-3xl font-bold text-foreground leading-none">{summary?.current_streak ?? 0}</span>
-                    <span className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Current</span>
+                    <p className="text-3xl font-bold text-foreground">{summary?.current_streak ?? 0}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Current</p>
                   </div>
                   <div className="border-l border-border pl-3 flex flex-col">
-                    <span className="text-3xl font-bold text-foreground leading-none">{summary?.longest_streak ?? 0}</span>
-                    <span className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Best</span>
+                    <p className="text-3xl font-bold text-foreground">{summary?.longest_streak ?? 0}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide">Best</p>
                   </div>
                 </div>
               </div>
