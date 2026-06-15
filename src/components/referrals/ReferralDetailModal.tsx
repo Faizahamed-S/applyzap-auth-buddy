@@ -77,7 +77,7 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
               {view.email && (
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="font-medium text-foreground w-20 text-right shrink-0">Email</span>
+                  <span className="font-medium text-foreground w-20 shrink-0">Email</span>
                   <span className="text-muted-foreground">:</span>
                   <a
                     href={`mailto:${view.email}`}
@@ -90,7 +90,7 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
               {view.mobile && (
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="font-medium text-foreground w-20 text-right shrink-0">Mobile</span>
+                  <span className="font-medium text-foreground w-20 shrink-0">Mobile</span>
                   <span className="text-muted-foreground">:</span>
                   <a
                     href={`tel:${view.mobile}`}
@@ -103,7 +103,7 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
               {view.linkedinUrl && (
                 <div className="flex items-center gap-2 text-sm">
                   <Linkedin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="font-medium text-foreground w-20 text-right shrink-0">LinkedIn</span>
+                  <span className="font-medium text-foreground w-20 shrink-0">LinkedIn</span>
                   <span className="text-muted-foreground">:</span>
                   <a
                     href={view.linkedinUrl}
