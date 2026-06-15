@@ -73,41 +73,44 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {view.email && (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Email</label>
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="font-medium text-foreground shrink-0">Email</span>
+                  <span className="text-muted-foreground">:</span>
                   <a
                     href={`mailto:${view.email}`}
-                    className="text-primary hover:underline inline-flex items-center gap-2"
+                    className="text-primary hover:underline truncate"
                   >
-                    <Mail className="h-4 w-4" />
                     {view.email}
                   </a>
                 </div>
               )}
               {view.mobile && (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Mobile</label>
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="font-medium text-foreground shrink-0">Mobile</span>
+                  <span className="text-muted-foreground">:</span>
                   <a
                     href={`tel:${view.mobile}`}
-                    className="text-foreground inline-flex items-center gap-2"
+                    className="text-foreground hover:underline truncate"
                   >
-                    <Phone className="h-4 w-4" />
                     {view.mobile}
                   </a>
                 </div>
               )}
               {view.linkedinUrl && (
-                <div className="space-y-1 md:col-span-2">
-                  <label className="text-xs font-medium text-muted-foreground">LinkedIn</label>
+                <div className="flex items-center gap-2 text-sm">
+                  <Linkedin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="font-medium text-foreground shrink-0">LinkedIn</span>
+                  <span className="text-muted-foreground">:</span>
                   <a
                     href={view.linkedinUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-2 break-all"
+                    className="text-primary hover:underline truncate"
                   >
-                    <Linkedin className="h-4 w-4" />
                     {view.linkedinUrl}
                   </a>
                 </div>
