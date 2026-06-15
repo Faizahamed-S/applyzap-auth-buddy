@@ -14,10 +14,20 @@ export const canonicalToLabel = (canonical: string): string =>
 import { z } from 'zod';
 
 export const transformForBackend = (data: any) => {
-  if (data && typeof data.status === 'string') {
-    return { ...data, status: normalizeStatus(data.status) };
+  const out: any = { ...data };
+  if (typeof out.status === 'string') {
+    out.status = normalizeStatus(out.status);
   }
-  return data;
+  // Strip server-populated read-only summary; never sent back to backend.
+  delete out.referralContactSummary;
+  // If "Has referral" toggle is off, drop the contact id entirely.
+  if (out.referral === false) {
+    delete out.referralContactId;
+  } else if (out.referralContactId == null) {
+    // Toggle on but no contact selected — omit the key per the agreed contract.
+    delete out.referralContactId;
+  }
+  return out;
 };
 
 // Schema for job application data coming from the backend.
@@ -31,7 +41,14 @@ const backendJobSchema = z.object({
   tailored: z.boolean().optional().default(false),
   jobDescription: z.string().max(50000).optional().nullable(),
   referral: z.boolean().optional().default(false),
-  referralId: z.string().nullable().optional(),
+  referralContactId: z.string().nullable().optional(),
+  referralContactSummary: z
+    .object({
+      id: z.union([z.string(), z.number()]).transform((v) => String(v)),
+      name: z.string(),
+    })
+    .nullable()
+    .optional(),
   status: z.string().max(200).default(''),
   applicationMetadata: z.record(z.unknown()).optional().nullable(),
 }).passthrough();

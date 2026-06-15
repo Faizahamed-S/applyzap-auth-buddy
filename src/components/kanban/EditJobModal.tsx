@@ -36,7 +36,7 @@ const formSchema = z.object({
   tailored: z.boolean().default(false),
   jobDescription: z.string().optional(),
   referral: z.boolean().default(false),
-  referralId: z.string().nullable().optional(),
+  referralContactId: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -63,7 +63,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
       tailored: false,
       jobDescription: '',
       referral: false,
-      referralId: null,
+      referralContactId: null,
     },
   });
 
@@ -78,7 +78,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
         tailored: job.tailored,
         jobDescription: job.jobDescription || '',
         referral: job.referral || false,
-        referralId: job.referralId ?? null,
+        referralContactId: job.referralContactId ?? null,
       });
       setCustomFields(metadataToFields(job.applicationMetadata));
     }
@@ -200,7 +200,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
                         checked={field.value}
                         onCheckedChange={(v) => {
                           field.onChange(v);
-                          if (!v) form.setValue('referralId', null);
+                          if (!v) form.setValue('referralContactId', null);
                         }}
                       />
                     </FormControl>
@@ -208,7 +208,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
                   {field.value && (
                     <FormField
                       control={form.control}
-                      name="referralId"
+                      name="referralContactId"
                       render={({ field: refField }) => (
                         <FormItem>
                           <FormLabel className="text-xs text-muted-foreground">
