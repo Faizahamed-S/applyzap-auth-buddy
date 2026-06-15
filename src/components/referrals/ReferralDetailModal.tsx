@@ -20,8 +20,7 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { Referral } from '@/types/referral';
-import { JobApplication } from '@/types/job';
-import { jobApi } from '@/lib/jobApi';
+import { referralApi } from '@/lib/referralApi';
 import { useReferralTemplate } from '@/hooks/useReferrals';
 import { ApplicationDetailModal } from '@/components/kanban/ApplicationDetailModal';
 
@@ -36,21 +35,20 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
   const { data: template } = useReferralTemplate();
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
-  const { data: applications = [] } = useQuery({
-    queryKey: ['applications', 'all'],
-    queryFn: () => jobApi.getAllApplications(),
+  // Fetch the full referral (with server-populated associatedApplications).
+  const { data: fullReferral } = useQuery({
+    queryKey: ['referral', referral?.id],
+    queryFn: () => referralApi.get(referral!.id),
     enabled: open && !!referral,
-    staleTime: 60_000,
   });
 
   if (!referral) return null;
 
-  const linked: JobApplication[] = applications.filter(
-    (a: any) => (a as any).referralId === referral.id,
-  );
+  const view = fullReferral ?? referral;
+  const linked = view.associatedApplications ?? [];
 
   const customEntries = template?.fields
-    .map((f) => ({ label: f.label, value: referral.customFields?.[f.key] }))
+    .map((f) => ({ label: f.label, value: view.customFields?.[f.key] }))
     .filter((e) => e.value && e.value.trim() !== '');
 
   return (
@@ -66,51 +64,51 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-foreground">{referral.name}</h2>
-              {referral.companyName && (
+              <h2 className="text-2xl font-bold text-foreground">{view.name}</h2>
+              {view.companyName && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Building className="h-4 w-4" />
-                  <span>{referral.companyName}</span>
+                  <span>{view.companyName}</span>
                 </div>
               )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {referral.email && (
+              {view.email && (
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Email</label>
                   <a
-                    href={`mailto:${referral.email}`}
+                    href={`mailto:${view.email}`}
                     className="text-primary hover:underline inline-flex items-center gap-2"
                   >
                     <Mail className="h-4 w-4" />
-                    {referral.email}
+                    {view.email}
                   </a>
                 </div>
               )}
-              {referral.mobile && (
+              {view.mobile && (
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Mobile</label>
                   <a
-                    href={`tel:${referral.mobile}`}
+                    href={`tel:${view.mobile}`}
                     className="text-foreground inline-flex items-center gap-2"
                   >
                     <Phone className="h-4 w-4" />
-                    {referral.mobile}
+                    {view.mobile}
                   </a>
                 </div>
               )}
-              {referral.linkedinUrl && (
+              {view.linkedinUrl && (
                 <div className="space-y-1 md:col-span-2">
                   <label className="text-xs font-medium text-muted-foreground">LinkedIn</label>
                   <a
-                    href={referral.linkedinUrl}
+                    href={view.linkedinUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="text-primary hover:underline inline-flex items-center gap-2 break-all"
                   >
                     <Linkedin className="h-4 w-4" />
-                    {referral.linkedinUrl}
+                    {view.linkedinUrl}
                   </a>
                 </div>
               )}
@@ -133,14 +131,14 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
               </div>
             )}
 
-            {referral.notes && (
+            {view.notes && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                   <StickyNote className="h-4 w-4" />
                   Notes
                 </label>
                 <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-foreground whitespace-pre-wrap text-sm">{referral.notes}</p>
+                  <p className="text-foreground whitespace-pre-wrap text-sm">{view.notes}</p>
                 </div>
               </div>
             )}
@@ -184,7 +182,7 @@ export const ReferralDetailModal = ({ open, onOpenChange, referral, onEdit }: Pr
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Close
               </Button>
-              <Button onClick={() => onEdit(referral)}>
+              <Button onClick={() => onEdit(view)}>
                 <Edit2 className="h-4 w-4 mr-2" />
                 Edit
               </Button>

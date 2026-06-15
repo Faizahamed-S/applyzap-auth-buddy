@@ -1,4 +1,5 @@
-import { Referral, ReferralFieldTemplate, CreateReferral, UpdateReferral } from '@/types/referral';
+import { Referral, ReferralFieldTemplate, CreateReferral, UpdateReferral, AssociatedApplicationSummary } from '@/types/referral';
+import { jobApi } from './jobApi';
 
 /**
  * Mocked Referral API backed by localStorage.
@@ -48,7 +49,26 @@ export const referralApi = {
   },
 
   get: async (id: string): Promise<Referral | null> => {
-    return delay(readReferrals().find((r) => r.id === id) ?? null);
+    const referral = readReferrals().find((r) => r.id === id) ?? null;
+    if (!referral) return delay(null);
+    // TEMPORARY SHIM — remove when backend ships GET /api/referrals/{id} with
+    // an `associatedApplications` array. Until then, derive it client-side.
+    let associatedApplications: AssociatedApplicationSummary[] = [];
+    try {
+      const apps = await jobApi.getAllApplications();
+      associatedApplications = apps
+        .filter((a: any) => a.referralContactId === id)
+        .map((a) => ({
+          id: a.id,
+          companyName: a.companyName,
+          roleName: a.roleName,
+          dateOfApplication: a.dateOfApplication,
+          status: a.status,
+        }));
+    } catch {
+      /* ignore — empty list */
+    }
+    return delay({ ...referral, associatedApplications });
   },
 
   create: async (data: CreateReferral): Promise<Referral> => {

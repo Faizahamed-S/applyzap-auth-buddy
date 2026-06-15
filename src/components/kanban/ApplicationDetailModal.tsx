@@ -162,26 +162,6 @@ export const ApplicationDetailModal = ({
               </div>
             </div>
 
-            {application.jobLink && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Job Posting</label>
-                <Button
-                  variant="link"
-                  className="h-auto p-0 text-primary"
-                  asChild
-                >
-                  <a
-                    href={application.jobLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    View Original Job Posting
-                  </a>
-                </Button>
-              </div>
-            )}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">Tags</label>
@@ -195,7 +175,9 @@ export const ApplicationDetailModal = ({
                 {application.referral && (
                   <Badge variant="outline" className="flex items-center gap-1">
                     <User className="h-3 w-3" />
-                    Referral
+                    {application.referralContactSummary?.name
+                      ? `Referral · ${application.referralContactSummary.name}`
+                      : 'Referral'}
                   </Badge>
                 )}
               </div>
