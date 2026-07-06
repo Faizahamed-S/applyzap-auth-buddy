@@ -21,6 +21,7 @@ import { ArrowLeft, Search, Edit2, Trash2, ExternalLink, Calendar } from 'lucide
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
 import { canonicalToLabel } from '@/lib/statusMapper';
+import { reportGroupMirrorResults } from '@/lib/groupMirrorToasts';
 
 type SortField = 'companyName' | 'roleName' | 'dateOfApplication';
 type SortDirection = 'asc' | 'desc';
