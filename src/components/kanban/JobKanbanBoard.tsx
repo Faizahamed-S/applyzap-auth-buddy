@@ -196,8 +196,23 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
 
 
-  const handleEditJob = (id: string, data: any) => {
-    updateMutation.mutate({ id, data });
+  const handleEditJob = async (id: string, data: any) => {
+    const { __groupIds, ...personal } = data as { __groupIds?: number[] } & Record<string, unknown>;
+    const groupIds = Array.isArray(__groupIds) ? __groupIds : undefined;
+
+    let result;
+    try {
+      result = await updateMutation.mutateAsync({ id, data: personal, groupIds });
+    } catch {
+      return;
+    }
+
+    if (groupIds === undefined) {
+      toast.success('Application updated successfully!');
+      return;
+    }
+    setLastSelectedGroupIds(groupIds);
+    reportGroupMirrorResults(groupIds, result?.groupResults, 'Application updated successfully!');
   };
 
   const handleDeleteJob = (id: string) => {
