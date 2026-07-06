@@ -14,6 +14,7 @@ import { User } from '@supabase/supabase-js';
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { getGroupsCache, setLastSelectedGroupIds } from '@/lib/groupsCache';
+import { reportGroupMirrorResults } from '@/lib/groupMirrorToasts';
 import { KanbanColumn } from './KanbanColumn';
 import { JobCard } from './JobCard';
 import { AddJobModal } from './AddJobModal';
