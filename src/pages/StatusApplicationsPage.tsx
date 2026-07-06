@@ -21,6 +21,7 @@ import { ArrowLeft, Search, Edit2, Trash2, ExternalLink, Calendar } from 'lucide
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
 import { canonicalToLabel } from '@/lib/statusMapper';
+import { reportGroupMirrorResults } from '@/lib/groupMirrorToasts';
 
 type SortField = 'companyName' | 'roleName' | 'dateOfApplication';
 type SortDirection = 'asc' | 'desc';
@@ -65,12 +66,20 @@ const StatusApplicationsPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      jobApi.updateApplication(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data, groupIds }: { id: string; data: any; groupIds?: number[] }) =>
+      jobApi.updateApplication(id, data, groupIds),
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['applications-by-status', status] });
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
-      toast.success('Application updated successfully!');
+      if (variables.groupIds === undefined) {
+        toast.success('Application updated successfully!');
+      } else {
+        reportGroupMirrorResults(
+          variables.groupIds,
+          result?.groupResults,
+          'Application updated successfully!',
+        );
+      }
     },
     onError: () => {
       toast.error('Failed to update application');
@@ -133,7 +142,9 @@ const StatusApplicationsPage = () => {
   };
 
   const handleEditSubmit = (id: string, data: any) => {
-    updateMutation.mutate({ id, data });
+    const { __groupIds, ...personal } = data as { __groupIds?: number[] } & Record<string, unknown>;
+    const groupIds = Array.isArray(__groupIds) ? __groupIds : undefined;
+    updateMutation.mutate({ id, data: personal, groupIds });
     setIsEditModalOpen(false);
     setEditingJob(null);
   };

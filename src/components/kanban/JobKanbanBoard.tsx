@@ -14,6 +14,7 @@ import { User } from '@supabase/supabase-js';
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { getGroupsCache, setLastSelectedGroupIds } from '@/lib/groupsCache';
+import { reportGroupMirrorResults } from '@/lib/groupMirrorToasts';
 import { KanbanColumn } from './KanbanColumn';
 import { JobCard } from './JobCard';
 import { AddJobModal } from './AddJobModal';
@@ -76,12 +77,11 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      jobApi.updateApplication(id, data),
+    mutationFn: ({ id, data, groupIds }: { id: string; data: any; groupIds?: number[] }) =>
+      jobApi.updateApplication(id, data, groupIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
-      toast.success('Application updated successfully!');
     },
     onError: () => {
       toast.error('Failed to update application');
@@ -197,8 +197,23 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
 
 
-  const handleEditJob = (id: string, data: any) => {
-    updateMutation.mutate({ id, data });
+  const handleEditJob = async (id: string, data: any) => {
+    const { __groupIds, ...personal } = data as { __groupIds?: number[] } & Record<string, unknown>;
+    const groupIds = Array.isArray(__groupIds) ? __groupIds : undefined;
+
+    let result;
+    try {
+      result = await updateMutation.mutateAsync({ id, data: personal, groupIds });
+    } catch {
+      return;
+    }
+
+    if (groupIds === undefined) {
+      toast.success('Application updated successfully!');
+      return;
+    }
+    setLastSelectedGroupIds(groupIds);
+    reportGroupMirrorResults(groupIds, result?.groupResults, 'Application updated successfully!');
   };
 
   const handleDeleteJob = (id: string) => {

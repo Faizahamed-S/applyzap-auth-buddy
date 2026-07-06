@@ -102,34 +102,62 @@ export const jobApi = {
   },
 
 
-  // Update application (full)
-  updateApplication: async (id: string, data: UpdateJobApplication): Promise<JobApplication> => {
+  // Update application (full). Optionally mirror to collaborative groups via `groupIds`.
+  // Response is a flat Application; when `groupIds` is included in the request, the
+  // response may also include a `groupResults` array with per-group outcomes.
+  updateApplication: async (
+    id: string,
+    data: UpdateJobApplication,
+    groupIds?: number[],
+  ): Promise<{ application: JobApplication; groupResults: GroupAddResult[] }> => {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
+
+    const body =
+      groupIds !== undefined
+        ? { ...transformedData, groupIds }
+        : transformedData;
 
     const response = await apiFetch(`${API_BASE_URL}/applications/${id}`, {
       method: "PUT",
       headers,
-      body: JSON.stringify(transformedData),
+      body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Failed to update application");
     const result = await response.json();
-    return transformFromBackend(result);
+    const { groupResults, ...appFields } = result ?? {};
+    return {
+      application: transformFromBackend(appFields),
+      groupResults: Array.isArray(groupResults) ? groupResults : [],
+    };
   },
 
-  // Partial update (PATCH)
-  patchApplication: async (id: string, data: UpdateJobApplication): Promise<JobApplication> => {
+  // Partial update (PATCH). Same groupIds/groupResults contract as PUT.
+  patchApplication: async (
+    id: string,
+    data: UpdateJobApplication,
+    groupIds?: number[],
+  ): Promise<{ application: JobApplication; groupResults: GroupAddResult[] }> => {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
+
+    const body =
+      groupIds !== undefined
+        ? { ...transformedData, groupIds }
+        : transformedData;
 
     const response = await apiFetch(`${API_BASE_URL}/applications/${id}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(transformedData),
+      body: JSON.stringify(body),
     });
     if (!response.ok) throw new Error("Failed to patch application");
     const result = await response.json();
-    return transformFromBackend(result);
+    const { groupResults, ...appFields } = result ?? {};
+    return {
+      application: transformFromBackend(appFields),
+      groupResults: Array.isArray(groupResults) ? groupResults : [],
+    };
   },
 
   // Delete application

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
+import { reportGroupMirrorResults } from '@/lib/groupMirrorToasts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -43,11 +44,19 @@ export const AllApplicationsTable = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      jobApi.updateApplication(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data, groupIds }: { id: string; data: any; groupIds?: number[] }) =>
+      jobApi.updateApplication(id, data, groupIds),
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
-      toast.success('Application updated successfully!');
+      if (variables.groupIds === undefined) {
+        toast.success('Application updated successfully!');
+      } else {
+        reportGroupMirrorResults(
+          variables.groupIds,
+          result?.groupResults,
+          'Application updated successfully!',
+        );
+      }
     },
     onError: () => {
       toast.error('Failed to update application');
@@ -108,7 +117,9 @@ export const AllApplicationsTable = ({
   };
 
   const handleEditSubmit = (id: string, data: any) => {
-    updateMutation.mutate({ id, data });
+    const { __groupIds, ...personal } = data as { __groupIds?: number[] } & Record<string, unknown>;
+    const groupIds = Array.isArray(__groupIds) ? __groupIds : undefined;
+    updateMutation.mutate({ id, data: personal, groupIds });
     setIsEditModalOpen(false);
     setEditingJob(null);
   };
