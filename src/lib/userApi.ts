@@ -1,4 +1,5 @@
 import { User, UserProfileUpdateDTO } from "@/types/user";
+import { apiFetch } from "./apiFetch";
 import { supabase } from "@/integrations/supabase/client";
 import { API_BASE_URL as BASE } from "./apiConfig";
 
@@ -24,14 +25,14 @@ const getAuthHeaders = async () => {
 export const userApi = {
   getProfile: async (): Promise<User> => {
     const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/profile`, { headers });
+    const response = await apiFetch(`${API_BASE_URL}/profile`, { headers });
     if (!response.ok) throw new Error("Failed to fetch user profile");
     return response.json();
   },
 
   updateProfile: async (data: UserProfileUpdateDTO): Promise<User> => {
     const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/profile`, {
+    const response = await apiFetch(`${API_BASE_URL}/profile`, {
       method: "PUT",
       headers,
       body: JSON.stringify(data),

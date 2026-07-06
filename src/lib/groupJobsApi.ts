@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "./apiFetch";
 import { API_BASE_URL as API_BASE } from "./apiConfig";
 import { GroupsApiError } from "./groupsApi";
 import type { GroupMember } from "./groupsApi";
@@ -72,7 +73,7 @@ const parseError = async (res: Response): Promise<GroupsApiError> => {
 export const groupJobsApi = {
   getBoard: async (groupId: number | string): Promise<GroupBoard> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}/jobs`, { headers });
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}/jobs`, { headers });
     if (!res.ok) throw await parseError(res);
     return res.json();
   },
@@ -82,7 +83,7 @@ export const groupJobsApi = {
     payload: CreateGroupJobPayload,
   ): Promise<GroupJob> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}/jobs`, {
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}/jobs`, {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
@@ -97,7 +98,7 @@ export const groupJobsApi = {
     payload: CreateGroupJobPayload,
   ): Promise<GroupJob> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}/jobs/${jobId}`, {
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}/jobs/${jobId}`, {
       method: "PUT",
       headers,
       body: JSON.stringify(payload),
@@ -112,7 +113,7 @@ export const groupJobsApi = {
     status: GroupJobStatus,
   ): Promise<void> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(
+    const res = await apiFetch(
       `${API_BASE}/api/groups/${groupId}/jobs/${jobId}/status`,
       {
         method: "PATCH",
@@ -128,7 +129,7 @@ export const groupJobsApi = {
     jobId: number | string,
   ): Promise<void> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}/jobs/${jobId}`, {
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}/jobs/${jobId}`, {
       method: "DELETE",
       headers,
     });

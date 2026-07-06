@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "./apiFetch";
 import { API_BASE_URL as API_BASE } from "./apiConfig";
 
 export interface Group {
@@ -75,14 +76,14 @@ const parseError = async (res: Response): Promise<GroupsApiError> => {
 export const groupsApi = {
   listGroups: async (): Promise<Group[]> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups`, { headers });
+    const res = await apiFetch(`${API_BASE}/api/groups`, { headers });
     if (!res.ok) throw await parseError(res);
     return res.json();
   },
 
   createGroup: async (name: string): Promise<Group> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups`, {
+    const res = await apiFetch(`${API_BASE}/api/groups`, {
       method: "POST",
       headers,
       body: JSON.stringify({ name }),
@@ -93,14 +94,14 @@ export const groupsApi = {
 
   getGroup: async (groupId: number | string): Promise<GroupDetail> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}`, { headers });
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}`, { headers });
     if (!res.ok) throw await parseError(res);
     return res.json();
   },
 
   inviteMember: async (groupId: number | string, email: string): Promise<string> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}/invites`, {
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}/invites`, {
       method: "POST",
       headers,
       body: JSON.stringify({ email }),
@@ -123,7 +124,7 @@ export const groupsApi = {
 
   leaveGroup: async (groupId: number | string): Promise<void> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}/members/me`, {
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}/members/me`, {
       method: "DELETE",
       headers,
     });
@@ -132,7 +133,7 @@ export const groupsApi = {
 
   deleteGroup: async (groupId: number | string): Promise<void> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/${groupId}`, {
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}`, {
       method: "DELETE",
       headers,
     });
@@ -141,14 +142,14 @@ export const groupsApi = {
 
   getInviteInfo: async (token: string): Promise<GroupInviteInfo> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/invites/${token}`, { headers });
+    const res = await apiFetch(`${API_BASE}/api/groups/invites/${token}`, { headers });
     if (!res.ok) throw await parseError(res);
     return res.json();
   },
 
   acceptInvite: async (token: string): Promise<void> => {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/groups/invites/${token}/accept`, {
+    const res = await apiFetch(`${API_BASE}/api/groups/invites/${token}/accept`, {
       method: "POST",
       headers,
     });

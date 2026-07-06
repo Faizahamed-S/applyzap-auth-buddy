@@ -1,81 +1,84 @@
-# Plan: Trim Application Detail + Align Referral Contract
+# Add retry logic for transient network failures
 
-## Part 1 — Remove duplicate "View Original Job Posting" link
+## Problem
 
-In `src/components/kanban/ApplicationDetailModal.tsx`, the same job link is rendered twice:
-- Inline block under "Application Information" (lines 165–184) labelled **View Original Job Posting**
-- Footer action button (lines 242–258) labelled **View Job Posting**
+The app has no central fetch wrapper — every API module (`jobApi`, `userApi`, `groupsApi`, `groupJobsApi`, `analyticsApi`, plus one call in `MyGroupsHub`) calls `fetch()` directly. Transient issues (dropped connections, TLS hiccups, backend 502/503/504 during Railway cold starts or restarts) surface as immediate user-facing errors.
 
-Remove the inline block (lines 165–184). Keep the footer button. Nothing else in that file changes.
+## Approach
 
-## Part 2 — Align referral frontend to the agreed Spring Boot contract
+Introduce one shared wrapper, `apiFetch`, and swap the raw `fetch(...)` calls in the existing API modules to use it. Behavior on success stays byte-identical to today; retries are purely additive.
 
-Currently the frontend uses a local-only field name `referralId`, filters `associatedApplications` client-side, and the application has no embedded referral summary. The agreed backend contract is:
+## New file: `src/lib/apiFetch.ts`
 
-| Concern | Backend field |
-|---|---|
-| Link a referral on an application (write) | `referralContactId` (omit when no contact) |
-| Display referral name on an application (read) | `referralContactSummary.name` |
-| Linked jobs on a referral (read) | `GET /api/referrals/{id}` → `associatedApplications[]` |
-| "Has referral" only (no contact) | send `referral: true`, omit `referralContactId` |
+A thin wrapper around `fetch` with the same signature (`(input, init) => Promise<Response>`). It contains all retry logic in one place.
 
-### 2a. Types (`src/types/job.ts`)
+Retry rules:
 
-Replace `referralId?: string | null` with the backend shape:
+- **Max 3 attempts total** (1 initial + 2 retries).
+- **Backoff**: 500ms, then 1500ms, each with ±20% random jitter.
+- **Retry on transient failures only**:
+  - Network/connection errors (fetch throws `TypeError` — DNS, connection refused, TLS handshake, connection reset).
+  - Request timeouts (`AbortError` from an internal timeout signal, ~15s per attempt).
+  - HTTP responses with status `502`, `503`, `504`.
+- **Never retry**: `400`, `401`, `403`, `404`, `409`, `422`, `429`, any other 4xx, any 2xx/3xx, and any 5xx that isn't 502/503/504.
+- **Mutation safety**: for methods other than `GET`/`HEAD`/`OPTIONS` (i.e. `POST`/`PUT`/`PATCH`/`DELETE`), only retry on a thrown connection/TLS error where no response was received. Never retry a mutation that returned a 502/503/504 — the request may have been processed server-side and retrying would risk duplicates.
+- **Idempotent methods** (`GET`/`HEAD`/`OPTIONS`) may retry on both thrown network errors and 502/503/504 responses.
+- Auth headers, body, endpoint, credentials, and the returned `Response` are passed through unchanged. Callers still handle `response.ok` exactly as they do today.
 
-```ts
-referralContactId?: string | null;     // write
-referralContactSummary?: {             // read-only (server-populated)
-  id: string;
-  name: string;
-} | null;
-```
+A short header comment in the file will explain the transient-vs-permanent split and the mutation-safety rule.
 
-### 2b. Backend transform (`src/lib/statusMapper.ts`)
+## Call-site updates (mechanical rename only)
 
-Update `backendJobSchema`:
-- Replace `referralId` with `referralContactId: z.string().nullable().optional()`.
-- Add `referralContactSummary: z.object({ id: z.string(), name: z.string() }).nullable().optional()`.
+In each of the following files, replace `fetch(` with `apiFetch(` and add `import { apiFetch } from "./apiFetch"` (or the relative equivalent). No other logic changes:
 
-`transformForBackend` already passes through; no change needed beyond field rename. When `referral === false`, ensure `referralContactId` is stripped from the payload so we don't send a stale value. When `referral === true` but no contact selected, omit the key (do not send `null` unless the backend requires it; default to omit).
-
-### 2c. Add/Edit Job modals (`AddJobModal.tsx`, `EditJobModal.tsx`)
-
-- Rename form field `referralId` → `referralContactId` everywhere (schema, defaultValues, reset, Switch reset handler, `ReferralCombobox` value/onChange).
-- On submit, if `referral === false`, drop `referralContactId` from the outgoing payload.
-- `EditJobModal` initial value: `job.referralContactId ?? null`.
-
-### 2d. Application Detail modal
-
-In the "Tags" section, when `application.referral` is true, render the referral pill as:
-- If `referralContactSummary?.name` exists → `Referral · {name}`
-- Else → `Referral` (unchanged)
-
-### 2e. Referral Detail modal (`ReferralDetailModal.tsx`)
-
-Stop filtering `jobApi.getAllApplications()` client-side. Source linked jobs from the referral object itself, which the backend will populate as `associatedApplications: Array<{ id, companyName, roleName, dateOfApplication, status }>`.
-
-- Add `associatedApplications?: AssociatedApplicationSummary[]` to `Referral` in `src/types/referral.ts`.
-- Render `referral.associatedApplications ?? []`. Empty array → existing empty state.
-- Remove the `useQuery(['applications', 'all'])` block and the `(a as any).referralId` filter.
-- Click on a row still opens the existing `ApplicationDetailModal` via `setSelectedAppId(app.id)` (no change).
-
-### 2f. Mock referral API (`src/lib/referralApi.ts`)
-
-Backend isn't ready yet, so to keep the dev UX working until the Spring Boot endpoint lands, the mock `get(id)` should synthesise `associatedApplications` by calling `jobApi.getAllApplications()` and filtering by `referralContactId === id`. This is a temporary shim, clearly commented as "remove when backend ships GET /api/referrals/{id}".
-
-### 2g. Referral Combobox
-
-No interface change — it still takes `value: string | null` and `onChange(id: string | null)`. Only the form field name binding changes.
+- `src/lib/jobApi.ts`
+- `src/lib/userApi.ts`
+- `src/lib/groupsApi.ts`
+- `src/lib/groupJobsApi.ts`
+- `src/lib/analyticsApi.ts`
+- `src/components/groups/MyGroupsHub.tsx` (single backend call there)
 
 ## Out of scope
 
-- No changes to `ReferralCombobox` internals.
-- No changes to `jobApi.ts` URLs (backend will reuse existing `PUT /applications/{id}` with the new field name).
-- No migration of existing localStorage data (`referralId` linked apps in dev will simply lose their link; acceptable since this is pre-prod mock data).
+- No changes to Supabase auth calls (`supabase.auth.*`) — those already have their own retry/refresh.
+- No changes to `referralApi.ts` (localStorage-backed mock, no network).
+- No component-level changes, no toast/UX changes, no changes to `apiConfig.ts` base URL.
 
-## Risk / verification
+## Technical details
 
-- After build, open Tracker → application detail: only one job-link link remains (the footer button).
-- Add/Edit job: toggle Referral on, pick a contact, save → payload contains `referralContactId`, not `referralId`. Toggle off → payload omits `referralContactId`.
-- Referral Base → open a referral that has linked apps → Associated Applications list still renders (via mock shim until backend lands).
+```ts
+// src/lib/apiFetch.ts (shape)
+const RETRYABLE_STATUS = new Set([502, 503, 504]);
+const MAX_ATTEMPTS = 3;
+const BACKOFFS_MS = [500, 1500]; // between attempt 1→2 and 2→3
+const PER_ATTEMPT_TIMEOUT_MS = 15000;
+
+export async function apiFetch(input, init = {}) {
+  const method = (init.method ?? "GET").toUpperCase();
+  const isIdempotent = method === "GET" || method === "HEAD" || method === "OPTIONS";
+
+  let lastErr;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    // per-attempt AbortController merged with caller's init.signal
+    try {
+      const res = await fetch(input, { ...init, signal: mergedSignal });
+      if (RETRYABLE_STATUS.has(res.status) && isIdempotent && attempt < MAX_ATTEMPTS) {
+        await sleep(jitter(BACKOFFS_MS[attempt - 1]));
+        continue;
+      }
+      return res; // includes 4xx, non-retryable 5xx, and mutation 5xx
+    } catch (err) {
+      lastErr = err;
+      const transient = isNetworkOrTlsError(err) || isTimeout(err);
+      if (transient && attempt < MAX_ATTEMPTS) {
+        await sleep(jitter(BACKOFFS_MS[attempt - 1]));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+```
+
+The caller's own `AbortSignal` (if any) is respected — aborts propagate immediately and are not retried.
