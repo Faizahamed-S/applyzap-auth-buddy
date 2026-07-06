@@ -117,7 +117,9 @@ export const AllApplicationsTable = ({
   };
 
   const handleEditSubmit = (id: string, data: any) => {
-    updateMutation.mutate({ id, data });
+    const { __groupIds, ...personal } = data as { __groupIds?: number[] } & Record<string, unknown>;
+    const groupIds = Array.isArray(__groupIds) ? __groupIds : undefined;
+    updateMutation.mutate({ id, data: personal, groupIds });
     setIsEditModalOpen(false);
     setEditingJob(null);
   };
