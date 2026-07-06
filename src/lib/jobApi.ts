@@ -1,4 +1,5 @@
 import { JobApplication, CreateJobApplication, UpdateJobApplication } from "@/types/job";
+import { apiFetch } from "./apiFetch";
 import { transformForBackend, transformFromBackend } from "./statusMapper";
 import { supabase } from "@/integrations/supabase/client";
 import { API_BASE_URL as BASE } from "./apiConfig";
@@ -45,7 +46,7 @@ export const jobApi = {
     const url = `${API_BASE_URL}/applications?${params.toString()}`;
     const headers = await getAuthHeaders();
 
-    const response = await fetch(url, { headers });
+    const response = await apiFetch(url, { headers });
     if (!response.ok) throw new Error("Failed to fetch applications");
     const result = await response.json();
     return result.map(transformFromBackend);
@@ -54,7 +55,7 @@ export const jobApi = {
   // Fetch single application
   getApplication: async (id: string): Promise<JobApplication> => {
     const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/applications/${id}`, { headers });
+    const response = await apiFetch(`${API_BASE_URL}/applications/${id}`, { headers });
     if (!response.ok) throw new Error("Failed to fetch application");
     const result = await response.json();
     return transformFromBackend(result);
@@ -63,7 +64,7 @@ export const jobApi = {
   // Fetch applications by status
   getApplicationsByStatus: async (status: string): Promise<JobApplication[]> => {
     const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/applications/status/${status}`, { headers });
+    const response = await apiFetch(`${API_BASE_URL}/applications/status/${status}`, { headers });
     if (!response.ok) throw new Error("Failed to fetch applications by status");
     const result = await response.json();
     return result.map(transformFromBackend);
@@ -82,7 +83,7 @@ export const jobApi = {
         ? { ...transformedData, groupIds }
         : transformedData;
 
-    const response = await fetch(`${API_BASE_URL}/applications`, {
+    const response = await apiFetch(`${API_BASE_URL}/applications`, {
       method: "POST",
       headers,
       body: JSON.stringify(body),
@@ -106,7 +107,7 @@ export const jobApi = {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/applications/${id}`, {
       method: "PUT",
       headers,
       body: JSON.stringify(transformedData),
@@ -121,7 +122,7 @@ export const jobApi = {
     const transformedData = transformForBackend(data);
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/applications/${id}`, {
       method: "PATCH",
       headers,
       body: JSON.stringify(transformedData),
@@ -134,7 +135,7 @@ export const jobApi = {
   // Delete application
   deleteApplication: async (id: string): Promise<void> => {
     const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
+    const response = await apiFetch(`${API_BASE_URL}/applications/${id}`, {
       method: "DELETE",
       headers,
     });
@@ -144,7 +145,7 @@ export const jobApi = {
   // Fetch unique statuses
   getUniqueStatuses: async (): Promise<string[]> => {
     const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/applications/statuses`, { headers });
+    const response = await apiFetch(`${API_BASE_URL}/applications/statuses`, { headers });
     if (!response.ok) throw new Error("Failed to fetch statuses");
     return response.json();
   },
