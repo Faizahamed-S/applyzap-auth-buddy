@@ -43,11 +43,19 @@ export const AllApplicationsTable = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      jobApi.updateApplication(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data, groupIds }: { id: string; data: any; groupIds?: number[] }) =>
+      jobApi.updateApplication(id, data, groupIds),
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
-      toast.success('Application updated successfully!');
+      if (variables.groupIds === undefined) {
+        toast.success('Application updated successfully!');
+      } else {
+        reportGroupMirrorResults(
+          variables.groupIds,
+          result?.groupResults,
+          'Application updated successfully!',
+        );
+      }
     },
     onError: () => {
       toast.error('Failed to update application');
