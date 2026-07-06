@@ -76,12 +76,11 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
 
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      jobApi.updateApplication(id, data),
+    mutationFn: ({ id, data, groupIds }: { id: string; data: any; groupIds?: number[] }) =>
+      jobApi.updateApplication(id, data, groupIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
       queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
-      toast.success('Application updated successfully!');
     },
     onError: () => {
       toast.error('Failed to update application');
