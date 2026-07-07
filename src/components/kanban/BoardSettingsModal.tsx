@@ -72,6 +72,12 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
     }
   }, [open, initialColumns]);
 
+  const [wipeDialogOpen, setWipeDialogOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [wipeProgress, setWipeProgress] = useState<{ done: number; total: number } | null>(null);
+  const { data: user } = useUserProfile();
+  const confirmEmail = user?.email ?? '';
+
   const saveMutation = useMutation({
     mutationFn: () => userApi.updateProfile({ trackerConfig: { columns } }),
     onSuccess: () => {
@@ -83,6 +89,34 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
       toast.error('Failed to save board settings');
     },
   });
+
+  const wipeMutation = useMutation({
+    mutationFn: () =>
+      jobApi.deleteAllApplications((done, total) => setWipeProgress({ done, total })),
+    onSuccess: ({ deleted, failed, total }) => {
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      if (total === 0) {
+        toast.info('No applications to delete');
+      } else if (failed === 0) {
+        toast.success(`Deleted ${deleted} application${deleted === 1 ? '' : 's'}`);
+      } else {
+        toast.warning(`Deleted ${deleted} of ${total}. ${failed} failed.`);
+      }
+      setWipeDialogOpen(false);
+      setConfirmText('');
+      setWipeProgress(null);
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast.error('Failed to delete applications');
+      setWipeProgress(null);
+    },
+  });
+
+  const canConfirmWipe =
+    confirmEmail.length > 0 &&
+    confirmText.trim().toLowerCase() === confirmEmail.trim().toLowerCase();
 
   const generateId = () => `col_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
