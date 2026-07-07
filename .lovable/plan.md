@@ -1,84 +1,58 @@
-# Add retry logic for transient network failures
+## Goal
 
-## Problem
+Add a shortcut inside **Board Settings** to wipe every job application on the personal Kanban board, protected by a GitHub-style typed confirmation.
 
-The app has no central fetch wrapper — every API module (`jobApi`, `userApi`, `groupsApi`, `groupJobsApi`, `analyticsApi`, plus one call in `MyGroupsHub`) calls `fetch()` directly. Transient issues (dropped connections, TLS hiccups, backend 502/503/504 during Railway cold starts or restarts) surface as immediate user-facing errors.
+## Confirmation string
 
-## Approach
+The app doesn't store a "username" — the closest unique identifier tied to the account is the user's **email address** (from `useUserProfile`). We'll use the full email as the confirmation string, shown in bold in the dialog copy ("Type `you@example.com` to confirm"). The Delete button stays disabled until the input matches exactly (case-insensitive, trimmed).
 
-Introduce one shared wrapper, `apiFetch`, and swap the raw `fetch(...)` calls in the existing API modules to use it. Behavior on success stays byte-identical to today; retries are purely additive.
+If you'd rather use `firstName lastName` instead of email, say the word and I'll swap it — everything else stays the same.
 
-## New file: `src/lib/apiFetch.ts`
+## UX
 
-A thin wrapper around `fetch` with the same signature (`(input, init) => Promise<Response>`). It contains all retry logic in one place.
+Inside `BoardSettingsModal`, below the existing column list and Add Column button, add a **Danger Zone** section:
 
-Retry rules:
+```text
+──────────────────────────────
+Danger Zone
+Delete all applications on this board.
+This permanently removes every job you've added. This action cannot be undone.
+[ Delete all applications ]  (destructive button)
+──────────────────────────────
+```
 
-- **Max 3 attempts total** (1 initial + 2 retries).
-- **Backoff**: 500ms, then 1500ms, each with ±20% random jitter.
-- **Retry on transient failures only**:
-  - Network/connection errors (fetch throws `TypeError` — DNS, connection refused, TLS handshake, connection reset).
-  - Request timeouts (`AbortError` from an internal timeout signal, ~15s per attempt).
-  - HTTP responses with status `502`, `503`, `504`.
-- **Never retry**: `400`, `401`, `403`, `404`, `409`, `422`, `429`, any other 4xx, any 2xx/3xx, and any 5xx that isn't 502/503/504.
-- **Mutation safety**: for methods other than `GET`/`HEAD`/`OPTIONS` (i.e. `POST`/`PUT`/`PATCH`/`DELETE`), only retry on a thrown connection/TLS error where no response was received. Never retry a mutation that returned a 502/503/504 — the request may have been processed server-side and retrying would risk duplicates.
-- **Idempotent methods** (`GET`/`HEAD`/`OPTIONS`) may retry on both thrown network errors and 502/503/504 responses.
-- Auth headers, body, endpoint, credentials, and the returned `Response` are passed through unchanged. Callers still handle `response.ok` exactly as they do today.
+Clicking the button opens a **nested confirmation dialog** (AlertDialog) with:
 
-A short header comment in the file will explain the transient-vs-permanent split and the mutation-safety rule.
+- Warning icon + "Delete all applications?" title
+- Body: "This will permanently delete all N applications on your board. To confirm, type your email `you@example.com` below."
+- Text input
+- Cancel + "Delete everything" (destructive, disabled until input matches)
+- While deleting: button shows "Deleting… (x / N)"
 
-## Call-site updates (mechanical rename only)
+## Implementation
 
-In each of the following files, replace `fetch(` with `apiFetch(` and add `import { apiFetch } from "./apiFetch"` (or the relative equivalent). No other logic changes:
+**`src/lib/jobApi.ts`** — add one helper:
 
-- `src/lib/jobApi.ts`
-- `src/lib/userApi.ts`
-- `src/lib/groupsApi.ts`
-- `src/lib/groupJobsApi.ts`
-- `src/lib/analyticsApi.ts`
-- `src/components/groups/MyGroupsHub.tsx` (single backend call there)
+```ts
+deleteAllApplications: async (): Promise<{ deleted: number; failed: number }> => { ... }
+```
+
+It fetches every application via existing `getAllApplications()` (paginated if needed — loop until returned page is short), then calls `deleteApplication(id)` for each with limited concurrency (e.g. 5 at a time via a small pool). Returns counts so the toast can summarize. No new backend endpoint required.
+
+**`src/components/kanban/BoardSettingsModal.tsx`**:
+
+- Import `useUserProfile` to read the current user's email.
+- Add state: `wipeDialogOpen`, `confirmText`, `wipeProgress`.
+- Add the Danger Zone section as described.
+- Add nested `AlertDialog` (shadcn) for the typed confirmation.
+- Wire up a `wipeMutation` using `useMutation` calling `jobApi.deleteAllApplications`.
+- On success: `queryClient.invalidateQueries({ queryKey: ['applications'] })`, toast `"Deleted N applications"` (or partial-failure warning if any failed), close both dialogs.
+- On error: toast error, keep dialog open.
+
+**No changes** to backend, routes, or other components.
 
 ## Out of scope
 
-- No changes to Supabase auth calls (`supabase.auth.*`) — those already have their own retry/refresh.
-- No changes to `referralApi.ts` (localStorage-backed mock, no network).
-- No component-level changes, no toast/UX changes, no changes to `apiConfig.ts` base URL.
-
-## Technical details
-
-```ts
-// src/lib/apiFetch.ts (shape)
-const RETRYABLE_STATUS = new Set([502, 503, 504]);
-const MAX_ATTEMPTS = 3;
-const BACKOFFS_MS = [500, 1500]; // between attempt 1→2 and 2→3
-const PER_ATTEMPT_TIMEOUT_MS = 15000;
-
-export async function apiFetch(input, init = {}) {
-  const method = (init.method ?? "GET").toUpperCase();
-  const isIdempotent = method === "GET" || method === "HEAD" || method === "OPTIONS";
-
-  let lastErr;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    // per-attempt AbortController merged with caller's init.signal
-    try {
-      const res = await fetch(input, { ...init, signal: mergedSignal });
-      if (RETRYABLE_STATUS.has(res.status) && isIdempotent && attempt < MAX_ATTEMPTS) {
-        await sleep(jitter(BACKOFFS_MS[attempt - 1]));
-        continue;
-      }
-      return res; // includes 4xx, non-retryable 5xx, and mutation 5xx
-    } catch (err) {
-      lastErr = err;
-      const transient = isNetworkOrTlsError(err) || isTimeout(err);
-      if (transient && attempt < MAX_ATTEMPTS) {
-        await sleep(jitter(BACKOFFS_MS[attempt - 1]));
-        continue;
-      }
-      throw err;
-    }
-  }
-  throw lastErr;
-}
-```
-
-The caller's own `AbortSignal` (if any) is respected — aborts propagate immediately and are not retried.
+- No bulk-delete endpoint on the Spring Boot backend (uses existing per-item DELETE loop).
+- Does not touch collaborative group boards — only the user's personal board, matching the current "Board Settings" scope.
+- No change to columns / trackerConfig behavior.

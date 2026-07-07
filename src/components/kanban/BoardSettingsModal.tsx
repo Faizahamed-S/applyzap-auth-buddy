@@ -17,8 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { userApi } from '@/lib/userApi';
+import { jobApi } from '@/lib/jobApi';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { toast } from 'sonner';
 
 const AVAILABLE_COLORS = [
@@ -60,6 +72,12 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
     }
   }, [open, initialColumns]);
 
+  const [wipeDialogOpen, setWipeDialogOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [wipeProgress, setWipeProgress] = useState<{ done: number; total: number } | null>(null);
+  const { data: user } = useUserProfile();
+  const confirmEmail = user?.email ?? '';
+
   const saveMutation = useMutation({
     mutationFn: () => userApi.updateProfile({ trackerConfig: { columns } }),
     onSuccess: () => {
@@ -71,6 +89,34 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
       toast.error('Failed to save board settings');
     },
   });
+
+  const wipeMutation = useMutation({
+    mutationFn: () =>
+      jobApi.deleteAllApplications((done, total) => setWipeProgress({ done, total })),
+    onSuccess: ({ deleted, failed, total }) => {
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+      queryClient.invalidateQueries({ queryKey: ['application'] });
+      if (total === 0) {
+        toast.info('No applications to delete');
+      } else if (failed === 0) {
+        toast.success(`Deleted ${deleted} application${deleted === 1 ? '' : 's'}`);
+      } else {
+        toast.warning(`Deleted ${deleted} of ${total}. ${failed} failed.`);
+      }
+      setWipeDialogOpen(false);
+      setConfirmText('');
+      setWipeProgress(null);
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast.error('Failed to delete applications');
+      setWipeProgress(null);
+    },
+  });
+
+  const canConfirmWipe =
+    confirmEmail.length > 0 &&
+    confirmText.trim().toLowerCase() === confirmEmail.trim().toLowerCase();
 
   const generateId = () => `col_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
@@ -217,6 +263,30 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
             <Plus className="mr-2 h-4 w-4" />
             Add Column
           </Button>
+
+          <div className="mt-6 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <p className="text-sm font-semibold text-destructive">Danger Zone</p>
+                <p className="text-xs text-muted-foreground">
+                  Permanently delete every application on your board. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="mt-3 w-full"
+              onClick={() => {
+                setConfirmText('');
+                setWipeDialogOpen(true);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete all applications
+            </Button>
+          </div>
         </div>
 
         <DialogFooter>
@@ -228,6 +298,53 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog open={wipeDialogOpen} onOpenChange={(o) => !wipeMutation.isPending && setWipeDialogOpen(o)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete all applications?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm">
+                <p>
+                  This will permanently delete every job application on your board. This action cannot be undone.
+                </p>
+                <p>
+                  To confirm, type your email{' '}
+                  <span className="font-semibold text-foreground break-all">{confirmEmail || '...'}</span> below.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder={confirmEmail}
+            autoComplete="off"
+            disabled={wipeMutation.isPending}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={wipeMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (!canConfirmWipe || wipeMutation.isPending) return;
+                wipeMutation.mutate();
+              }}
+              disabled={!canConfirmWipe || wipeMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {wipeMutation.isPending
+                ? wipeProgress
+                  ? `Deleting… (${wipeProgress.done} / ${wipeProgress.total})`
+                  : 'Deleting…'
+                : 'Delete everything'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };

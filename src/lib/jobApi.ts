@@ -170,6 +170,46 @@ export const jobApi = {
     if (!response.ok) throw new Error("Failed to delete application");
   },
 
+  // Bulk delete: fetches every application (paginated) then deletes them with
+  // limited concurrency. Backend has no bulk endpoint, so this loops per-item.
+  deleteAllApplications: async (
+    onProgress?: (done: number, total: number) => void,
+  ): Promise<{ deleted: number; failed: number; total: number }> => {
+    const pageSize = 100;
+    const all: JobApplication[] = [];
+    let page = 1;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const batch = await jobApi.getAllApplications(undefined, page, pageSize);
+      all.push(...batch);
+      if (batch.length < pageSize) break;
+      page += 1;
+      if (page > 200) break; // safety cap
+    }
+
+    const total = all.length;
+    let deleted = 0;
+    let failed = 0;
+    const concurrency = 5;
+    let index = 0;
+
+    const worker = async () => {
+      while (index < all.length) {
+        const current = all[index++];
+        try {
+          await jobApi.deleteApplication(current.id);
+          deleted += 1;
+        } catch {
+          failed += 1;
+        }
+        onProgress?.(deleted + failed, total);
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(concurrency, all.length) }, worker));
+    return { deleted, failed, total };
+  },
+
   // Fetch unique statuses
   getUniqueStatuses: async (): Promise<string[]> => {
     const headers = await getAuthHeaders();
