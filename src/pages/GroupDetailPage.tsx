@@ -15,7 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, UserPlus, LayoutGrid, LogOut, Trash2, Users } from "lucide-react";
+import { ArrowLeft, UserPlus, LayoutGrid, LogOut, Trash2, Users, Pencil, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { groupsApi, GroupsApiError } from "@/lib/groupsApi";
