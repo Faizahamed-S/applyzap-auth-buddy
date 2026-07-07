@@ -17,8 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { userApi } from '@/lib/userApi';
+import { jobApi } from '@/lib/jobApi';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { toast } from 'sonner';
 
 const AVAILABLE_COLORS = [
