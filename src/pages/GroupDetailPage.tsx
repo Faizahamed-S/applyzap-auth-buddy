@@ -33,6 +33,8 @@ const GroupDetailPage = () => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
 
   useEffect(() => {
     const checkAuth = async () => {
