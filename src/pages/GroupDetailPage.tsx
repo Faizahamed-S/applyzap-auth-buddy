@@ -15,7 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, UserPlus, LayoutGrid, LogOut, Trash2, Users } from "lucide-react";
+import { ArrowLeft, UserPlus, LayoutGrid, LogOut, Trash2, Users, Pencil, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { groupsApi, GroupsApiError } from "@/lib/groupsApi";
@@ -32,6 +33,8 @@ const GroupDetailPage = () => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -110,6 +113,51 @@ const GroupDetailPage = () => {
     },
   });
 
+  const renameMutation = useMutation({
+    mutationFn: (name: string) => groupsApi.renameGroup(groupId!, name),
+    onSuccess: (updated) => {
+      toast.success("Group renamed");
+      queryClient.setQueryData(["group", groupId], (prev: unknown) =>
+        prev && typeof prev === "object" ? { ...prev, name: updated.name } : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      refreshGroupsCache();
+      setIsRenaming(false);
+    },
+    onError: (err: unknown) => {
+      if (err instanceof GroupsApiError) {
+        if (err.status === 401) return toast.error("Please sign in again");
+        if (err.status === 403) return toast.error("Only the owner can rename this group.");
+        if (err.status === 404) return toast.error("Group not found");
+        if (err.status === 400) return toast.error(err.message || "Invalid group name.");
+        if (err.status >= 500) return toast.error("Couldn't rename group. Please try again.");
+        return toast.error(err.message || "Couldn't rename group.");
+      }
+      toast.error("Network error. Please try again.");
+    },
+  });
+
+  const startRename = () => {
+    if (!group) return;
+    setRenameValue(group.name);
+    setIsRenaming(true);
+  };
+
+  const submitRename = () => {
+    const trimmed = renameValue.trim();
+    if (!group) return;
+    if (!trimmed) {
+      toast.error("Group name can't be empty");
+      return;
+    }
+    if (trimmed === group.name) {
+      setIsRenaming(false);
+      return;
+    }
+    renameMutation.mutate(trimmed);
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -162,10 +210,62 @@ const GroupDetailPage = () => {
         ) : group ? (
           <>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div className="space-y-1 min-w-0">
-                <h1 className="text-3xl font-bold text-foreground truncate">
-                  {group.name} — Members & settings
-                </h1>
+              <div className="space-y-1 min-w-0 flex-1">
+                {isRenaming && isOwner ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Input
+                      autoFocus
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          submitRename();
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          setIsRenaming(false);
+                        }
+                      }}
+                      disabled={renameMutation.isPending}
+                      maxLength={80}
+                      className="text-2xl font-bold h-11 max-w-md"
+                    />
+                    <Button
+                      size="icon"
+                      onClick={submitRename}
+                      disabled={renameMutation.isPending}
+                      aria-label="Save group name"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setIsRenaming(false)}
+                      disabled={renameMutation.isPending}
+                      aria-label="Cancel rename"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h1 className="text-3xl font-bold text-foreground truncate">
+                      {group.name} — Members & settings
+                    </h1>
+                    {isOwner && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={startRename}
+                        aria-label="Rename group"
+                        className="shrink-0"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {(() => {
                     try {

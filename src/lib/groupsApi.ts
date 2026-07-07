@@ -122,6 +122,17 @@ export const groupsApi = {
     return text;
   },
 
+  renameGroup: async (groupId: number | string, name: string): Promise<Group> => {
+    const headers = await getAuthHeaders();
+    const res = await apiFetch(`${API_BASE}/api/groups/${groupId}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw await parseError(res);
+    return res.json();
+  },
+
   leaveGroup: async (groupId: number | string): Promise<void> => {
     const headers = await getAuthHeaders();
     const res = await apiFetch(`${API_BASE}/api/groups/${groupId}/members/me`, {
