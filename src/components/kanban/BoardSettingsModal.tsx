@@ -263,6 +263,30 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
             <Plus className="mr-2 h-4 w-4" />
             Add Column
           </Button>
+
+          <div className="mt-6 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <p className="text-sm font-semibold text-destructive">Danger Zone</p>
+                <p className="text-xs text-muted-foreground">
+                  Permanently delete every application on your board. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="mt-3 w-full"
+              onClick={() => {
+                setConfirmText('');
+                setWipeDialogOpen(true);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete all applications
+            </Button>
+          </div>
         </div>
 
         <DialogFooter>
@@ -274,6 +298,53 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog open={wipeDialogOpen} onOpenChange={(o) => !wipeMutation.isPending && setWipeDialogOpen(o)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete all applications?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm">
+                <p>
+                  This will permanently delete every job application on your board. This action cannot be undone.
+                </p>
+                <p>
+                  To confirm, type your email{' '}
+                  <span className="font-semibold text-foreground break-all">{confirmEmail || '...'}</span> below.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder={confirmEmail}
+            autoComplete="off"
+            disabled={wipeMutation.isPending}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={wipeMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (!canConfirmWipe || wipeMutation.isPending) return;
+                wipeMutation.mutate();
+              }}
+              disabled={!canConfirmWipe || wipeMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {wipeMutation.isPending
+                ? wipeProgress
+                  ? `Deleting… (${wipeProgress.done} / ${wipeProgress.total})`
+                  : 'Deleting…'
+                : 'Delete everything'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
