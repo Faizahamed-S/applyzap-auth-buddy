@@ -210,10 +210,62 @@ const GroupDetailPage = () => {
         ) : group ? (
           <>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div className="space-y-1 min-w-0">
-                <h1 className="text-3xl font-bold text-foreground truncate">
-                  {group.name} — Members & settings
-                </h1>
+              <div className="space-y-1 min-w-0 flex-1">
+                {isRenaming && isOwner ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Input
+                      autoFocus
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          submitRename();
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          setIsRenaming(false);
+                        }
+                      }}
+                      disabled={renameMutation.isPending}
+                      maxLength={80}
+                      className="text-2xl font-bold h-11 max-w-md"
+                    />
+                    <Button
+                      size="icon"
+                      onClick={submitRename}
+                      disabled={renameMutation.isPending}
+                      aria-label="Save group name"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setIsRenaming(false)}
+                      disabled={renameMutation.isPending}
+                      aria-label="Cancel rename"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h1 className="text-3xl font-bold text-foreground truncate">
+                      {group.name} — Members & settings
+                    </h1>
+                    {isOwner && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={startRename}
+                        aria-label="Rename group"
+                        className="shrink-0"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {(() => {
                     try {
