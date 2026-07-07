@@ -113,6 +113,51 @@ const GroupDetailPage = () => {
     },
   });
 
+  const renameMutation = useMutation({
+    mutationFn: (name: string) => groupsApi.renameGroup(groupId!, name),
+    onSuccess: (updated) => {
+      toast.success("Group renamed");
+      queryClient.setQueryData(["group", groupId], (prev: unknown) =>
+        prev && typeof prev === "object" ? { ...prev, name: updated.name } : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      refreshGroupsCache();
+      setIsRenaming(false);
+    },
+    onError: (err: unknown) => {
+      if (err instanceof GroupsApiError) {
+        if (err.status === 401) return toast.error("Please sign in again");
+        if (err.status === 403) return toast.error("Only the owner can rename this group.");
+        if (err.status === 404) return toast.error("Group not found");
+        if (err.status === 400) return toast.error(err.message || "Invalid group name.");
+        if (err.status >= 500) return toast.error("Couldn't rename group. Please try again.");
+        return toast.error(err.message || "Couldn't rename group.");
+      }
+      toast.error("Network error. Please try again.");
+    },
+  });
+
+  const startRename = () => {
+    if (!group) return;
+    setRenameValue(group.name);
+    setIsRenaming(true);
+  };
+
+  const submitRename = () => {
+    const trimmed = renameValue.trim();
+    if (!group) return;
+    if (!trimmed) {
+      toast.error("Group name can't be empty");
+      return;
+    }
+    if (trimmed === group.name) {
+      setIsRenaming(false);
+      return;
+    }
+    renameMutation.mutate(trimmed);
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
