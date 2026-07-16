@@ -49,7 +49,13 @@ export const jobApi = {
     const response = await apiFetch(url, { headers });
     if (!response.ok) throw new Error("Failed to fetch applications");
     const result = await response.json();
-    return result.map(transformFromBackend);
+    return result
+      .map(transformFromBackend)
+      .sort((a, b) => {
+        const dateDiff = new Date(b.dateOfApplication).getTime() - new Date(a.dateOfApplication).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return b.id.localeCompare(a.id);
+      });
   },
 
   // Fetch single application
