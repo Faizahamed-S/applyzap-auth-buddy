@@ -55,13 +55,16 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
     navigate('/login');
   };
 
-  const handleNavClick = (item: NavItem) => {
+  const handleNavClick = (e: React.MouseEvent, item: NavItem) => {
+    e.stopPropagation();
     if (item.comingSoon) {
       toast.info(`${item.label} — Coming soon!`);
       return;
     }
     if (item.href) navigate(item.href);
   };
+
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   const isActive = (href?: string) => href && location.pathname === href;
 
@@ -75,7 +78,7 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
           isActive(item.href) && 'bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent',
           item.comingSoon && 'opacity-50',
         )}
-        onClick={() => handleNavClick(item)}
+        onClick={(e) => handleNavClick(e, item)}
       >
         <item.icon className="h-5 w-5 shrink-0" />
         {!collapsed && (
