@@ -1,27 +1,39 @@
-## Sidebar UX Updates
+## Referrals as Cards
 
-Update `src/components/dashboard/DashboardLayout.tsx` and `src/components/dashboard/DashboardSidebar.tsx` to change the sidebar's default state, add click-empty-space toggle, and persist the user's preference.
+Replace the current `ReferralTable` list view with a responsive grid of cards. Cards emphasize **name** and **company**, expose a quick **LinkedIn** link, and open the existing detail modal on tap for full info.
 
-### 1. Default open + persist preference (localStorage)
+### New component: `ReferralCard`
+Location: `src/components/referrals/ReferralCard.tsx`
 
-In `DashboardLayout.tsx`:
-- Change `useState(true)` (collapsed by default) to read from `localStorage.getItem('sidebar:collapsed')`.
-- If nothing is stored, default to **open** (`collapsed = false`).
-- On every toggle, write the new value to `localStorage`.
+Layout per card (top → bottom):
+- **Company name** — most prominent. Rendered with our primary blue accent (`text-primary`, `font-semibold`, `text-base`) so it visually pops as the anchor of the card. Matches the existing brand blue (`hsl(221 83% 53%)`) already used elsewhere.
+- **Contact name** — `text-foreground`, `font-medium`, `text-sm`. Sits directly under the company.
+- **Role/title** (if present) — `text-xs text-muted-foreground`.
+- **Footer row** — small LinkedIn icon button (opens `linkedinUrl` in a new tab, `stopPropagation` so it doesn't open the detail modal), plus a subtle "N linked application(s)" count on the right when available.
+- **Overflow menu** (three-dot) — Edit / Delete, mirroring current `ReferralTable` row actions. `stopPropagation` on trigger.
 
-### 2. Click empty space to toggle
+Card container:
+- `rounded-lg border border-border bg-card p-4 cursor-pointer transition-all`
+- Hover: `hover:border-primary/40 hover:shadow-sm`
+- Whole card is clickable → `onSelect(referral)` opens `ReferralDetailModal` (unchanged behavior).
 
-In `DashboardSidebar.tsx`:
-- Attach `onClick={onToggle}` to the outer `<aside>` (or to the `<nav>` and footer container's empty regions).
-- Nav item `Button`s already handle their own `onClick` and call `navigate(...)`. Add `e.stopPropagation()` inside `handleNavClick` so clicks on nav items don't bubble up and toggle the sidebar.
-- Add `stopPropagation` on the `Logo` wrapper, the collapse/expand chevron buttons, `ThemeToggle` container, and the `Logout` button so those interactive controls don't trigger a toggle.
-- The Logo continues to link to `/dashboard` (already configured via `linkTo="/dashboard"` in both collapsed and expanded states), satisfying the "logo always returns to home" requirement.
+### Grid wrapper
+In `ReferralBaseHub.tsx`, swap `<ReferralTable … />` for:
+```
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+  {filtered.map(r => <ReferralCard key={r.id} referral={r} … />)}
+</div>
+```
+`ReferralTable.tsx` stays in the repo for now (unused) so we can revert quickly; no other imports change.
 
-### 3. Cursor affordance
+### Ranking-ready
+Leaves a clean surface for the ranking sort you'll add next: sorting will happen in `ReferralBaseHub` before the `.map`, and the card already has room in the footer for a small rank chip when needed. No ranking UI in this pass.
 
-- Add `cursor-pointer` to the `<aside>` and `cursor-default` (or explicit override) on the interactive children so users get visual feedback that empty space is clickable.
+### Answer on the color
+Yes — our primary is a bright blue (`hsl(221 83% 53%)` with a cyan-blue gradient partner). Applying `text-primary` to the company gives that "blueish-white/highlight" pop against both light and dark themes without hardcoding a hex. If you'd rather have the company appear white-bold in dark mode and blue only on hover, say the word and I'll switch it to `text-foreground` + `group-hover:text-primary`.
 
-### Notes
+### Files touched
+- Add: `src/components/referrals/ReferralCard.tsx`
+- Edit: `src/components/referrals/ReferralBaseHub.tsx` (replace table with card grid)
 
-- No changes to routing or nav item behavior — clicking Dashboard/Tracker/etc. still navigates as today.
-- No backend changes.
+No API, type, or data changes.

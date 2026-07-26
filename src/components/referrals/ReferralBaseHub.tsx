@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import { Referral } from '@/types/referral';
 import { useDeleteReferral, useReferrals } from '@/hooks/useReferrals';
-import { ReferralTable } from './ReferralTable';
+import { ReferralCard } from './ReferralCard';
 import { AddEditReferralModal } from './AddEditReferralModal';
 import { ReferralDetailModal } from './ReferralDetailModal';
 import { CustomFieldsTemplateModal } from './CustomFieldsTemplateModal';
@@ -128,12 +128,17 @@ export const ReferralBaseHub = () => {
           No referrals match “{search}”.
         </div>
       ) : (
-        <ReferralTable
-          referrals={filtered}
-          onSelect={openDetail}
-          onEdit={openEdit}
-          onDelete={(r) => setToDelete(r)}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filtered.map((r) => (
+            <ReferralCard
+              key={r.id}
+              referral={r}
+              onSelect={openDetail}
+              onEdit={openEdit}
+              onDelete={(x) => setToDelete(x)}
+            />
+          ))}
+        </div>
       )}
 
       <AddEditReferralModal
