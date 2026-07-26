@@ -1,34 +1,27 @@
-## Goal
-Sort personal job applications in the frontend so the most recently applied appear first across the app (Dashboard, Tracker, table view, status pages).
+## Sidebar UX Updates
 
-## Decision
-Use **frontend-only sort** (zero meaningful latency impact, no backend dependency). Sort by `dateOfApplication` descending, with `id` descending as tiebreaker to keep newest-saved first when dates collide.
+Update `src/components/dashboard/DashboardLayout.tsx` and `src/components/dashboard/DashboardSidebar.tsx` to change the sidebar's default state, add click-empty-space toggle, and persist the user's preference.
 
-## Changes
+### 1. Default open + persist preference (localStorage)
 
-1. **`src/lib/jobApi.ts` — `getAllApplications`**
-   - After the backend response is mapped via `transformFromBackend`, sort the returned array in place:
-     ```ts
-     return result
-       .map(transformFromBackend)
-       .sort((a, b) => {
-         const dateDiff = new Date(b.dateOfApplication).getTime() - new Date(a.dateOfApplication).getTime();
-         if (dateDiff !== 0) return dateDiff;
-         return b.id.localeCompare(a.id);
-       });
-     ```
-   - This single change propagates to every consumer that calls `getAllApplications`.
+In `DashboardLayout.tsx`:
+- Change `useState(true)` (collapsed by default) to read from `localStorage.getItem('sidebar:collapsed')`.
+- If nothing is stored, default to **open** (`collapsed = false`).
+- On every toggle, write the new value to `localStorage`.
 
-2. **No other files changed.**
-   - Dashboard `Recent Applications`, Tracker board, status pages, and table view all consume `getAllApplications` or the same query data and will inherit the sort.
+### 2. Click empty space to toggle
 
-## Out of scope
-- No backend/API changes.
-- No `createdAt` support.
-- No new components, UI, or settings toggles.
+In `DashboardSidebar.tsx`:
+- Attach `onClick={onToggle}` to the outer `<aside>` (or to the `<nav>` and footer container's empty regions).
+- Nav item `Button`s already handle their own `onClick` and call `navigate(...)`. Add `e.stopPropagation()` inside `handleNavClick` so clicks on nav items don't bubble up and toggle the sidebar.
+- Add `stopPropagation` on the `Logo` wrapper, the collapse/expand chevron buttons, `ThemeToggle` container, and the `Logout` button so those interactive controls don't trigger a toggle.
+- The Logo continues to link to `/dashboard` (already configured via `linkTo="/dashboard"` in both collapsed and expanded states), satisfying the "logo always returns to home" requirement.
 
-## Acceptance criteria
-- Opening `/tracker` shows the most recently applied job cards at the top of each column.
-- Dashboard `Recent Applications` list shows newest first.
-- Status-specific page (`/status/:status`) shows newest first.
-- Sort is stable across reloads without extra network cost.
+### 3. Cursor affordance
+
+- Add `cursor-pointer` to the `<aside>` and `cursor-default` (or explicit override) on the interactive children so users get visual feedback that empty space is clickable.
+
+### Notes
+
+- No changes to routing or nav item behavior — clicking Dashboard/Tracker/etc. still navigates as today.
+- No backend changes.
