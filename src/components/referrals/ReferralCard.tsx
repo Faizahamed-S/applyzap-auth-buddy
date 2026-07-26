@@ -41,9 +41,9 @@ export const ReferralCard = ({ referral, onSelect, onEdit, onDelete }: Props) =>
           <p className="text-sm font-medium text-foreground truncate mt-0.5">
             {referral.name}
           </p>
-          {referral.roleName && (
+          {referral.email && (
             <p className="text-xs text-muted-foreground truncate mt-0.5">
-              {referral.roleName}
+              {referral.email}
             </p>
           )}
         </div>
