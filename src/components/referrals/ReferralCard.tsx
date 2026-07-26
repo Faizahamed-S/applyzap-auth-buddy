@@ -38,7 +38,7 @@ export const ReferralCard = ({ referral, onSelect, onEdit, onDelete }: Props) =>
           <h3 className="text-base font-bold text-white truncate flex-1 min-w-0">
             {referral.name || 'Unknown contact'}
           </h3>
-          <span className="text-sm font-bold text-primary truncate max-w-[40%]">
+          <span className="text-xs font-semibold text-primary-foreground bg-primary truncate max-w-[40%] rounded-md px-2.5 py-1">
             {referral.companyName || 'Unknown company'}
           </span>
         </div>
