@@ -34,15 +34,15 @@ export const ReferralCard = ({ referral, onSelect, onEdit, onDelete }: Props) =>
       className="group relative rounded-lg border border-border bg-card p-4 cursor-pointer transition-all hover:border-primary/40 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring flex flex-col gap-2"
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-primary truncate">
+        <div className="min-w-0 flex-1 flex flex-col gap-1">
+          <h3 className="text-base font-bold text-white truncate">
             {referral.companyName || 'Unknown company'}
           </h3>
-          <p className="text-sm font-medium text-foreground truncate mt-0.5">
+          <p className="text-sm font-medium text-foreground truncate">
             {referral.name}
           </p>
           {referral.email && (
-            <p className="text-xs text-muted-foreground truncate mt-0.5">
+            <p className="text-xs text-muted-foreground truncate">
               {referral.email}
             </p>
           )}
