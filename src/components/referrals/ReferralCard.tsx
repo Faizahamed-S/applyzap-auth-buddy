@@ -33,21 +33,21 @@ export const ReferralCard = ({ referral, onSelect, onEdit, onDelete }: Props) =>
       }}
       className="group relative rounded-lg border border-border bg-card p-4 cursor-pointer transition-all hover:border-primary/40 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring flex flex-col gap-2"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1 flex flex-col gap-1">
-          <h3 className="text-base font-bold text-white truncate">
-            {referral.companyName || 'Unknown company'}
+      <div className="relative flex flex-col gap-1 pr-8">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-base font-bold text-white truncate flex-1 min-w-0">
+            {referral.name || 'Unknown contact'}
           </h3>
-          <p className="text-sm font-medium text-foreground truncate">
-            {referral.name}
-          </p>
-          {referral.email && (
-            <p className="text-xs text-muted-foreground truncate">
-              {referral.email}
-            </p>
-          )}
+          <span className="text-sm font-bold text-primary truncate max-w-[40%]">
+            {referral.companyName || 'Unknown company'}
+          </span>
         </div>
-        <div onClick={stop}>
+        {referral.email && (
+          <p className="text-sm text-muted-foreground truncate">
+            {referral.email}
+          </p>
+        )}
+        <div onClick={stop} className="absolute top-0 right-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-1">
