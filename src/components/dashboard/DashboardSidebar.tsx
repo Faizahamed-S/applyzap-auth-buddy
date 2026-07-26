@@ -55,13 +55,16 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
     navigate('/login');
   };
 
-  const handleNavClick = (item: NavItem) => {
+  const handleNavClick = (e: React.MouseEvent, item: NavItem) => {
+    e.stopPropagation();
     if (item.comingSoon) {
       toast.info(`${item.label} — Coming soon!`);
       return;
     }
     if (item.href) navigate(item.href);
   };
+
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   const isActive = (href?: string) => href && location.pathname === href;
 
@@ -75,7 +78,7 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
           isActive(item.href) && 'bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent',
           item.comingSoon && 'opacity-50',
         )}
-        onClick={() => handleNavClick(item)}
+        onClick={(e) => handleNavClick(e, item)}
       >
         <item.icon className="h-5 w-5 shrink-0" />
         {!collapsed && (
@@ -108,21 +111,25 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
 
   return (
     <aside
+      onClick={onToggle}
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300',
+        'fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300 cursor-pointer',
         'bg-sidebar border-r border-sidebar-border',
         collapsed ? 'w-16' : 'w-60',
       )}
     >
       {/* Logo + Toggle */}
       <div className="flex items-center justify-between p-3 border-b border-sidebar-border h-16">
-        <div className={cn('transition-all overflow-hidden', collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100')}>
+        <div
+          onClick={stop}
+          className={cn('transition-all overflow-hidden cursor-auto', collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100')}
+        >
           <Logo size="sm" linkTo="/dashboard" />
         </div>
         {collapsed && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="mx-auto">
+              <div className="mx-auto cursor-auto" onClick={stop}>
                 <Logo size="sm" showText={false} linkTo="/dashboard" />
               </div>
             </TooltipTrigger>
@@ -132,7 +139,10 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={onToggle}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle();
+          }}
           className={cn(
             'text-sidebar-foreground/50 hover:text-sidebar-foreground shrink-0 h-8 w-8',
             collapsed && 'hidden',
@@ -156,7 +166,10 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onToggle}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
                 className="w-full text-sidebar-foreground/50 hover:text-sidebar-foreground"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -166,14 +179,20 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
           </Tooltip>
         )}
 
-        <div className={cn('flex items-center', collapsed ? 'justify-center' : 'justify-between px-1')}>
+        <div
+          onClick={stop}
+          className={cn('flex items-center cursor-auto', collapsed ? 'justify-center' : 'justify-between px-1')}
+        >
           <ThemeToggle />
           {!collapsed && (
             <Button
               variant="ghost"
               size="sm"
               className="text-sidebar-foreground/50 hover:text-sidebar-foreground gap-2"
-              onClick={handleLogout}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLogout();
+              }}
             >
               <LogOut className="h-4 w-4" />
               Logout
@@ -188,7 +207,10 @@ export const DashboardSidebar = ({ collapsed, onToggle }: SidebarProps) => {
                 variant="ghost"
                 size="icon"
                 className="w-full text-sidebar-foreground/50 hover:text-sidebar-foreground"
-                onClick={handleLogout}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLogout();
+                }}
               >
                 <LogOut className="h-4 w-4" />
               </Button>
