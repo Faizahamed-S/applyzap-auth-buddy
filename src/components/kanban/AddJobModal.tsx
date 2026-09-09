@@ -138,9 +138,16 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       setGroupError('Select at least one group, or turn the toggle off.');
       return;
     }
+    const tplErrors = validateTemplateValues(templateFields, templateValues);
+    setTemplateErrors(tplErrors);
+    if (Object.keys(tplErrors).length > 0) return;
+
     setIsSubmitting(true);
     try {
-      const metadata = fieldsToMetadata(customFields);
+      const adHoc = fieldsToMetadata(customFields) ?? {};
+      const tplMeta = valuesToMetadata(templateFields, templateValues);
+      const merged = { ...adHoc, ...tplMeta };
+      const metadata = Object.keys(merged).length > 0 ? merged : undefined;
       const groupIds = postToGroups ? selectedGroupIds : [];
       await onSubmit({
         ...data,
@@ -149,6 +156,8 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       } as any);
       form.reset();
       setCustomFields([]);
+      setTemplateValues(valuesFromMetadata(templateFields, null));
+      setTemplateErrors({});
       setPostToGroups(false);
       setGroupError(null);
       onOpenChange(false);
