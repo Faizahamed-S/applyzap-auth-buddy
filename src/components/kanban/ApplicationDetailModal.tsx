@@ -9,6 +9,7 @@ import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { getStatusConfig } from '@/lib/statusConfig';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
+import { useFieldTemplate } from '@/hooks/useFieldTemplate';
 
 interface ApplicationDetailModalProps {
   open: boolean;
