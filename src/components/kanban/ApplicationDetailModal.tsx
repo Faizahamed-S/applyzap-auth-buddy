@@ -30,6 +30,10 @@ export const ApplicationDetailModal = ({
 }: ApplicationDetailModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { columns: trackerColumns } = useTrackerColumns();
+  const { data: fieldTemplate } = useFieldTemplate();
+  const templateByKey = new Map(
+    (fieldTemplate?.custom ?? []).map((f) => [f.key, f]),
+  );
 
   const { data: application, isLoading, error } = useQuery({
     queryKey: ['application', applicationId],
