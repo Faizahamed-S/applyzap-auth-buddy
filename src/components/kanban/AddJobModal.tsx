@@ -28,6 +28,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { CustomFieldsEditor, fieldsToMetadata } from './CustomFieldsEditor';
 import type { CustomFieldEntry } from './CustomFieldsEditor';
+import {
+  TemplateFields,
+  validateTemplateValues,
+  valuesFromMetadata,
+  valuesToMetadata,
+  type TemplateValues,
+} from './TemplateFields';
+import { useFieldTemplate } from '@/hooks/useFieldTemplate';
 import { ReferralCombobox } from '@/components/referrals/ReferralCombobox';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
 import { normalizeStatus } from '@/lib/statusMapper';
@@ -62,6 +70,10 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
   const { columns } = useTrackerColumns();
+  const { data: template } = useFieldTemplate();
+  const templateFields = template?.custom ?? [];
+  const [templateValues, setTemplateValues] = useState<TemplateValues>({});
+  const [templateErrors, setTemplateErrors] = useState<Record<string, string>>({});
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
