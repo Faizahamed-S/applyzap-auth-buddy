@@ -266,6 +266,22 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
             Add Column
           </Button>
 
+          <div className="mt-6 rounded-lg border border-border bg-card p-4 space-y-2">
+            <p className="text-sm font-semibold">Application form</p>
+            <p className="text-xs text-muted-foreground">
+              Choose which fields appear when you add or edit an application.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setTemplateOpen(true)}
+            >
+              <LayoutList className="mr-2 h-4 w-4" />
+              Template
+            </Button>
+          </div>
+
           <div className="mt-6 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
