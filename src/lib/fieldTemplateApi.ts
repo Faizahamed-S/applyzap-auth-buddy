@@ -88,7 +88,7 @@ export const fieldTemplateApi = {
       console.warn('Field template failed validation', parsed.error.flatten());
       return EMPTY;
     }
-    return sortByOrder(parsed.data);
+    return sortByOrder({ builtIn: parsed.data.builtIn ?? [], custom: parsed.data.custom ?? [] });
   },
 
   updateTemplate: async (template: FieldTemplate): Promise<FieldTemplate> => {
@@ -106,7 +106,8 @@ export const fieldTemplateApi = {
     try {
       const json = await res.json();
       const parsed = templateSchema.safeParse(json ?? {});
-      if (parsed.success) return sortByOrder(parsed.data);
+      if (parsed.success)
+        return sortByOrder({ builtIn: parsed.data.builtIn ?? [], custom: parsed.data.custom ?? [] });
     } catch {
       /* empty body is fine */
     }
