@@ -108,13 +108,19 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
         referral: job.referral || false,
         referralContactId: job.referralContactId ?? null,
       });
-      setCustomFields(metadataToFields(job.applicationMetadata));
+      const tplFields = template?.custom ?? [];
+      const owned = templateKeys(tplFields);
+      setCustomFields(
+        metadataToFields(job.applicationMetadata).filter((f) => !owned.has(f.key)),
+      );
+      setTemplateValues(valuesFromMetadata(tplFields, job.applicationMetadata));
+      setTemplateErrors({});
       // Reset group-share state each time a new job is loaded.
       setPostToGroups(false);
       setSelectedGroupIds([]);
       setGroupError(null);
     }
-  }, [job, form]);
+  }, [job, form, template]);
 
   useEffect(() => {
     if (!open) return;
