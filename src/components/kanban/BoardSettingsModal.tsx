@@ -363,6 +363,8 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FieldTemplateModal open={templateOpen} onOpenChange={setTemplateOpen} />
     </Dialog>
   );
 };
