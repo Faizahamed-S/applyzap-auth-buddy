@@ -183,9 +183,16 @@ export const FieldTemplateModal = ({ open, onOpenChange }: Props) => {
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading template…</p>
           ) : isError ? (
-            <p className="text-sm text-destructive">
-              Couldn't load your template. Please close and try again.
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-destructive">
+                Your form template isn't available right now — the server refused the request
+                (403).
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Everything else on your board is working, so this is on the server side. Once
+                the template service is live, this screen will fill in automatically.
+              </p>
+            </div>
           ) : (
             <>
               <div className="space-y-2">
