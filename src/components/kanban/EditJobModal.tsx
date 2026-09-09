@@ -28,6 +28,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { JobApplication } from '@/types/job';
 import { CustomFieldsEditor, metadataToFields, fieldsToMetadata, CustomFieldEntry } from './CustomFieldsEditor';
+import {
+  TemplateFields,
+  templateKeys,
+  validateTemplateValues,
+  valuesFromMetadata,
+  valuesToMetadata,
+  type TemplateValues,
+} from './TemplateFields';
+import { useFieldTemplate } from '@/hooks/useFieldTemplate';
 import { ReferralCombobox } from '@/components/referrals/ReferralCombobox';
 import {
   ensureGroupsCache,
@@ -60,6 +69,10 @@ interface EditJobModalProps {
 export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
+  const { data: template } = useFieldTemplate();
+  const templateFields = template?.custom ?? [];
+  const [templateValues, setTemplateValues] = useState<TemplateValues>({});
+  const [templateErrors, setTemplateErrors] = useState<Record<string, string>>({});
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
