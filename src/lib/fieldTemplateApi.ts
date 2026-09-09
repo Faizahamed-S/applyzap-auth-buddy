@@ -98,7 +98,7 @@ export const fieldTemplateApi = {
       custom: template.custom.map((f, i) => ({ ...f, order: i })),
     };
     const res = await apiFetch(ENDPOINT, {
-      method: 'POST',
+      method: 'PUT',
       headers,
       body: JSON.stringify(body),
     });
