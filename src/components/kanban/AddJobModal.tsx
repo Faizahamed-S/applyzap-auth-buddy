@@ -28,6 +28,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { CustomFieldsEditor, fieldsToMetadata } from './CustomFieldsEditor';
 import type { CustomFieldEntry } from './CustomFieldsEditor';
+import {
+  TemplateFields,
+  validateTemplateValues,
+  valuesFromMetadata,
+  valuesToMetadata,
+  type TemplateValues,
+} from './TemplateFields';
+import { useFieldTemplate } from '@/hooks/useFieldTemplate';
 import { ReferralCombobox } from '@/components/referrals/ReferralCombobox';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
 import { normalizeStatus } from '@/lib/statusMapper';
@@ -62,6 +70,10 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
   const { columns } = useTrackerColumns();
+  const { data: template } = useFieldTemplate();
+  const templateFields = template?.custom ?? [];
+  const [templateValues, setTemplateValues] = useState<TemplateValues>({});
+  const [templateErrors, setTemplateErrors] = useState<Record<string, string>>({});
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
@@ -104,6 +116,12 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    setTemplateValues(valuesFromMetadata(template?.custom ?? [], null));
+    setTemplateErrors({});
+  }, [open, template]);
+
   const handleToggleGroups = async (checked: boolean) => {
     setPostToGroups(checked);
     setGroupError(null);
@@ -126,9 +144,16 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       setGroupError('Select at least one group, or turn the toggle off.');
       return;
     }
+    const tplErrors = validateTemplateValues(templateFields, templateValues);
+    setTemplateErrors(tplErrors);
+    if (Object.keys(tplErrors).length > 0) return;
+
     setIsSubmitting(true);
     try {
-      const metadata = fieldsToMetadata(customFields);
+      const adHoc = fieldsToMetadata(customFields) ?? {};
+      const tplMeta = valuesToMetadata(templateFields, templateValues);
+      const merged = { ...adHoc, ...tplMeta };
+      const metadata = Object.keys(merged).length > 0 ? merged : undefined;
       const groupIds = postToGroups ? selectedGroupIds : [];
       await onSubmit({
         ...data,
@@ -137,6 +162,8 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
       } as any);
       form.reset();
       setCustomFields([]);
+      setTemplateValues(valuesFromMetadata(templateFields, null));
+      setTemplateErrors({});
       setPostToGroups(false);
       setGroupError(null);
       onOpenChange(false);
@@ -313,6 +340,21 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <TemplateFields
+              fields={templateFields}
+              values={templateValues}
+              errors={templateErrors}
+              onChange={(key, value) => {
+                setTemplateValues((prev) => ({ ...prev, [key]: value }));
+                setTemplateErrors((prev) => {
+                  if (!prev[key]) return prev;
+                  const next = { ...prev };
+                  delete next[key];
+                  return next;
+                });
+              }}
             />
 
             <Separator />

@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, AlertTriangle, LayoutList } from 'lucide-react';
+import { FieldTemplateModal } from './FieldTemplateModal';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -72,6 +73,7 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
     }
   }, [open, initialColumns]);
 
+  const [templateOpen, setTemplateOpen] = useState(false);
   const [wipeDialogOpen, setWipeDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [wipeProgress, setWipeProgress] = useState<{ done: number; total: number } | null>(null);
@@ -264,6 +266,22 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
             Add Column
           </Button>
 
+          <div className="mt-6 rounded-lg border border-border bg-card p-4 space-y-2">
+            <p className="text-sm font-semibold">Application form</p>
+            <p className="text-xs text-muted-foreground">
+              Choose which fields appear when you add or edit an application.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setTemplateOpen(true)}
+            >
+              <LayoutList className="mr-2 h-4 w-4" />
+              Template
+            </Button>
+          </div>
+
           <div className="mt-6 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
@@ -345,6 +363,8 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FieldTemplateModal open={templateOpen} onOpenChange={setTemplateOpen} />
     </Dialog>
   );
 };

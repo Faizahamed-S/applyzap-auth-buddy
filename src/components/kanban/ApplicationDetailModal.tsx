@@ -9,6 +9,7 @@ import { JobApplication } from '@/types/job';
 import { jobApi } from '@/lib/jobApi';
 import { getStatusConfig } from '@/lib/statusConfig';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
+import { useFieldTemplate } from '@/hooks/useFieldTemplate';
 
 interface ApplicationDetailModalProps {
   open: boolean;
@@ -29,6 +30,10 @@ export const ApplicationDetailModal = ({
 }: ApplicationDetailModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { columns: trackerColumns } = useTrackerColumns();
+  const { data: fieldTemplate } = useFieldTemplate();
+  const templateByKey = new Map(
+    (fieldTemplate?.custom ?? []).map((f) => [f.key, f]),
+  );
 
   const { data: application, isLoading, error } = useQuery({
     queryKey: ['application', applicationId],
@@ -196,15 +201,28 @@ export const ApplicationDetailModal = ({
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                   <Tag className="h-4 w-4" />
-                  Custom Fields
+                  Additional Details
                 </label>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                  {Object.entries(application.applicationMetadata).map(([key, value]) => (
-                    <div key={key} className="flex items-baseline gap-2">
-                      <span className="text-sm font-medium text-foreground">{key}:</span>
-                      <span className="text-sm text-muted-foreground">{String(value)}</span>
-                    </div>
-                  ))}
+                  {Object.entries(application.applicationMetadata).map(([key, value]) => {
+                    const field = templateByKey.get(key);
+                    const display =
+                      field?.type === 'boolean' || typeof value === 'boolean'
+                        ? value === true || value === 'true'
+                          ? 'Yes'
+                          : 'No'
+                        : String(value);
+                    return (
+                      <div key={key} className="flex items-baseline gap-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {field?.label ?? key}:
+                        </span>
+                        <span className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {display}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

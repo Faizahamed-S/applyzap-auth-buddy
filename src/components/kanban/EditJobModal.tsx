@@ -28,6 +28,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { JobApplication } from '@/types/job';
 import { CustomFieldsEditor, metadataToFields, fieldsToMetadata, CustomFieldEntry } from './CustomFieldsEditor';
+import {
+  TemplateFields,
+  templateKeys,
+  validateTemplateValues,
+  valuesFromMetadata,
+  valuesToMetadata,
+  type TemplateValues,
+} from './TemplateFields';
+import { useFieldTemplate } from '@/hooks/useFieldTemplate';
 import { ReferralCombobox } from '@/components/referrals/ReferralCombobox';
 import {
   ensureGroupsCache,
@@ -60,6 +69,10 @@ interface EditJobModalProps {
 export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customFields, setCustomFields] = useState<CustomFieldEntry[]>([]);
+  const { data: template } = useFieldTemplate();
+  const templateFields = template?.custom ?? [];
+  const [templateValues, setTemplateValues] = useState<TemplateValues>({});
+  const [templateErrors, setTemplateErrors] = useState<Record<string, string>>({});
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
@@ -95,13 +108,19 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
         referral: job.referral || false,
         referralContactId: job.referralContactId ?? null,
       });
-      setCustomFields(metadataToFields(job.applicationMetadata));
+      const tplFields = template?.custom ?? [];
+      const owned = templateKeys(tplFields);
+      setCustomFields(
+        metadataToFields(job.applicationMetadata).filter((f) => !owned.has(f.key)),
+      );
+      setTemplateValues(valuesFromMetadata(tplFields, job.applicationMetadata));
+      setTemplateErrors({});
       // Reset group-share state each time a new job is loaded.
       setPostToGroups(false);
       setSelectedGroupIds([]);
       setGroupError(null);
     }
-  }, [job, form]);
+  }, [job, form, template]);
 
   useEffect(() => {
     if (!open) return;
@@ -147,9 +166,16 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
       return;
     }
 
+    const tplErrors = validateTemplateValues(templateFields, templateValues);
+    setTemplateErrors(tplErrors);
+    if (Object.keys(tplErrors).length > 0) return;
+
     setIsSubmitting(true);
     try {
-      const metadata = fieldsToMetadata(customFields);
+      const adHoc = fieldsToMetadata(customFields) ?? {};
+      const tplMeta = valuesToMetadata(templateFields, templateValues);
+      const merged = { ...adHoc, ...tplMeta };
+      const metadata = Object.keys(merged).length > 0 ? merged : undefined;
       const groupIds = postToGroups ? selectedGroupIds : undefined;
       await onSubmit(job.id, {
         ...data,
@@ -330,6 +356,21 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <TemplateFields
+              fields={templateFields}
+              values={templateValues}
+              errors={templateErrors}
+              onChange={(key, value) => {
+                setTemplateValues((prev) => ({ ...prev, [key]: value }));
+                setTemplateErrors((prev) => {
+                  if (!prev[key]) return prev;
+                  const next = { ...prev };
+                  delete next[key];
+                  return next;
+                });
+              }}
             />
 
             <Separator />
