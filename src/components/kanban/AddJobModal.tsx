@@ -116,6 +116,12 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    setTemplateValues(valuesFromMetadata(template?.custom ?? [], null));
+    setTemplateErrors({});
+  }, [open, template]);
+
   const handleToggleGroups = async (checked: boolean) => {
     setPostToGroups(checked);
     setGroupError(null);
