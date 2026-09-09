@@ -166,9 +166,16 @@ export const EditJobModal = ({ open, onOpenChange, job, onSubmit }: EditJobModal
       return;
     }
 
+    const tplErrors = validateTemplateValues(templateFields, templateValues);
+    setTemplateErrors(tplErrors);
+    if (Object.keys(tplErrors).length > 0) return;
+
     setIsSubmitting(true);
     try {
-      const metadata = fieldsToMetadata(customFields);
+      const adHoc = fieldsToMetadata(customFields) ?? {};
+      const tplMeta = valuesToMetadata(templateFields, templateValues);
+      const merged = { ...adHoc, ...tplMeta };
+      const metadata = Object.keys(merged).length > 0 ? merged : undefined;
       const groupIds = postToGroups ? selectedGroupIds : undefined;
       await onSubmit(job.id, {
         ...data,
