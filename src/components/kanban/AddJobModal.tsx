@@ -342,6 +342,21 @@ export const AddJobModal = ({ open, onOpenChange, onSubmit }: AddJobModalProps) 
               )}
             />
 
+            <TemplateFields
+              fields={templateFields}
+              values={templateValues}
+              errors={templateErrors}
+              onChange={(key, value) => {
+                setTemplateValues((prev) => ({ ...prev, [key]: value }));
+                setTemplateErrors((prev) => {
+                  if (!prev[key]) return prev;
+                  const next = { ...prev };
+                  delete next[key];
+                  return next;
+                });
+              }}
+            />
+
             <Separator />
 
             <CustomFieldsEditor fields={customFields} onChange={setCustomFields} />
