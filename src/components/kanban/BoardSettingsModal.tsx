@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, AlertTriangle, LayoutList } from 'lucide-react';
+import { FieldTemplateModal } from './FieldTemplateModal';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -72,6 +73,7 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
     }
   }, [open, initialColumns]);
 
+  const [templateOpen, setTemplateOpen] = useState(false);
   const [wipeDialogOpen, setWipeDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [wipeProgress, setWipeProgress] = useState<{ done: number; total: number } | null>(null);
