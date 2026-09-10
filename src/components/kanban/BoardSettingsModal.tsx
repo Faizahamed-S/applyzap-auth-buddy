@@ -84,9 +84,12 @@ export const BoardSettingsModal = ({ open, onOpenChange, columns: initialColumns
     mutationFn: () => userApi.updateProfile({ trackerConfig: { columns } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['fieldTemplate'] });
+      queryClient.invalidateQueries({ queryKey: ['unique-statuses'] });
       toast.success('Board columns updated!');
       onOpenChange(false);
     },
+
     onError: () => {
       toast.error('Failed to save board settings');
     },
