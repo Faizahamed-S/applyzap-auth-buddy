@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { jobApi } from '@/lib/jobApi';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
+import { useStatusOptions } from '@/hooks/useFieldTemplate';
 import { normalizeStatus, canonicalToLabel } from '@/lib/statusMapper';
 
 interface StatusInputProps {
@@ -17,22 +18,26 @@ export const StatusInput = ({ value, onChange }: StatusInputProps) => {
   });
 
   const { columns } = useTrackerColumns();
+  const templateOptions = useStatusOptions();
 
-  // Merge board column statuses + backend statuses, deduplicated by canonical key
+  // Preference order: backend field-template status options, then board columns,
+  // then any additional statuses already used on applications. Deduped by canonical key.
   const allStatuses = (() => {
-    const seen = new Map<string, string>();
-    // Board columns first (preserves user's configured order)
-    for (const col of columns) {
-      const canonical = normalizeStatus(col.title);
-      if (!seen.has(canonical)) seen.set(canonical, canonical);
-    }
-    // Then any additional statuses from backend
-    for (const s of usedStatuses) {
-      const canonical = normalizeStatus(s);
-      if (!seen.has(canonical)) seen.set(canonical, canonical);
-    }
-    return Array.from(seen.values());
+    const seen = new Set<string>();
+    const out: string[] = [];
+    const add = (raw: string) => {
+      if (!raw || !raw.trim()) return;
+      const canonical = normalizeStatus(raw);
+      if (seen.has(canonical)) return;
+      seen.add(canonical);
+      out.push(canonical);
+    };
+    templateOptions.forEach(add);
+    columns.forEach((col) => add(col.title));
+    usedStatuses.forEach(add);
+    return out;
   })();
+
 
   return (
     <div className="flex flex-wrap gap-2">
