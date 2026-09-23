@@ -53,9 +53,14 @@ export const JobCard = ({ job, onEdit, onDelete, onViewDetails }: JobCardProps) 
         </button>
       </div>
       <p className="text-xs text-muted-foreground truncate mt-1.5 capitalize">{job.roleName}</p>
-      <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground/70">
-        <Calendar className="h-3 w-3 flex-shrink-0" />
-        <span>{formattedDate}</span>
+      <div className="flex items-center justify-between gap-2 mt-1.5 text-[11px] text-muted-foreground/70">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Calendar className="h-3 w-3 flex-shrink-0" />
+          <span>{formattedDate}</span>
+        </div>
+        {job.userJobId !== undefined && (
+          <span className="shrink-0 font-mono tabular-nums">#{job.userJobId}</span>
+        )}
       </div>
     </div>
   );
