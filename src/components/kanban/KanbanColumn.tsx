@@ -60,7 +60,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
 
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest('[data-badge]')) {
-      navigate(`/status/${status}`);
+      navigate(`/status/${encodeURIComponent(status)}`);
     }
   };
 

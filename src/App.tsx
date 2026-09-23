@@ -50,6 +50,8 @@ const App = () => (
             <Route path="/groups/:groupId/settings" element={<GroupDetailPage />} />
             <Route path="/groups/:groupId/board" element={<GroupBoardRedirect />} />
             <Route path="/invite/:token" element={<InviteAcceptPage />} />
+            <Route path="/status/:status" element={<StatusApplicationsPage />} />
+
 
 
 
