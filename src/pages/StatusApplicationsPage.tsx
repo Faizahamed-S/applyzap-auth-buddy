@@ -298,8 +298,10 @@ const StatusApplicationsPage = () => {
                 </TableRow>
               ) : (
                 filteredAndSortedApplications.map((job) => (
-                    <TableCell className="font-mono text-xs text-muted-foreground">#{job.userJobId || "n/a"}</TableCell>
                   <TableRow key={job.id} className="group">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {job.userJobId !== undefined ? `#${job.userJobId}` : '-'}
+                    </TableCell>
                     <TableCell>
                       <InlineStatusSelect
                         applicationId={job.id}

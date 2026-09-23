@@ -34,6 +34,7 @@ export const transformForBackend = (data: any) => {
 // Coerces id to string and ensures critical fields are strings before reaching the UI.
 const backendJobSchema = z.object({
   id: z.union([z.string(), z.number()]).transform((v) => String(v)),
+  userJobId: z.coerce.number().int().nonnegative().optional(),
   companyName: z.string().max(500).default(''),
   roleName: z.string().max(500).default(''),
   dateOfApplication: z.string().max(100).default(''),
