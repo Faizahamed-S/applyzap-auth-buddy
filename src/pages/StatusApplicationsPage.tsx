@@ -263,6 +263,7 @@ const StatusApplicationsPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead 
                   className="cursor-pointer hover:bg-muted/50"
@@ -291,12 +292,13 @@ const StatusApplicationsPage = () => {
             <TableBody>
               {filteredAndSortedApplications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                     {searchTerm ? 'No applications found matching your search.' : 'No applications found.'}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredAndSortedApplications.map((job) => (
+                    <TableCell className="font-mono text-xs text-muted-foreground">#{job.userJobId || "n/a"}</TableCell>
                   <TableRow key={job.id} className="group">
                     <TableCell>
                       <InlineStatusSelect
