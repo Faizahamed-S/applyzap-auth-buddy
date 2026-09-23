@@ -27,7 +27,9 @@ type SortField = 'companyName' | 'roleName' | 'dateOfApplication';
 type SortDirection = 'asc' | 'desc';
 
 const StatusApplicationsPage = () => {
-  const { status } = useParams<{ status: string }>();
+  const { status: rawStatus } = useParams<{ status: string }>();
+  // Single canonical form used for the query key, the fetch and status config.
+  const status = rawStatus ? normalizeStatus(decodeURIComponent(rawStatus)) : undefined;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
