@@ -20,7 +20,7 @@ import { InlineStatusSelect } from '@/components/kanban/InlineStatusSelect';
 import { ArrowLeft, Search, Edit2, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
-import { canonicalToLabel } from '@/lib/statusMapper';
+import { canonicalToLabel, normalizeStatus } from '@/lib/statusMapper';
 import { reportGroupMirrorResults } from '@/lib/groupMirrorToasts';
 
 type SortField = 'companyName' | 'roleName' | 'dateOfApplication';

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
 import { useTrackerColumns } from '@/hooks/useUserProfile';
-import { canonicalToLabel } from '@/lib/statusMapper';
+import { canonicalToLabel, normalizeStatus } from '@/lib/statusMapper';
 import { Check, X } from 'lucide-react';
 import { StatusInput } from './StatusInput';
 
@@ -43,9 +43,9 @@ export const InlineStatusSelect = ({
   });
 
   const handleSave = () => {
-    const trimmed = editValue.trim();
-    if (trimmed && trimmed !== currentStatus) {
-      updateMutation.mutate({ id: applicationId, status: trimmed });
+    const canonical = editValue.trim() ? normalizeStatus(editValue) : '';
+    if (canonical && canonical !== normalizeStatus(currentStatus)) {
+      updateMutation.mutate({ id: applicationId, status: canonical });
     }
     setIsEditing(false);
   };
