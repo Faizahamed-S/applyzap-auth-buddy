@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useNavigate } from 'react-router-dom';
 import { JobApplication } from '@/types/job';
 import { JobCard } from './JobCard';
-import { canonicalToLabel } from '@/lib/statusMapper';
+import { canonicalToLabel, normalizeStatus } from '@/lib/statusMapper';
 
 const COLOR_MAP: Record<string, string> = {
   blue: 'bg-blue-500',
@@ -60,7 +60,7 @@ export const KanbanColumn = ({ status, jobs, onEdit, onDelete, onViewDetails, co
 
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest('[data-badge]')) {
-      navigate(`/status/${encodeURIComponent(status)}`);
+      navigate(`/status/${encodeURIComponent(normalizeStatus(status))}`);
     }
   };
 

@@ -146,14 +146,15 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
       }
     }
 
+    const canonicalStatus = normalizeStatus(newStatus);
     const job = applications.find((j) => j.id === jobId);
-    if (!job || job.status === newStatus) return;
+    if (!job || normalizeStatus(job.status) === canonicalStatus) return;
 
     queryClient.setQueryData(['job-applications', currentPage, itemsPerPage], (old: JobApplication[]) =>
-      old.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j))
+      old.map((j) => (j.id === jobId ? { ...j, status: canonicalStatus } : j))
     );
 
-    patchMutation.mutate({ id: jobId, data: { status: newStatus } });
+    patchMutation.mutate({ id: jobId, data: { status: canonicalStatus } });
   };
 
   const handleAddJob = async (data: any) => {

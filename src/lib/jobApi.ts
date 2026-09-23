@@ -1,6 +1,6 @@
 import { JobApplication, CreateJobApplication, UpdateJobApplication } from "@/types/job";
 import { apiFetch } from "./apiFetch";
-import { transformForBackend, transformFromBackend } from "./statusMapper";
+import { transformForBackend, transformFromBackend, normalizeStatus } from "./statusMapper";
 import { supabase } from "@/integrations/supabase/client";
 import { API_BASE_URL as BASE } from "./apiConfig";
 
@@ -70,7 +70,8 @@ export const jobApi = {
   // Fetch applications by status
   getApplicationsByStatus: async (status: string): Promise<JobApplication[]> => {
     const headers = await getAuthHeaders();
-    const response = await apiFetch(`${API_BASE_URL}/applications/status/${status}`, { headers });
+    const canonical = encodeURIComponent(normalizeStatus(status));
+    const response = await apiFetch(`${API_BASE_URL}/applications/status/${canonical}`, { headers });
     if (!response.ok) throw new Error("Failed to fetch applications by status");
     const result = await response.json();
     return result.map(transformFromBackend);

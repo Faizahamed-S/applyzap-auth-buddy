@@ -20,14 +20,16 @@ import { InlineStatusSelect } from '@/components/kanban/InlineStatusSelect';
 import { ArrowLeft, Search, Edit2, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStatusConfig } from '@/lib/statusConfig';
-import { canonicalToLabel } from '@/lib/statusMapper';
+import { canonicalToLabel, normalizeStatus } from '@/lib/statusMapper';
 import { reportGroupMirrorResults } from '@/lib/groupMirrorToasts';
 
 type SortField = 'companyName' | 'roleName' | 'dateOfApplication';
 type SortDirection = 'asc' | 'desc';
 
 const StatusApplicationsPage = () => {
-  const { status } = useParams<{ status: string }>();
+  const { status: rawStatus } = useParams<{ status: string }>();
+  // Single canonical form used for the query key, the fetch and status config.
+  const status = rawStatus ? normalizeStatus(decodeURIComponent(rawStatus)) : undefined;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
