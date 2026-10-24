@@ -23,3 +23,29 @@ describe('buildStatusBreakdown', () => {
     expect(r[0].percent).toBe(0);
   });
 });
+
+import { hourLabel, fillLastNDays, monthLabel, fillHours } from './analyticsMath';
+
+describe('activity helpers', () => {
+  it('hour labels', () => {
+    expect(hourLabel(0)).toBe('12am');
+    expect(hourLabel(12)).toBe('12pm');
+    expect(hourLabel(23)).toBe('11pm');
+  });
+  it('fills 24 hours', () => {
+    const r = fillHours([{ hour: 9, count: 4 }]);
+    expect(r).toHaveLength(24);
+    expect(r[9]).toEqual({ label: '9am', count: 4 });
+    expect(r[10].count).toBe(0);
+  });
+  it('week zero-fills to 7 days ending today', () => {
+    const r = fillLastNDays(
+      [{ date: '2026-10-18', count: 2 }, { date: '2026-10-24', count: 5 }],
+      7,
+      new Date(2026, 9, 24),
+    );
+    expect(r.map((x) => x.count)).toEqual([2, 0, 0, 0, 0, 0, 5]);
+    expect(r[0].label).toBe('Oct 18');
+  });
+  it('month label', () => expect(monthLabel('2026-10')).toBe('Oct 2026'));
+});
