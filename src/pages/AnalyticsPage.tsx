@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { KpiRow } from '@/components/analytics/KpiRow';
+import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChart";
 
 const AnalyticsPage = () => {
   const navigate = useNavigate();
@@ -38,7 +39,9 @@ const AnalyticsPage = () => {
         </div>
         <KpiRow />
         {/* Chart grid — charts from src/components/analytics/ go here */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <StatusBreakdownChart />
+        </div>
       </div>
     </DashboardLayout>
   );
