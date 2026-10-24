@@ -96,3 +96,13 @@ export const dayLabel = (s: string): string => {
   const mi = Number(m[2]) - 1;
   return mi >= 0 && mi < 12 ? `${MONTHS[mi]} ${Number(m[3])}` : String(s);
 };
+
+/** Heatmap intensity 0–4: 0 = no activity, then quarters of the max count. */
+export const heatLevel = (count: number, max: number): 0 | 1 | 2 | 3 | 4 => {
+  if (!count || count <= 0 || !max || max <= 0) return 0;
+  const r = count / max;
+  if (r <= 0.25) return 1;
+  if (r <= 0.5) return 2;
+  if (r <= 0.75) return 3;
+  return 4;
+};

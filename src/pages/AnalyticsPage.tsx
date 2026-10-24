@@ -5,6 +5,7 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { KpiRow } from '@/components/analytics/KpiRow';
 import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChart";
 import { ActivityChart } from "@/components/analytics/ActivityChart";
+import { ConsistencyCard } from "@/components/analytics/ConsistencyCard";
 
 const AnalyticsPage = () => {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const AnalyticsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <StatusBreakdownChart />
           <ActivityChart />
+          <ConsistencyCard />
         </div>
       </div>
     </DashboardLayout>
