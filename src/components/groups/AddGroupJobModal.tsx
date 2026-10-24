@@ -63,6 +63,7 @@ export const AddGroupJobModal = ({ open, onOpenChange, groupId }: Props) => {
     onSuccess: () => {
       toast.success("Job added to board");
       queryClient.invalidateQueries({ queryKey: ["groupBoard", String(groupId)] });
+      queryClient.invalidateQueries({ queryKey: ["group-analytics", String(groupId)] });
       reset();
       onOpenChange(false);
     },

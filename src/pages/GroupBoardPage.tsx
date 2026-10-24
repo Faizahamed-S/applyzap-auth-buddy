@@ -33,6 +33,7 @@ import {
 } from "@/lib/collabTutorialSamples";
 import { GroupBoardGrid } from "@/components/groups/GroupBoardGrid";
 import { AddGroupJobModal } from "@/components/groups/AddGroupJobModal";
+import { ContributorsCard } from "@/components/analytics/ContributorsCard";
 
 const GroupBoardPage = () => {
   const navigate = useNavigate();
@@ -120,6 +121,7 @@ const GroupBoardPage = () => {
     onSuccess: () => {
       toast.success("Job removed");
       queryClient.invalidateQueries({ queryKey: boardKey });
+      queryClient.invalidateQueries({ queryKey: ["group-analytics", String(groupId)] });
       setPendingDelete(null);
     },
     onError: (err: unknown) => {
@@ -214,6 +216,8 @@ const GroupBoardPage = () => {
                 </Button>
               </div>
             </div>
+
+            <ContributorsCard groupId={board.id} />
 
             {board.jobs.length > 0 ? (
               <GroupBoardGrid
