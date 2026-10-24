@@ -61,3 +61,24 @@ describe('heatLevel', () => {
     expect(heatLevel(7, 10)).toBe(3);
   });
 });
+
+import { buildDonut } from './analyticsMath';
+
+describe('buildDonut', () => {
+  it('splits part vs rest with percents', () => {
+    expect(buildDonut(3, 12, 'Referral', 'No referral')).toEqual([
+      { key: 'yes', label: 'Referral', count: 3, percent: 25 },
+      { key: 'no', label: 'No referral', count: 9, percent: 75 },
+    ]);
+  });
+  it('total 0 gives zero slices and 0%', () => {
+    expect(buildDonut(0, 0, 'Referral', 'No referral')).toEqual([
+      { key: 'yes', label: 'Referral', count: 0, percent: 0 },
+      { key: 'no', label: 'No referral', count: 0, percent: 0 },
+    ]);
+  });
+  it('part bigger than total is clamped', () => {
+    expect(buildDonut(5, 3, 'Tailored', 'Not tailored').map((s) => s.count)).toEqual([3, 0]);
+  });
+});
+

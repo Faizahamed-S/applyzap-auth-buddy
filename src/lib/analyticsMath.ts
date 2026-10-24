@@ -106,3 +106,26 @@ export const heatLevel = (count: number, max: number): 0 | 1 | 2 | 3 | 4 => {
   if (r <= 0.75) return 3;
   return 4;
 };
+
+export interface DonutSegment {
+  key: 'yes' | 'no';
+  label: string;
+  count: number;
+  percent: number;
+}
+
+/** Two slices: `part` vs the rest of `total`. total <= 0 → both slices are 0 with 0%. */
+export const buildDonut = (
+  part: number | undefined,
+  total: number | undefined,
+  yesLabel: string,
+  noLabel: string,
+): DonutSegment[] => {
+  const t = Math.max(0, Number(total) || 0);
+  const p = Math.min(Math.max(0, Number(part) || 0), t);
+  return [
+    { key: 'yes', label: yesLabel, count: p, percent: pct(p, t) },
+    { key: 'no', label: noLabel, count: t - p, percent: pct(t - p, t) },
+  ];
+};
+
