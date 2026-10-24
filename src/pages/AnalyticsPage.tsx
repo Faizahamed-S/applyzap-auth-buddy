@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { KpiRow } from '@/components/analytics/KpiRow';
 import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChart";
+import { ActivityChart } from "@/components/analytics/ActivityChart";
 
 const AnalyticsPage = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const AnalyticsPage = () => {
         {/* Chart grid — charts from src/components/analytics/ go here */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <StatusBreakdownChart />
+          <ActivityChart />
         </div>
       </div>
     </DashboardLayout>
