@@ -6,6 +6,8 @@ import { KpiRow } from '@/components/analytics/KpiRow';
 import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChart";
 import { ActivityChart } from "@/components/analytics/ActivityChart";
 import { ConsistencyCard } from "@/components/analytics/ConsistencyCard";
+import { ReferralTailoredCard } from "@/components/analytics/ReferralTailoredCard";
+
 
 const AnalyticsPage = () => {
   const navigate = useNavigate();
@@ -45,6 +47,8 @@ const AnalyticsPage = () => {
           <StatusBreakdownChart />
           <ActivityChart />
           <ConsistencyCard />
+          <ReferralTailoredCard />
+
         </div>
       </div>
     </DashboardLayout>
