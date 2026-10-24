@@ -52,7 +52,7 @@ export const ConsistencyCard = () => {
             ) : (
               <TooltipProvider delayDuration={100}>
                 <div className="overflow-x-auto">
-                  <div className="grid grid-rows-7 grid-flow-col gap-1 w-max">
+                  <div className="grid grid-rows-[repeat(7,1rem)] grid-flow-col gap-1 w-max">
                     {Array.from({ length: offset }).map((_, i) => <div key={`pad-${i}`} className="h-4 w-4" />)}
                     {days.map((d) => {
                       const count = Number(d.count) || 0;
