@@ -34,6 +34,9 @@ interface JobKanbanBoardProps {
   user: User | null;
 }
 
+// Shared width + horizontal padding for the header and the board, defined once.
+const BOARD_CONTAINER = 'max-w-[1600px] mx-auto w-full px-4 lg:px-6 xl:px-10';
+
 export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
   const queryClient = useQueryClient();
   const [activeJob, setActiveJob] = useState<JobApplication | null>(null);
@@ -264,15 +267,15 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
     <div className="w-full h-screen flex flex-col bg-background">
       {/* Fixed Header */}
       <div className="shrink-0 bg-background">
-        <div className="max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Job Application Tracker</h1>
-              <p className="text-muted-foreground mt-1">
+        <div className={`${BOARD_CONTAINER} py-6`}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-3xl font-bold text-foreground truncate">Job Application Tracker</h1>
+              <p className="text-muted-foreground mt-1 truncate">
                 Manage your job search with drag-and-drop simplicity
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -294,9 +297,9 @@ export const JobKanbanBoard = ({ user }: JobKanbanBoardProps) => {
         </div>
       </div>
 
-      {/* Scrollable Board Area */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16 py-6 min-h-full flex flex-col">
+      {/* Scrollable Board Area — the only scroll container on this page */}
+      <div className="flex-1 min-h-0 min-w-0 overflow-auto">
+        <div className={`${BOARD_CONTAINER} py-6 min-h-full flex flex-col`}>
           {currentView === 'kanban' ? (
             <DndContext
               sensors={sensors}

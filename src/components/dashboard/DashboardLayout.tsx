@@ -26,7 +26,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     <div className="min-h-screen w-full bg-background flex">
       <DashboardSidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
       <main
-        className="flex-1 transition-all duration-300"
+        className="flex-1 min-w-0 min-h-0 transition-all duration-300"
         style={{ marginLeft: collapsed ? '4rem' : '15rem' }}
       >
         {children}
