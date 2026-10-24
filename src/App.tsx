@@ -25,6 +25,7 @@ import GroupDetailPage from "./pages/GroupDetailPage";
 import GroupBoardPage from "./pages/GroupBoardPage";
 import InviteAcceptPage from "./pages/InviteAcceptPage";
 import NotFound from "./pages/NotFound";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/groups/:groupId/board" element={<GroupBoardRedirect />} />
             <Route path="/invite/:token" element={<InviteAcceptPage />} />
             <Route path="/status/:status" element={<StatusApplicationsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
 
 
 
