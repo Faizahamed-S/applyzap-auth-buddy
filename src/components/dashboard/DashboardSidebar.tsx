@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   { icon: FileText, label: 'Resume Generator', comingSoon: true },
   { icon: PenTool, label: 'Cover Letter', comingSoon: true },
   { icon: Users, label: 'Referral Base', href: '/referrals' },
-  { icon: BarChart3, label: 'Analytics', comingSoon: true },
+  { icon: BarChart3, label: 'Analytics', href: '/analytics' },
   { icon: Handshake, label: 'Collaborative Tracker', href: '/groups' },
   { icon: Globe, label: 'Global Apply', comingSoon: true },
   { icon: UserCircle, label: 'Profile', href: '/profile' },

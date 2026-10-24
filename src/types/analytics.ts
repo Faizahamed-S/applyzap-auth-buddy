@@ -10,4 +10,7 @@ export interface DashboardAnalytics {
     longest_streak: number;
   };
   recent_activity: Array<{ date: string; count: number }>;
+  activity_by_hour_today?: Array<{ hour: number; count: number }>;
+  activity_by_day_last_30?: Array<{ date: string; count: number }>;
+  activity_by_month_last_12?: Array<{ month: string; count: number }>;
 }
