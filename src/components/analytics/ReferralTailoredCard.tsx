@@ -77,16 +77,17 @@ const Donut = ({
 
       <div className="text-center">
         <p className="text-sm font-medium text-foreground">{title}</p>
-        <div className="mt-1 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5">
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
             <span className="h-2.5 w-2.5 rounded-full bg-primary" />
             {yesLabel} · {yes.count}
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
             <span className="h-2.5 w-2.5 rounded-full bg-muted" />
             {noLabel} · {no.count}
           </span>
         </div>
+
       </div>
     </div>
   );
