@@ -7,6 +7,8 @@ import { StatusBreakdownChart } from "@/components/analytics/StatusBreakdownChar
 import { ActivityChart } from "@/components/analytics/ActivityChart";
 import { ConsistencyCard } from "@/components/analytics/ConsistencyCard";
 import { ReferralTailoredCard } from "@/components/analytics/ReferralTailoredCard";
+import { TopCompaniesCard } from '@/components/analytics/TopCompaniesCard';
+import { ReferralEffectivenessCard } from '@/components/analytics/ReferralEffectivenessCard';
 
 
 const AnalyticsPage = () => {
@@ -48,7 +50,8 @@ const AnalyticsPage = () => {
           <ActivityChart />
           <ConsistencyCard />
           <ReferralTailoredCard />
-
+          <TopCompaniesCard />
+          <ReferralEffectivenessCard />
         </div>
       </div>
     </DashboardLayout>
