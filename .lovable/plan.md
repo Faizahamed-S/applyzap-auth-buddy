@@ -1,22 +1,32 @@
-# Fix the tracker page: fixed top bar, only the board scrolls
+# Tracker page scroll fix — audit and revised plan
 
-## Goal
-On the /tracker page, the top bar (title, settings, Add Application, view toggle) stays fixed to the window width and never scrolls. Only the Kanban board area scrolls — horizontally when there are many columns, vertically when columns are tall. One scroll area instead of two.
+## Audit of current code
 
-## What changes for the user
-- On a 13" laptop with the sidebar open or collapsed, the whole top bar fits on screen with no scrolling.
-- On narrower windows, the top bar wraps neatly onto two lines instead of pushing off-screen.
-- The board scrolls on its own; the page itself no longer scrolls sideways.
-- Columns, cards, drag-and-drop, sticky column headers and the table view all behave exactly as today.
+1. Height chain — MISSING (partly)
+   - `DashboardLayout.tsx` root: `min-h-screen w-full bg-background flex` — no fixed height, no overflow-hidden.
+   - `<main>`: `flex-1 transition-all duration-300` + inline `marginLeft` — no flex-col, no min-h-0.
+   - `JobKanbanBoard.tsx` root: `w-full h-screen flex flex-col bg-background` — fixed height comes from here, not the layout.
+   - Board scroll wrapper: `flex-1 overflow-auto` — no min-h-0.
+   - Inner board container: `max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16 py-6 min-h-full flex flex-col`.
+2. `<main>` width — MISSING. No `min-w-0`, no overflow classes. This is why wide boards stretch `<main>` and the whole page (header included) scrolls sideways.
+3. Header — PARTLY DONE
+   - Wrapper is `shrink-0` — ALREADY DONE.
+   - Action buttons (settings, Add Application, ViewToggle) are already in one shared wrapper `flex items-center gap-3` — ALREADY DONE.
+   - Title block has no `min-w-0` — MISSING. Subtitle has no `truncate` — MISSING. Row is `flex items-center justify-between`, no wrap — MISSING.
+4. Padding — MISSING (duplicated). Same string `max-w-[1600px] mx-auto w-full px-3 sm:px-6 lg:px-10 xl:px-16` written twice inline (header and board), not defined in one place.
+5. Board scroll container — `flex-1 overflow-auto`. Other overflow on the page: none on `<main>` or columns; the table view's shadcn `Table` wrapper has its own `overflow-auto`, and `AllApplicationsTable` has `overflow-hidden` on its card. Because `<main>` lacks min-w-0, the browser window currently also scrolls horizontally.
+6. Drag and drop — `@dnd-kit/core`. No `autoScroll` prop is set, so dnd-kit's default auto-scroll is on; it scrolls every scrollable ancestor of the pointer (not limited to one parent), so it will work with the board container.
+7. Sticky column headers — `sticky top-0` inside each column; nearest scroll ancestor is the board `flex-1 overflow-auto` div, so they stick to that container (not the window).
+8. Table view — rendered inside the same board scroll container; the table also has its own inner `overflow-auto`, so it doesn't need page scrolling except when `<main>` stretches.
+9. Hidden scrollbar — NOT APPLICABLE. A `.scrollbar-stealth` class exists in `index.css` but is not used anywhere.
 
-## Technical details
-1. `DashboardLayout.tsx`: add `min-w-0` (and `overflow-x-hidden`) to `<main>` so wide board content can no longer stretch the main area past the window — this is the root cause of the page-level horizontal scroll that drags the header along.
-2. `JobKanbanBoard.tsx` header:
-   - Make the header row `flex-wrap gap-3` with `min-w-0` on the title block so controls wrap instead of overflowing.
-   - Reduce side padding on laptop widths (e.g. `px-4 lg:px-6 xl:px-10`) for header and board container, keeping them aligned.
-   - Subtitle truncates on small widths.
-3. Board area: keep `flex-1 overflow-auto` as the single scroll container; add `min-w-0` so horizontal scrolling happens only inside it. Sticky column headers keep working since they stick to this container.
-4. No changes to data, statuses, drag logic, or other pages (other pages share the layout but gain only the harmless `min-w-0`).
+## Revised plan (MISSING items only)
+
+1. `DashboardLayout.tsx` `<main>`: add `min-w-0` and `min-h-0` only. No overflow-x-hidden.
+2. `JobKanbanBoard.tsx` board scroll wrapper: `flex-1 min-h-0 min-w-0 overflow-auto` — the only scroll container for the board.
+3. Header row: `flex flex-wrap items-center justify-between gap-3`; title block gets `min-w-0`; subtitle gets `truncate`. Action wrapper stays as one group (add `shrink-0`) so the two groups wrap, never individual buttons.
+4. Shared padding: define one constant (e.g. `const CONTAINER = 'max-w-[1600px] mx-auto w-full px-4 lg:px-6 xl:px-10'`) in `JobKanbanBoard.tsx` and use it for both header and board.
+5. No changes to drag-and-drop config, sticky headers, table, statuses, or data.
 
 ## Verification
-Playwright screenshots at 1280px and 793px widths with sidebar open and collapsed: header fully visible, page has no horizontal scroll, board scrolls independently.
+Playwright at 1280px and 793px, sidebar open and collapsed: header fully visible, window has no horizontal scroll, board scrolls on its own, drag near edge still auto-scrolls.
