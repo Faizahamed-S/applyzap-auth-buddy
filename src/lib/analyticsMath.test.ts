@@ -49,3 +49,15 @@ describe('activity helpers', () => {
   });
   it('month label', () => expect(monthLabel('2026-10')).toBe('Oct 2026'));
 });
+
+import { heatLevel } from './analyticsMath';
+
+describe('heatLevel', () => {
+  it('0 activity is level 0', () => expect(heatLevel(0, 10)).toBe(0));
+  it('max is level 4', () => expect(heatLevel(10, 10)).toBe(4));
+  it('quarters map to levels 1-3', () => {
+    expect(heatLevel(2, 10)).toBe(1);
+    expect(heatLevel(5, 10)).toBe(2);
+    expect(heatLevel(7, 10)).toBe(3);
+  });
+});
