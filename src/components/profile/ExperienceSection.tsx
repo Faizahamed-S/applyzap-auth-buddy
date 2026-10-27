@@ -72,7 +72,7 @@ const ExperienceSection = ({ experiences, onChange }: ExperienceSectionProps) =>
           </div>
         )}
         {displayItems.map((exp, index) => (
-          <div key={index} className="rounded-lg border border-border p-4 space-y-3">
+          <div key={exp.id ?? index} className="rounded-lg border border-border p-4 space-y-3">
             {editing ? (
               <>
                 <div className="flex items-center justify-between">

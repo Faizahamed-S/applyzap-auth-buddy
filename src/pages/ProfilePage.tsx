@@ -79,13 +79,14 @@ const ProfilePage = () => {
 
   const saveMutation = useMutation({
     mutationFn: () => {
+      // Backend merges profileData by key and treats null as "delete" — never send null.
       const profileData: ProfileData = {
-        aboutMe,
-        links,
-        experiences,
-        basicInfoExtra,
-        customSections,
-        sectionOrder,
+        aboutMe: aboutMe ?? '',
+        links: links ?? [],
+        experiences: experiences ?? [],
+        basicInfoExtra: basicInfoExtra ?? [],
+        customSections: customSections ?? [],
+        sectionOrder: sectionOrder ?? [],
       };
       return userApi.updateProfile({ firstName, lastName, timezone, profileData });
     },
@@ -93,8 +94,12 @@ const ProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast.success('Profile saved successfully!');
     },
-    onError: () => {
-      toast.error('Failed to save profile');
+    onError: (error: Error & { status?: number; serverMessage?: string }) => {
+      if (error?.status === 400 && error.serverMessage) {
+        toast.error(`Couldn't save: ${error.serverMessage}`);
+      } else {
+        toast.error('Failed to save profile');
+      }
     },
   });
 
