@@ -15,12 +15,27 @@ export interface ProfileLinks {
   portfolio?: string;
 }
 
+export interface ProfileExperienceHighlight {
+  id?: string;
+  text: string;
+  skills?: string[];
+  metric?: string | null;
+  include?: boolean;
+}
+
 export interface ProfileExperience {
+  /** Server-assigned stable id (e.g. "exp_1a2b3c4d"). Never generated on the client. */
+  id?: string;
   title: string;
   company: string;
   description: string;
   startDate?: string;
   endDate?: string;
+  current?: boolean;
+  location?: string;
+  rawNotes?: string;
+  highlights?: ProfileExperienceHighlight[];
+  [key: string]: unknown;
 }
 
 export interface BasicInfoExtraField {

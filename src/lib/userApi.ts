@@ -37,7 +37,21 @@ export const userApi = {
       headers,
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Failed to update user profile");
+    if (!response.ok) {
+      let body: { message?: unknown; field?: unknown } = {};
+      try {
+        body = await response.json();
+      } catch {
+        // non-JSON error body
+      }
+      const err = new Error(
+        typeof body.message === "string" ? body.message : "Failed to update user profile"
+      ) as Error & { status?: number; field?: string; serverMessage?: string };
+      err.status = response.status;
+      if (typeof body.field === "string") err.field = body.field;
+      if (typeof body.message === "string") err.serverMessage = body.message;
+      throw err;
+    }
     return response.json();
   },
 };
